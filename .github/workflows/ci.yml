@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Download Godot 4.3
+        run: |
+          curl -sL -o godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          chmod +x Godot_v4.3-stable_linux.x86_64
+          ./Godot_v4.3-stable_linux.x86_64 --version
+
+      - name: Run GDScript tests (headless)
+        run: |
+          cd godot-project
+          PASS=0
+          FAIL=0
+          FAILED=""
+          for t in scripts/*_test.gd; do
+            echo "=== $t ==="
+            if ../Godot_v4.3-stable_linux.x86_64 --headless --script "$t" 2>&1; then
+              PASS=$((PASS + 1))
+            else
+              FAIL=$((FAIL + 1))
+              FAILED="$FAILED $t"
+            fi
+          done
+          echo "---"
+          echo "Passed: $PASS  Failed: $FAIL"
+          if [ "$FAIL" -ne 0 ]; then
+            echo "Failed tests:$FAILED"
+            exit 1
+          fi
