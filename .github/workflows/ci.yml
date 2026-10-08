@@ -22,6 +22,11 @@ jobs:
           chmod +x Godot_v4.3-stable_linux.x86_64
           ./Godot_v4.3-stable_linux.x86_64 --version
 
+      - name: Import project resources (headless)
+        run: |
+          cd godot-project
+          ../Godot_v4.3-stable_linux.x86_64 --headless --import 2>&1 | tail -3
+
       - name: Run GDScript tests (headless)
         run: |
           cd godot-project
