@@ -1,0 +1,159 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
+[ext_resource type="Texture2D" path="res://assets/environments/f1-ashen-approach.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2560, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="RectangleShape2D" id="WildRect_WildZoneF1"]
+size = Vector2(1400, 380)
+
+
+[node name="RoomF1" type="Node2D"]
+script = ExtResource("1")
+room_id = "f1"
+room_rect = Rect2(-1280, -360, 2560, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.32, 0.30, 0.28, 1)
+polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
+
+[node name="Ember1" type="Polygon2D" parent="."]
+color = Color(0.90, 0.40, 0.10, 1)
+polygon = PackedVector2Array(-412, 155, -388, 155, -388, 145, -412, 145)
+
+[node name="Ember2" type="Polygon2D" parent="."]
+color = Color(0.85, 0.35, 0.10, 1)
+polygon = PackedVector2Array(185, -94, 215, -94, 215, -106, 185, -106)
+
+[node name="Stack1" type="Polygon2D" parent="."]
+color = Color(0.20, 0.19, 0.18, 1)
+polygon = PackedVector2Array(-260, -240, -140, -240, -140, -360, -260, -360)
+
+[node name="Stack2" type="Polygon2D" parent="."]
+color = Color(0.22, 0.20, 0.19, 1)
+polygon = PackedVector2Array(550, -260, 650, -260, 650, -360, 550, -360)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineF1" parent="." instance=ExtResource("5")]
+position = Vector2(1050, 200)
+shrine_id = "f1_1"
+
+[node name="WildZoneF1" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(300, 60)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "f1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneF1"]
+shape = SubResource("WildRect_WildZoneF1")
+
+[node name="Apprentice" parent="." instance=ExtResource("8")]
+position = Vector2(-700, 150)
+npc_name = "Blacksmith's Apprentice"
+art_id = "apprentice"
+tint = Color(0.55, 0.50, 0.45, 1)
+talk_flag = "f1_apprentice_met"
+lines = PackedStringArray("[WIRING] Lost again. The path up to Forgehold eats signposts.", "[WIRING] You're the reaper, right? My master talks about you like a debt.", "[WIRING] Walk with me a bit? The ash plays tricks on the eyes.")
+repeat_lines = PackedStringArray("[WIRING] East, up the switchbacks. Try to keep up.")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f2.tscn"
+metadata/target_room_id = "f2"
+metadata/spawn = Vector2(-860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h1.tscn"
+metadata/target_room_id = "h1"
+metadata/spawn = Vector2(1450, -100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="BrokenCrossing" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, -260)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f2.tscn"
+metadata/target_room_id = "f2"
+metadata/spawn = Vector2(800, 100)
+metadata/lock_flag = "f2_bridge_repaired"
+metadata/locked_hint = "[WIRING] The crossing is collapsed — a ruin of snapped beams. The fabricator could grow new supports."
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BrokenCrossing"]
+shape = SubResource("ExitCircle")
+
+[node name="Act2Flag" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(0, 100)
+collision_layer = 0
+collision_mask = 1
+flag = "act2_unlocked"
+one_shot = true
+trigger_mode = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Act2Flag"]
+shape = SubResource("RangeCircle")

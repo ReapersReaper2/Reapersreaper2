@@ -1,0 +1,194 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
+[ext_resource type="Texture2D" path="res://assets/environments/f2-forgehold-town.png" id="9"]
+[ext_resource type="Script" path="res://scripts/key_door.gd" id="10"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2560, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomF2" type="Node2D"]
+script = ExtResource("1")
+room_id = "f2"
+room_rect = Rect2(-1280, -360, 2560, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.25, 0.22, 0.20, 1)
+polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
+
+[node name="SmithyRow1" type="Polygon2D" parent="."]
+color = Color(0.18, 0.15, 0.13, 1)
+polygon = PackedVector2Array(-500, -160, -100, -160, -100, -360, -500, -360)
+
+[node name="SmithyRow2" type="Polygon2D" parent="."]
+color = Color(0.20, 0.16, 0.13, 1)
+polygon = PackedVector2Array(25, -160, 375, -160, 375, -360, 25, -360)
+
+[node name="CoalYard" type="Polygon2D" parent="."]
+color = Color(0.10, 0.10, 0.10, 1)
+polygon = PackedVector2Array(-1050, 280, -750, 280, -750, 120, -1050, 120)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineF2" parent="." instance=ExtResource("5")]
+position = Vector2(1050, 200)
+shrine_id = "f2_1"
+
+[node name="ApprenticeF2" parent="." instance=ExtResource("8")]
+position = Vector2(-400, 100)
+npc_name = "Blacksmith's Apprentice"
+art_id = "apprentice"
+tint = Color(0.55, 0.50, 0.45, 1)
+talk_flag = "f2_forge_ready"
+lines = PackedStringArray("[WIRING] Made it. The forge door only opens for real work — master's rule.", "[WIRING] Tell the door you're ready. It'll know if you're lying.")
+repeat_lines = PackedStringArray("[WIRING] The forge door. Go on.")
+
+[node name="Smith" parent="." instance=ExtResource("8")]
+position = Vector2(100, 200)
+npc_name = "Forge Smith"
+tint = Color(0.60, 0.40, 0.30, 1)
+is_shopkeeper = true
+shop_id = "forge_smithy"
+lines = PackedStringArray()
+repeat_lines = PackedStringArray("[WIRING] Steel, temper, and opinions about your armor.")
+
+[node name="Flint" parent="." instance=ExtResource("8")]
+position = Vector2(620, -120)
+npc_name = "FLINT"
+art_id = "flint"
+talk_flag = "f2_flint_met"
+lines = PackedStringArray("[WIRING] Flint doesn't look up from the anvil. 'Another reaper. The forge has opinions about your kind.'", "[WIRING] 'That armor of yours is dead metal. I can wake it — if the door decides you're worth the heat.'", "[WIRING] 'Form 4 isn't given. It's quenched. Bring me something that wants to burn.'")
+repeat_lines = PackedStringArray("[WIRING] 'The forge door. When you're ready to stop being a visitor.'")
+
+[node name="ForgeDoor" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(800, -200)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] forge door"
+label_text = "Forge Door"
+tint = Color(0.50, 0.15, 0.10, 1)
+lines = PackedStringArray("[WIRING] The forge inhales. Heat takes the shape of armor.", "[WIRING] FORM 4 — BLACKSMITH ARMOR — unlocked. (Full quench cutscene later.)")
+repeat_lines = PackedStringArray("[WIRING] The forge remembers you. Come back when the armor needs feeding.")
+flag = "form4_unlocked"
+extra_flags = PackedStringArray()
+lock_flag = "f2_forge_ready"
+locked_hint = "[WIRING] The forge door is shut. Finish the apprentice's work first."
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="ForgeDoor"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="ForgeDoor"]
+polygon = PackedVector2Array(-60, 80, 60, 80, 60, -80, -60, -80)
+
+[node name="Prompt" type="Label" parent="ForgeDoor"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] forge door"
+
+[node name="SupplyDoor" type="Area2D" parent="."]
+script = ExtResource("10")
+position = Vector2(-800, -200)
+collision_layer = 0
+collision_mask = 1
+flag = "f2_supply_unlocked"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SupplyDoor"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="SupplyDoor"]
+color = Color(0.35, 0.28, 0.2, 1)
+polygon = PackedVector2Array(-50, 70, 50, 70, 50, -70, -50, -70)
+
+[node name="Prompt" type="Label" parent="SupplyDoor"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f3.tscn"
+metadata/target_room_id = "f3"
+metadata/spawn = Vector2(-210, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f1.tscn"
+metadata/target_room_id = "f1"
+metadata/spawn = Vector2(860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

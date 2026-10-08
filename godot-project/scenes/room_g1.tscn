@@ -1,0 +1,269 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/fabricator_station.gd" id="8"]
+[ext_resource type="Texture2D" path="res://assets/environments/p1-armor-grove.png" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="10"]
+[ext_resource type="Script" path="res://scripts/vine_exchange.gd" id="11"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomG1" type="Node2D"]
+script = ExtResource("1")
+room_id = "g1"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.25, 0.35, 0.20, 1)
+polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
+
+[node name="GroveLight" type="Polygon2D" parent="."]
+color = Color(0.35, 0.45, 0.25, 1)
+polygon = PackedVector2Array(-400, -100, 400, -100, 400, -300, -400, -300)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineG1" parent="." instance=ExtResource("5")]
+position = Vector2(-400, 200)
+shrine_id = "g1_1"
+
+[node name="ArmorPlant" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(200, 50)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] approach plant"
+label_text = "Armor Plant"
+tint = Color(0.30, 0.55, 0.30, 1)
+lines = PackedStringArray("[WIRING] The armor-plant turns toward you. It is deciding.", "[WIRING] Negotiation, not conquest. Be kind — the Bloom meter is watching. (Kindness tutorial hook.)")
+repeat_lines = PackedStringArray("[WIRING] The plant settles. It has decided to grow with you.")
+flag = "g1_plant_met"
+extra_flags = PackedStringArray("g1_bloom_tutorial", "form5_unlocked")
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="ArmorPlant"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="ArmorPlant"]
+polygon = PackedVector2Array(-50, 90, 50, 90, 30, -90, -30, -90)
+
+[node name="Prompt" type="Label" parent="ArmorPlant"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] approach plant"
+
+[node name="FabricatorStation" type="Area2D" parent="."]
+script = ExtResource("8")
+position = Vector2(350, 150)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] use fabricator"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FabricatorStation"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="FabricatorStation"]
+color = Color(0.25, 0.45, 0.28, 1)
+polygon = PackedVector2Array(-45, 60, 45, 60, 55, 0, 45, -60, -45, -60, -55, 0)
+
+[node name="Prompt" type="Label" parent="FabricatorStation"]
+visible = false
+offset_left = -60.0
+offset_top = -90.0
+offset_right = 60.0
+offset_bottom = -66.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="MourningCutting" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-320, -120)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] examine cutting"
+label_text = "Grimley"
+tint = Color(0.35, 0.45, 0.30, 1)
+lines = PackedStringArray("Old argument. Still growing.")
+repeat_lines = PackedStringArray("[WIRING] Grimley tends the cutting in silence. He will not say more.")
+flag = "g1_mourning_vine_seen"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = false
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="MourningCutting"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="MourningCutting"]
+polygon = PackedVector2Array(-20, 30, 20, 30, 12, -30, -12, -30)
+
+[node name="Prompt" type="Label" parent="MourningCutting"]
+visible = false
+offset_left = -60.0
+offset_top = -60.0
+offset_right = 60.0
+offset_bottom = -36.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] examine cutting"
+
+[node name="Petal" parent="." instance=ExtResource("10")]
+position = Vector2(-240, -80)
+npc_name = "PETAL"
+tint = Color(0.85, 0.75, 0.95, 1)
+lines = PackedStringArray("[WIRING] Oh! A visitor. Grimley doesn't get many. I'm Petal — I keep him company.", "[WIRING] The nursery is his whole world, really. He talks to the plants more than people.")
+repeat_lines = PackedStringArray("[WIRING] Back again? The cuttings are doing well.", "She gave me to him. Before. I don't think he ever told you that.")
+talk_flag = "g1_petal_met"
+
+[node name="TakeCutting" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-380, -60)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] take cutting"
+label_text = ""
+tint = Color(0.35, 0.45, 0.30, 1)
+lines = PackedStringArray("[WIRING] You take a cutting from Grimley's mourning vine.")
+repeat_lines = PackedStringArray()
+flag = "g1_cutting_taken"
+extra_flags = PackedStringArray()
+lock_flag = "e2_fragment_planted"
+locked_hint = "[WIRING] The vine is not ready to be cut."
+give_item = "grimley_cutting"
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="TakeCutting"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="TakeCutting"]
+polygon = PackedVector2Array(-15, 20, 15, 20, 10, -20, -10, -20)
+
+[node name="Prompt" type="Label" parent="TakeCutting"]
+visible = false
+offset_left = -60.0
+offset_top = -50.0
+offset_right = 60.0
+offset_bottom = -26.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] take cutting"
+
+[node name="DeliverCutting" type="Area2D" parent="."]
+script = ExtResource("11")
+position = Vector2(-280, -160)
+collision_layer = 0
+collision_mask = 1
+required_item = "ivy_cutting"
+speaker = "Grimley"
+reaction_lines = PackedStringArray("[WIRING] Grimley holds the cutting for a long time.", "[WIRING] He says nothing.")
+done_flag = "g1_ivy_cutting_delivered"
+lock_flag = "e2_fragment_planted"
+prompt_text = "[E] offer cutting"
+locked_hint = "[WIRING] Not yet."
+missing_hint = "[WIRING] You have no cutting from Ivy's garden."
+
+[node name="Range" type="CollisionShape2D" parent="DeliverCutting"]
+shape = SubResource("RangeCircle")
+
+[node name="Prompt" type="Label" parent="DeliverCutting"]
+visible = false
+offset_left = -60.0
+offset_top = -50.0
+offset_right = 60.0
+offset_bottom = -26.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] offer cutting"
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(560, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_g2.tscn"
+metadata/target_room_id = "g2"
+metadata/spawn = Vector2(-210, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-560, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f3.tscn"
+metadata/target_room_id = "f3"
+metadata/spawn = Vector2(210, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

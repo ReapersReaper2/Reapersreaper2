@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2partypanel0ui"]
+
+[ext_resource type="Script" path="res://scripts/party_panel.gd" id="1"]
+
+[node name="PartyPanel" type="CanvasLayer"]
+script = ExtResource("1")

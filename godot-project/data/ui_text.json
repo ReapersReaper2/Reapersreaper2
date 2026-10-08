@@ -1,0 +1,121 @@
+{
+  "stores": {
+    "oddments": {
+      "name": "Oddments",
+      "desc": "General goods. Everything you forgot you needed."
+    },
+    "the_forge": {
+      "name": "The Forge",
+      "desc": "The blacksmith. Steel, temper, and opinions about your armor."
+    },
+    "apothecary": {
+      "name": "Apothecary",
+      "desc": "Cures, reagents, and things that shouldn't be mixed."
+    },
+    "needles_and_flights": {
+      "name": "Needles & Flights",
+      "desc": "Fletcher. Arrows, bolts, and string for Fenna's customers."
+    },
+    "inn_and_tavern": {
+      "name": "Inn & Tavern",
+      "desc": "Beds, baths, and Murray's cooking. The bathhouse bleeds Sate faster in hot water."
+    },
+    "mote_broker": {
+      "name": "Mote Broker",
+      "desc": "Buys and sells motes. No questions. Fewer answers."
+    },
+    "feed_merchant": {
+      "name": "Feed Merchant",
+      "desc": "Creature feed. They're picky. Grimley keeps a chart."
+    },
+    "books_and_maps": {
+      "name": "Books & Maps",
+      "desc": "Maps of places that exist. Mostly."
+    },
+    "shrine_keeper": {
+      "name": "Shrine Keeper",
+      "desc": "Lantern supplies. The shrines hand oil to reapers who ask nicely."
+    },
+    "the_fence": {
+      "name": "The Fence",
+      "desc": "Black market. Don't ask where it came from. He won't tell you anyway."
+    },
+    "creature_stalls": {
+      "name": "Creature Stalls",
+      "desc": "The Night Market's creature row. Ivy's stall is at the end. The price is the price."
+    },
+    "ferry_stall": {
+      "name": "Ferry Stall",
+      "desc": "By the river, in Styx's shadow. Sells to souls who arrived with nothing. Fair prices — the alternative is swimming."
+    }
+  },
+  "disposition": {
+    "stranger": {
+      "name": "Stranger",
+      "desc": "List prices. Nothing beyond the counter."
+    },
+    "regular": {
+      "name": "Regular",
+      "desc": "5% better prices. They'll hold an item for a day."
+    },
+    "friend": {
+      "name": "Friend",
+      "desc": "10% better prices. A back shelf, literally. Tab access. A personal quest with a real reward."
+    },
+    "partner": {
+      "name": "Partner",
+      "desc": "15% better prices. First refusal on rare stock. They'll buy anything. They mention you to other merchants."
+    }
+  },
+  "haggling": {
+    "haggle_prompt": "Name your price — inside the shown range. One attempt per merchant per day.",
+    "haggle_success": "Done. They almost smile.",
+    "haggle_fail": "No. And the look you'll remember. Prices cool until tomorrow."
+  },
+  "investing": {
+    "invest_offer": "Invest in [store]? A lump sum. New shelves, better lighting, a second counter. Stock rises permanently. They'll mention you by name to newcomers.",
+    "invest_after": "The shop looks different. Customers comment. It was your money. It shows.",
+    "stall_unlock": "Your own stall at the Night Market. Set prices. Hire a minder. The Ledger takes its cut and pretends not to notice the rest.",
+    "stall_offer": "Five thousand credits. A roped-off patch of dark market floor, yours to work. The Tollkeeper counts it twice and doesn't smile.",
+    "stall_after": "The rope comes down. The space is yours. It smells like everyone else's ambition.",
+    "stall_empty_till": "Nothing yet. The dark market owes you nothing, and it's honest about it.",
+    "stall_collect": "The till. Ninety percent yours. The Ledger took its ten and pretended not to notice the rest.",
+    "stall_minder_offer": "Fifteen hundred for someone to watch the table while you sleep. They'll double what moves. They'll also eat half your lunch. Fair."
+  },
+  "families": {
+    "plant_creatures": {
+      "name": "Plant Creatures",
+      "desc": "The garden's answer. Rooted, patient, and harder to kill than anything that bleeds."
+    },
+    "phoenixes": {
+      "name": "Phoenixes",
+      "desc": "Rebirth, with interest. What burns doesn't always stay burned."
+    },
+    "dragons": {
+      "name": "Dragons",
+      "desc": "Apex Presence. Everything else in the field knows it."
+    },
+    "strange_animals": {
+      "name": "Strange Animals",
+      "desc": "Wrong in a way the Ledger can't file. Don't stare. It stares back."
+    },
+    "sea_creatures": {
+      "name": "Sea Creatures",
+      "desc": "Tidebound: stronger in water and rain, slower on dry land. The river's answer to everything the land grows."
+    }
+  },
+  "rearing": {},
+  "night_market": {
+    "entry": "The Night Market. Everything has a price. Some things have two.",
+    "ivy_sign": "The price is the price, little reaper.",
+    "moonfair": "The Moonfair. Seasonal. The sixth seat at the judging table is always set, never sat. The wine poured there is always gone by midnight."
+  },
+  "feeding": {
+    "eat_prompt": "Eat the {fruit}?",
+    "luna_smell_necrolean": "Luna drifts close to the {fruit}. \"It leans toward Death. Not all the way — but the rot is in it.\"",
+    "luna_smell_death": "Luna pulls back from the {fruit}. \"That one is Death through and through.\"",
+    "luna_smell_eternilean": "Luna brightens around the {fruit}. \"Light. It leans toward the Light.\"",
+    "rotted_note": "The {fruit} has rotted. Nothing left to eat.",
+    "spore_note": "Something took root in you when you ate. It will remember where you fall."
+  }
+}

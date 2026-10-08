@@ -1,0 +1,228 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/s1-warrens.png" id="8"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(3840, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="RectangleShape2D" id="WildRect_WildZoneS1"]
+size = Vector2(1600, 380)
+
+
+[node name="RoomS1" type="Node2D"]
+script = ExtResource("1")
+room_id = "s1"
+room_rect = Rect2(-1920, -360, 3840, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("8")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.30, 0.25, 0.20, 1)
+polygon = PackedVector2Array(-1920, 360, 1920, 360, 1920, -360, -1920, -360)
+
+[node name="Fungi1" type="Polygon2D" parent="."]
+color = Color(0.50, 0.60, 0.40, 1)
+polygon = PackedVector2Array(-860, -160, -740, -160, -740, -240, -860, -240)
+
+[node name="Fungi2" type="Polygon2D" parent="."]
+color = Color(0.45, 0.55, 0.35, 1)
+polygon = PackedVector2Array(330, 145, 470, 145, 470, 55, 330, 55)
+
+[node name="Tunnel" type="Polygon2D" parent="."]
+color = Color(0.20, 0.17, 0.15, 1)
+polygon = PackedVector2Array(-1500, -220, 1500, -220, 1500, -340, -1500, -340)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1952.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1952.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineS1" parent="." instance=ExtResource("5")]
+position = Vector2(-1500, 200)
+shrine_id = "s1_1"
+
+[node name="WildZoneS1" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(-400, 60)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "s1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneS1"]
+shape = SubResource("WildRect_WildZoneS1")
+
+[node name="PaleRootS1" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-1000, 150)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] inspect root"
+label_text = "Pale Root"
+tint = Color(0.85, 0.85, 0.90, 1)
+lines = PackedStringArray("[WIRING] Pale roots here too. Mine → Warrens → Death's Garden. The thread continues.")
+repeat_lines = PackedStringArray()
+flag = "s1_root_1"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="PaleRootS1"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="PaleRootS1"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="PaleRootS1"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] inspect root"
+
+[node name="PaleRootS2" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(200, -150)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] inspect root"
+label_text = "Pale Root"
+tint = Color(0.85, 0.85, 0.90, 1)
+lines = PackedStringArray("[WIRING] The root pulses faster here. The Ancient One is closer. Never explained in Game 1.")
+repeat_lines = PackedStringArray()
+flag = "s1_root_2"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="PaleRootS2"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="PaleRootS2"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="PaleRootS2"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] inspect root"
+
+[node name="Gravemaw" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(1200, 0)
+collision_layer = 0
+collision_mask = 1
+prompt_text = ""
+label_text = "Gravemaw"
+tint = Color(0.40, 0.30, 0.35, 1)
+lines = PackedStringArray("[WIRING] The Gravemaw rises from the fungal dark. It does not roar — it remembers.", "[WIRING] MINI-BOSS stub: Gravemaw defeated. (Real arena fight later.)")
+repeat_lines = PackedStringArray()
+flag = "s1_gravemaw_defeated"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = true
+
+[node name="Range" type="CollisionShape2D" parent="Gravemaw"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="Gravemaw"]
+polygon = PackedVector2Array(-80, 60, 80, 60, 50, -60, -50, -60)
+
+[node name="Prompt" type="Label" parent="Gravemaw"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = ""
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1840, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_s2.tscn"
+metadata/target_room_id = "s2"
+metadata/spawn = Vector2(-210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-1840, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_g2.tscn"
+metadata/target_room_id = "g2"
+metadata/spawn = Vector2(210, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

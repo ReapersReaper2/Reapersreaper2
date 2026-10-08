@@ -1,0 +1,155 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomS2" type="Node2D"]
+script = ExtResource("1")
+room_id = "s2"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.32, 0.26, 0.18, 1)
+polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
+
+[node name="Campfire" type="Polygon2D" parent="."]
+color = Color(0.90, 0.50, 0.15, 1)
+polygon = PackedVector2Array(-50, 170, 50, 170, 50, 130, -50, 130)
+
+[node name="Hollow1" type="Polygon2D" parent="."]
+color = Color(0.25, 0.20, 0.15, 1)
+polygon = PackedVector2Array(-480, 250, -320, 250, -320, 150, -480, 150)
+
+[node name="Hollow2" type="Polygon2D" parent="."]
+color = Color(0.25, 0.20, 0.15, 1)
+polygon = PackedVector2Array(320, 250, 480, 250, 480, 150, 320, 150)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="CampfireShrine" parent="." instance=ExtResource("5")]
+position = Vector2(0, 220)
+shrine_id = "s2_1"
+
+[node name="Tucker" parent="." instance=ExtResource("8")]
+position = Vector2(-200, 50)
+npc_name = "Tucker"
+tint = Color(0.45, 0.50, 0.35, 1)
+talk_flag = "s2_tucker_met"
+lines = PackedStringArray("[WIRING] Tucker looks up from the fire. 'Took you long enough, reaper.'", "[WIRING] 'The Warrens remember who walks soft. You walk soft.'")
+repeat_lines = PackedStringArray("[WIRING] 'He stays.' — Tucker's choice beat. (Earn it.)")
+
+[node name="SlothElder" parent="." instance=ExtResource("8")]
+position = Vector2(480, 120)
+npc_name = "SLOTH ELDER"
+art_id = "sloth_elder"
+talk_flag = "s2_elder_met"
+lines = PackedStringArray("[WIRING] The elder opens one eye. Moss shifts. 'Another mayfly with a scythe.'", "[WIRING] 'The Warrens have kept their oath for three hundred years. Speak yours slowly — the roots are listening.'", "[WIRING] 'Tucker vouches for you. That is... unusual. He vouches for no one.'")
+repeat_lines = PackedStringArray("[WIRING] 'The oath circle waits. When you are ready to be bound.'")
+
+[node name="OathCeremony" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(300, 100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = ""
+label_text = "Oath Circle"
+tint = Color(0.90, 0.60, 0.20, 1)
+lines = PackedStringArray("[WIRING] The oath ceremony. The sloths gather. 'He stays.' — the words settle like ash.", "[WIRING] OATH TAKEN: the sloths are endgame allies.")
+repeat_lines = PackedStringArray()
+flag = "s2_oath_taken"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = true
+
+[node name="Range" type="CollisionShape2D" parent="OathCeremony"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="OathCeremony"]
+polygon = PackedVector2Array(-40, 30, 40, 30, 40, -30, -40, -30)
+
+[node name="Prompt" type="Label" parent="OathCeremony"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = ""
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(560, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_c2.tscn"
+metadata/target_room_id = "c2"
+metadata/spawn = Vector2(-530, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-560, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_s1.tscn"
+metadata/target_room_id = "s1"
+metadata/spawn = Vector2(1490, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

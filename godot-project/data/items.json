@@ -1,0 +1,301 @@
+{
+  "items": {
+    "ancient_revolver": {
+      "name": "Ancient Revolver",
+      "kind": "key",
+      "desc": "Mechanically frozen. Spiritually inert. Small. Almost toy-like. [WIRING: unsellable; returns if sold.]",
+      "price": 0
+    },
+    "ash_bark": {
+      "desc": "[WIRING] Bark from an ash-adapted tree. Warm to the touch, even cold.",
+      "kind": "material",
+      "name": "Ash Bark",
+      "price": 60
+    },
+    "ashen_salt": {
+      "desc": "From the Peak. Tastes like the end of a fire. Cures Hollow.",
+      "effect": {
+        "statuses": [
+          "hollow"
+        ],
+        "target": "ally_active",
+        "type": "cure_status"
+      },
+      "kind": "battle",
+      "name": "Ashen Salt",
+      "price": 140
+    },
+    "blossom_nectar": {
+      "desc": "Blossom's gift. Fully heals the whole party \u2014 but it takes a full minute to drink, and the drinker dreams. Out of combat only.",
+      "effect": {
+        "out_of_combat_only": true,
+        "type": "heal_full_party"
+      },
+      "kind": "battle",
+      "name": "Blossom Nectar",
+      "price": 900
+    },
+    "briar_thorns": {
+      "desc": "[WIRING] A fistful of thorns. They point at you. All of them.",
+      "kind": "material",
+      "name": "Briar Thorns",
+      "price": 40
+    },
+    "broken_sword": {
+      "desc": "[WIRING] Snapped at the hilt. The plant looks at it the way a surgeon looks at a wound.",
+      "kind": "material",
+      "name": "Broken Sword",
+      "price": 30
+    },
+    "creep_pod": {
+      "desc": "A soft, harmless pod cluster from the back alleys. Not everything is a fight.",
+      "effect": {
+        "note": "Harmless pod cluster. No battle effect yet.",
+        "type": "collectible"
+      },
+      "name": "Creep Pod",
+      "price": 0
+    },
+    "dragon_gold": {
+      "desc": "Golden-dragon gold — the metal the Twins are made from. The only metal that chambers soul-flame without cracking. Forgehold and dragon-linked sources only; never an early seed. [STORY-BOT: late-game discovery-tier material; price set by the balance pass.]",
+      "kind": "material",
+      "name": "Dragon Gold",
+      "price": 0
+    },
+    "empty_mote_vial": {
+      "desc": "[WIRING] An uncharged soul-glass vial, empty and waiting. Bought from Grimley or crafted from 1 glass shard and 2 grave petals; the Still needs one loaded vial per extraction night. [TUNING: buy price is a placeholder; the balance pass sets it.]",
+      "kind": "material",
+      "name": "Empty Mote Vial",
+      "price": 50
+    },
+    "fathers_longsword": {
+      "desc": "[WIRING] Mollosar's father's blade, returned by the blacksmith. It will matter at Dragoni.",
+      "kind": "key",
+      "name": "Father's Longsword",
+      "price": 0
+    },
+    "glass_shard": {
+      "desc": "[WIRING] A shard of soul-glass, melted down and blown into an empty mote vial. Crafting material for the Still's vials. [TUNING: price unset; not sold anywhere.]",
+      "kind": "material",
+      "name": "Glass Shard",
+      "price": 0
+    },
+    "grave_moss_poultice": {
+      "desc": "Smells like a churchyard. Works like one too. Heals 40 HP to one creature.",
+      "effect": {
+        "amount": 40,
+        "target": "ally_active",
+        "type": "heal_hp"
+      },
+      "kind": "battle",
+      "name": "Grave-Moss Poultice",
+      "price": 70
+    },
+    "grave_petals": {
+      "desc": "[WIRING] Grave-flower petals, ground into the flux that seals a mote vial's recipe. Crafting material for the Still's vials. [TUNING: price unset; not sold anywhere.]",
+      "kind": "material",
+      "name": "Grave Petals",
+      "price": 0
+    },
+    "gravebind_snare": {
+      "desc": "It holds. Everything holds, eventually. Inflicts Rootbound on one enemy \u2014 it can't flee or switch.",
+      "effect": {
+        "status": "rootbound",
+        "target": "enemy",
+        "turns": 4,
+        "type": "inflict_status"
+      },
+      "kind": "battle",
+      "name": "Gravebind Snare",
+      "price": 150
+    },
+    "house_blend": {
+      "desc": "[WIRING] Won at the dice table. Murray's pride, smoked slow.",
+      "effect": {
+        "amount": 60,
+        "target": "ally_active",
+        "type": "heal_hp"
+      },
+      "kind": "consumable",
+      "name": "House Blend",
+      "price": 200
+    },
+    "iron_beam": {
+      "desc": "[WIRING] Salvaged Council surplus. Heavy enough to hold up a crossing.",
+      "kind": "material",
+      "name": "Iron Beam",
+      "price": 150
+    },
+    "ironwood_bark": {
+      "desc": "Bite down. The tree did. Sharply raises defense for 3 turns; lowers speed for the same duration.",
+      "effect": {
+        "def_mult": 1.75,
+        "spd_mult": 0.6,
+        "target": "ally_active",
+        "turns": 3,
+        "type": "stat_buff"
+      },
+      "kind": "battle",
+      "name": "Ironwood Bark",
+      "price": 200
+    },
+    "lantern_oil": {
+      "desc": "Standard issue. Restores 8 Vigor to Mollosar. Not for creatures.",
+      "effect": {
+        "amount": 8,
+        "type": "mollosar_vigor"
+      },
+      "kind": "supply",
+      "name": "Lantern Oil",
+      "price": 60
+    },
+    "living_key": {
+      "desc": "[WIRING] Grown, not forged. Opens one locked door, then it's just metal again.",
+      "kind": "key",
+      "name": "Living Key",
+      "price": 0
+    },
+    "mandrake_tea": {
+      "desc": "The mandrakes make it. They apologize for the taste. It's awful. Cures Wilt and Spore-fever.",
+      "effect": {
+        "statuses": [
+          "wilt",
+          "spore_fever"
+        ],
+        "target": "ally_active",
+        "type": "cure_status"
+      },
+      "kind": "battle",
+      "name": "Mandrake Tea",
+      "price": 120
+    },
+    "moon_ale": {
+      "desc": "Murray's. It helps. It doesn't help. Restores 5 Vigor to Mollosar.",
+      "effect": {
+        "amount": 5,
+        "type": "mollosar_vigor"
+      },
+      "kind": "supply",
+      "name": "Moon-Ale",
+      "price": 40
+    },
+    "moonlit_snare": {
+      "catch_bonus": 0.25,
+      "desc": "A snare left out under a full moon. The bound creature won't remember being caught.",
+      "effect": {
+        "target": "enemy",
+        "type": "catch"
+      },
+      "kind": "catch",
+      "name": "Moonlit Snare",
+      "price": 0
+    },
+    "nightshade_poultice": {
+      "desc": "Black petals, silver veins. Heals 120 HP to one creature. Tastes like midnight.",
+      "effect": {
+        "amount": 120,
+        "target": "ally_active",
+        "type": "heal_hp"
+      },
+      "kind": "battle",
+      "name": "Nightshade Poultice",
+      "price": 0
+    },
+    "rare_herb": {
+      "desc": "[WIRING] A blend-table stake. Smells like somebody else's luck.",
+      "kind": "material",
+      "name": "Rare Herb",
+      "price": 120
+    },
+    "rusted_key": {
+      "desc": "[WIRING] Opens nothing anymore. The plant could teach it a new shape.",
+      "kind": "material",
+      "name": "Rusted Key",
+      "price": 20
+    },
+    "sap_draught": {
+      "desc": "Thick. Sweet. Don't think about the tree. Heals 80 HP to one creature.",
+      "effect": {
+        "amount": 80,
+        "target": "ally_active",
+        "type": "heal_hp"
+      },
+      "kind": "battle",
+      "name": "Sap Draught",
+      "price": 220
+    },
+    "second_bell": {
+      "desc": "A tiny bell. Ring it once. Somebody always turns around. Revives a fallen creature at 50% HP.",
+      "effect": {
+        "hp_fraction": 0.5,
+        "target": "ally_fainted",
+        "type": "revive"
+      },
+      "kind": "battle",
+      "name": "Second Bell",
+      "price": 650
+    },
+    "silver_bell_bloom": {
+      "desc": "It doesn't care about you. It never did. That's the point. Draws one enemy attack, wasted.",
+      "effect": {
+        "target": "enemy",
+        "type": "decoy"
+      },
+      "kind": "battle",
+      "name": "Silver Bell Bloom",
+      "price": 0
+    },
+    "silvered_ore": {
+      "desc": "[WIRING] Veined with something that moves when unobserved. The plant wants it.",
+      "kind": "material",
+      "name": "Silvered Ore",
+      "price": 220
+    },
+    "soul_snare": {
+      "catch_bonus": 0.0,
+      "desc": "A woven soul-light snare. Throw at a weakened wild creature to bind it.",
+      "effect": {
+        "target": "enemy",
+        "type": "catch"
+      },
+      "kind": "catch",
+      "name": "Soul Snare",
+      "price": 0
+    },
+    "spore_sac": {
+      "desc": "Shake well. Throw far. Apologize never. Inflicts Spore-fever on one enemy.",
+      "effect": {
+        "status": "spore_fever",
+        "target": "enemy",
+        "turns": 4,
+        "type": "inflict_status"
+      },
+      "kind": "battle",
+      "name": "Spore Sac",
+      "price": 110
+    },
+    "thorn_pod": {
+      "desc": "Grimley grows them for the garden wall. You're borrowing. Deals fixed plant damage to one enemy.",
+      "effect": {
+        "amount": 25,
+        "target": "enemy",
+        "type": "fixed_damage"
+      },
+      "kind": "battle",
+      "name": "Thorn Pod",
+      "price": 90
+    },
+    "twins_lent": {
+      "name": "Lent Twin",
+      "class": "key-item weapon",
+      "note": "don't scratch the gold"
+    },
+    "widowblade": {
+      "name": "Widowblade",
+      "kind": "key",
+      "class": "key-item weapon",
+      "price": 0,
+      "desc": "[WIRING] A shadow-forged blade taken from Ivy in Death's Garden. Key item; never breedable, never sellable. Story text is Sweet Potato Creature's lane."
+    }
+  }
+}

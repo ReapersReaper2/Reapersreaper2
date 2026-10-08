@@ -1,0 +1,21 @@
+{
+  "_note": "Bounty board tallies: two hunters (Mollosar + Wrath). Wrath's completions are per-act, escalating. The Kanryu bounty is permanent and NEVER takable.",
+  "acts": {
+    "act1": {
+      "mollosar": {
+        "completed": 1,
+        "note": "One stray soul guided home on the river."
+      },
+      "wrath": {
+        "completed": 6,
+        "note": "Six bounties. Clean kills. No strays left behind."
+      }
+    }
+  },
+  "kanryu": {
+    "name": "KANRYU",
+    "sealed": true,
+    "terms": "50,000 Soul Credits + one vault item (restricted list \u2014 no Necro/Eterni Fruit)",
+    "note": "NOT FOR YOU. The Soul Council's mark. Permanent."
+  }
+}

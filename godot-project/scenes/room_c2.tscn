@@ -1,0 +1,178 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/c1-arms-cache.png" id="8"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1920, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomC2" type="Node2D"]
+script = ExtResource("1")
+room_id = "c2"
+room_rect = Rect2(-960, -360, 1920, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("8")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.35, 0.25, 0.15, 1)
+polygon = PackedVector2Array(-960, 360, 960, 360, 960, -360, -960, -360)
+
+[node name="RustPile1" type="Polygon2D" parent="."]
+color = Color(0.45, 0.25, 0.12, 1)
+polygon = PackedVector2Array(-500, 160, -300, 160, -300, 40, -500, 40)
+
+[node name="RustPile2" type="Polygon2D" parent="."]
+color = Color(0.40, 0.22, 0.10, 1)
+polygon = PackedVector2Array(180, -30, 420, -30, 420, -170, 180, -170)
+
+[node name="OilStain" type="Polygon2D" parent="."]
+color = Color(0.08, 0.08, 0.08, 1)
+polygon = PackedVector2Array(-150, 280, 150, 280, 150, 220, -150, 220)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-992.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(992.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineC2" parent="." instance=ExtResource("5")]
+position = Vector2(-700, 200)
+shrine_id = "c2_1"
+
+[node name="MiniCannon" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-200, 0)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] take cannon"
+label_text = "Broken Mini Cannon"
+tint = Color(0.50, 0.35, 0.20, 1)
+lines = PackedStringArray("[WIRING] The broken mini cannon. Rusted, unwanted, and somehow watching you.", "[WIRING] Take it? No one will buy it. (Keep flag set. Form 7 absorption hook.)")
+repeat_lines = PackedStringArray("[WIRING] The cannon waits. The armor dreams about it.")
+flag = "c2_cannon_kept"
+extra_flags = PackedStringArray("c2_form7_hook")
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="MiniCannon"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="MiniCannon"]
+polygon = PackedVector2Array(-70, 30, 70, 30, 70, -30, -70, -30)
+
+[node name="Prompt" type="Label" parent="MiniCannon"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] take cannon"
+
+[node name="Fence" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(500, 100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] sell cannon"
+label_text = "The Fence"
+tint = Color(0.45, 0.40, 0.50, 1)
+lines = PackedStringArray("[WIRING] 'A broken cannon? Nobody wants that.' ... 'Fine. 800. And we never met.'", "[WIRING] Sold the cannon. The armor will remember this. (Consequence hook.)")
+repeat_lines = PackedStringArray()
+flag = "c2_cannon_sold"
+extra_flags = PackedStringArray()
+lock_flag = "c2_cannon_kept"
+locked_hint = "[WIRING] The fence wants nothing you have. Yet."
+give_item = ""
+give_credits = 800
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="Fence"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="Fence"]
+polygon = PackedVector2Array(-30, 70, 30, 70, 20, -70, -20, -70)
+
+[node name="Prompt" type="Label" parent="Fence"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] sell cannon"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(880, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_v1.tscn"
+metadata/target_room_id = "v1"
+metadata/spawn = Vector2(-210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-880, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_s2.tscn"
+metadata/target_room_id = "s2"
+metadata/spawn = Vector2(210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

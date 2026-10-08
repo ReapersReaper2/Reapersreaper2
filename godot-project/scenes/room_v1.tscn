@@ -1,0 +1,152 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
+[ext_resource type="Texture2D" path="res://assets/environments/v1-astral-village.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomV1" type="Node2D"]
+script = ExtResource("1")
+room_id = "v1"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.15, 0.15, 0.25, 1)
+polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
+
+[node name="StarHut1" type="Polygon2D" parent="."]
+color = Color(0.25, 0.22, 0.40, 1)
+polygon = PackedVector2Array(-410, -60, -190, -60, -190, -240, -410, -240)
+
+[node name="StarHut2" type="Polygon2D" parent="."]
+color = Color(0.22, 0.20, 0.38, 1)
+polygon = PackedVector2Array(100, -70, 300, -70, 300, -230, 100, -230)
+
+[node name="Starfield" type="Polygon2D" parent="."]
+color = Color(0.30, 0.30, 0.50, 1)
+polygon = PackedVector2Array(-500, 290, 500, 290, 500, 210, -500, 210)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineV1" parent="." instance=ExtResource("5")]
+position = Vector2(400, 200)
+shrine_id = "v1_1"
+
+[node name="Innkeeper" parent="." instance=ExtResource("8")]
+position = Vector2(0, -50)
+npc_name = "INNKEEPER"
+art_id = "innkeeper"
+tint = Color(0.60, 0.60, 0.90, 1)
+talk_flag = "v1_innkeeper_met"
+lines = PackedStringArray("[WIRING] 'Pay with a memory, little reaper. Credits are for the living.'", "[WIRING] 'The innkeeper remembers things you haven't done yet. Don't ask.'")
+repeat_lines = PackedStringArray("[WIRING] 'Still here? The stars are patient. I'm not.'")
+
+[node name="ProjectionEntry" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-560, 100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = ""
+label_text = "Projection Seam"
+tint = Color(0.50, 0.50, 0.90, 1)
+lines = PackedStringArray("[WIRING] The world thins. You arrive by projection, not by walking.", "[WIRING] ASTRAL PROJECTION unlocked. (Scout mode later — stub.)")
+repeat_lines = PackedStringArray()
+flag = "v1_projection_unlocked"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = true
+
+[node name="Range" type="CollisionShape2D" parent="ProjectionEntry"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="ProjectionEntry"]
+polygon = PackedVector2Array(-50, 50, 50, 50, 50, -50, -50, -50)
+
+[node name="Prompt" type="Label" parent="ProjectionEntry"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = ""
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(560, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_b1.tscn"
+metadata/target_room_id = "b1"
+metadata/spawn = Vector2(-860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-560, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_c2.tscn"
+metadata/target_room_id = "c2"
+metadata/spawn = Vector2(530, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

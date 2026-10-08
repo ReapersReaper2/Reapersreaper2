@@ -1,0 +1,165 @@
+{
+ "_wiring": "STORY-BOT OWNED rows. All host names, epithets, lean weights, spore chances, and effects are provisional placeholders seeded by wiring so the system is functional; Sweet Potato Creature replaces/extends them. See the per-host _wiring notes. Consumption rules are LOCKED CANON (Sweet Potato Creature via the collab log): fruit is a random concoction of its host plant; lean types are necrolean / death / eternilean; power hidden until eaten; 1200-step rot; spore infection grows a gravebloom on player defeat only.",
+ "hosts": {
+  "ember_vine": {
+   "_wiring": "[WIRING] Provisional host set: name, epithets, weights, spore chance, and effects all await story-bot pass.",
+   "effects": [
+    {
+     "amount": 2,
+     "type": "heal_vigor",
+     "weight": 3
+    },
+    {
+     "amount": 40,
+     "type": "grant_credits",
+     "weight": 2
+    }
+   ],
+   "epithets": [
+    "Ember",
+    "Warm",
+    "Ash",
+    "Kindled",
+    "Smoked",
+    "Red"
+   ],
+   "lean_weights": {
+    "death": 5,
+    "eternilean": 1,
+    "necrolean": 2
+   },
+   "name": "Embervine",
+   "spore_chance": 0.15
+  },
+  "gloomcap": {
+   "_wiring": "[WIRING] Provisional host set: name, epithets, weights, spore chance, and effects all await story-bot pass.",
+   "effects": [
+    {
+     "amount": 1,
+     "type": "heal_vigor",
+     "weight": 4
+    },
+    {
+     "amount": 25,
+     "type": "grant_credits",
+     "weight": 3
+    },
+    {
+     "amount": 2,
+     "type": "heal_vigor",
+     "weight": 2
+    }
+   ],
+   "epithets": [
+    "Pale",
+    "Bitter",
+    "Hollow",
+    "Dusk",
+    "Soft",
+    "Grey"
+   ],
+   "lean_weights": {
+    "death": 3,
+    "eternilean": 1,
+    "necrolean": 5
+   },
+   "name": "Gloomcap",
+   "spore_chance": 0.2
+  },
+  "hollow_reed": {
+   "_wiring": "[WIRING] Provisional host set: name, epithets, weights, spore chance, and effects all await story-bot pass.",
+   "effects": [
+    {
+     "amount": 30,
+     "type": "grant_credits",
+     "weight": 4
+    },
+    {
+     "amount": 1,
+     "type": "heal_vigor",
+     "weight": 2
+    }
+   ],
+   "epithets": [
+    "Hollow",
+    "Thin",
+    "Whistling",
+    "Dry",
+    "Long",
+    "Pale"
+   ],
+   "lean_weights": {
+    "death": 2,
+    "eternilean": 3,
+    "necrolean": 3
+   },
+   "name": "Hollowreed",
+   "spore_chance": 0.25
+  },
+  "mournroot": {
+   "_wiring": "[WIRING] Provisional host set: name, epithets, weights, spore chance, and effects all await story-bot pass.",
+   "effects": [
+    {
+     "amount": 2,
+     "type": "heal_vigor",
+     "weight": 4
+    },
+    {
+     "amount": 20,
+     "type": "grant_credits",
+     "weight": 2
+    }
+   ],
+   "epithets": [
+    "Mournful",
+    "Dark",
+    "Heavy",
+    "Wet",
+    "Old",
+    "Bitter"
+   ],
+   "lean_weights": {
+    "death": 2,
+    "eternilean": 2,
+    "necrolean": 4
+   },
+   "name": "Mournroot",
+   "spore_chance": 0.3
+  },
+  "spore_growth": {
+   "_wiring": "[WIRING] Spore Needle host row: the fruit plant grown from a spore-infected kill. Name, epithets, weights, spore chance, and effects all await story-bot pass. spore_chance 0.0 is a wiring placeholder so a spore fruit never chains a second infection; the harvested fruit's lean is overridden to the plant's tree lean and it carries the sampled host traits (host_traits) for the future Still.",
+   "name": "Spore Growth",
+   "epithets": [
+    "Pale",
+    "Veined",
+    "Hollow",
+    "Second",
+    "Eaten",
+    "Returned"
+   ],
+   "lean_weights": {
+    "necrolean": 1,
+    "death": 1,
+    "eternilean": 1
+   },
+   "effects": [
+    {
+     "type": "heal_vigor",
+     "amount": 2,
+     "weight": 3
+    },
+    {
+     "type": "grant_credits",
+     "amount": 25,
+     "weight": 2
+    }
+   ],
+   "spore_chance": 0.0
+  }
+ },
+ "lean_types": [
+  "necrolean",
+  "death",
+  "eternilean"
+ ]
+}

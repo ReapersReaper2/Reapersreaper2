@@ -1,0 +1,110 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_nm.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1408, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="TrigCircle"]
+radius = 160.0
+
+[node name="RoomNM" type="Node2D"]
+script = ExtResource("1")
+room_id = "nm"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(300, 250)
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.07, 0.05, 0.14, 1)
+polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
+
+[node name="MarketCircle" type="Polygon2D" parent="."]
+color = Color(0.11, 0.08, 0.22, 1)
+polygon = PackedVector2Array(320, -50, 226, 176, 0, 270, -226, 176, -320, -50, -226, -276, 0, -370, 226, -276)
+
+[node name="MoonGlow" type="Polygon2D" parent="."]
+color = Color(0.55, 0.6, 0.95, 0.08)
+polygon = PackedVector2Array(140, -100, 99, -1, 0, 40, -99, -1, -140, -100, -99, -199, 0, -240, 99, -199)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(300, 250)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(260, 270)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="Ivy" parent="." instance=ExtResource("5")]
+position = Vector2(-400, -120)
+npc_name = "IVY"
+is_shopkeeper = true
+shop_id = "nm_ivy"
+
+[node name="Masked" parent="." instance=ExtResource("5")]
+position = Vector2(0, -160)
+npc_name = "MASKED ONE"
+is_shopkeeper = true
+shop_id = "nm_rares"
+
+[node name="Tollkeeper" parent="." instance=ExtResource("5")]
+position = Vector2(400, -120)
+npc_name = "TOLLKEEPER"
+is_shopkeeper = true
+shop_id = "nm_twoprice"
+
+[node name="RopedStall" parent="." instance=ExtResource("5")]
+position = Vector2(-180, 150)
+npc_name = "YOUR STALL"
+is_stall = true
+lines = PackedStringArray("Roped off. A crooked sign reads: 'Reserved.'", "(Your own stall at the Night Market. Not yet.)")
+repeat_lines = PackedStringArray("Still roped off. Soon, maybe.")
+talk_flag = "nm_stall_seen"
+
+[node name="EntryTrigger" type="Area2D" parent="." groups=["trigger"]]
+position = Vector2(300, 250)
+collision_layer = 0
+collision_mask = 1
+metadata/trigger_id = "nm_entry"
+metadata/one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EntryTrigger"]
+shape = SubResource("TrigCircle")
+
+[node name="ExitH1" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(550, 250)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h1.tscn"
+metadata/target_room_id = "h1"
+metadata/spawn = Vector2(1500, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitH1"]
+shape = SubResource("ExitCircle")

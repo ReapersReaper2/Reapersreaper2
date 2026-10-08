@@ -1,0 +1,159 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_c1.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/c1_river_band_1280x720.png" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="7"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="8"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(5248, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="TrigCircle"]
+radius = 150.0
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="RectangleShape2D" id="WildRect"]
+size = Vector2(900, 440)
+
+[node name="RoomC1" type="Node2D"]
+script = ExtResource("1")
+room_id = "c1"
+room_rect = Rect2(-2560, -360, 5120, 720)
+player_spawn = Vector2(-2300, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("6")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-2592, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(2592, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(-2300, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-2340, 120)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ShrineC1" parent="." instance=ExtResource("7")]
+position = Vector2(-2050, 180)
+shrine_id = "c1_1"
+
+[node name="WildZoneC1" type="Area2D" parent="."]
+script = ExtResource("8")
+position = Vector2(-400, 60)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "c1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneC1"]
+shape = SubResource("WildRect")
+
+[node name="Styx" parent="." instance=ExtResource("5")]
+position = Vector2(-2150, 50)
+npc_name = "STYX"
+tint = Color(0.3, 0.32, 0.4, 1)
+lines = PackedStringArray("In.", "Across.", "Collect.")
+talk_flag = "c1_styx_talked"
+repeat_lines = PackedStringArray("Hm.")
+
+[node name="FerryStall" parent="." instance=ExtResource("5")]
+position = Vector2(-1960, 60)
+npc_name = "FERRY STALL"
+art_id = "ferry_stall_keeper"
+tint = Color(0.75, 0.62, 0.3, 1)
+is_shopkeeper = true
+shop_id = "ferry_stall"
+# Greeting lines are a wiring placeholder — the story bot owns shopkeeper voice.
+lines = PackedStringArray("Crossing costs. Everything costs.")
+talk_flag = "c1_stall_talked"
+
+[node name="BountyTrigger" type="Area2D" parent="." groups=["trigger"]]
+position = Vector2(-1100, 0)
+metadata/trigger_id = "bounty_a"
+metadata/one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BountyTrigger"]
+shape = SubResource("TrigCircle")
+
+[node name="ZoneVisual" type="Polygon2D" parent="BountyTrigger"]
+color = Color(0.5, 0.7, 1, 0.15)
+polygon = PackedVector2Array(150, 0, 129.9, 75, 75, 129.9, 0, 150, -75, 129.9, -129.9, 75, -150, 0, -129.9, -75, -75, -129.9, 0, -150, 75, -129.9, 129.9, -75)
+
+[node name="LanternPoint" type="Marker2D" parent="."]
+position = Vector2(-1900, -200)
+
+[node name="TentacleTrigger" type="Area2D" parent="." groups=["trigger"]]
+position = Vector2(1100, 0)
+metadata/trigger_id = "tentacle_b"
+metadata/one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TentacleTrigger"]
+shape = SubResource("TrigCircle")
+
+[node name="ZoneVisual" type="Polygon2D" parent="TentacleTrigger"]
+color = Color(0.8, 0.3, 0.4, 0.15)
+polygon = PackedVector2Array(150, 0, 129.9, 75, 75, 129.9, 0, 150, -75, 129.9, -129.9, 75, -150, 0, -129.9, -75, -75, -129.9, 0, -150, 75, -129.9, 129.9, -75)
+
+[node name="BellmawTrigger" type="Area2D" parent="." groups=["trigger"]]
+position = Vector2(1900, 0)
+metadata/trigger_id = "bellmaw"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BellmawTrigger"]
+shape = SubResource("TrigCircle")
+
+[node name="ZoneVisual" type="Polygon2D" parent="BellmawTrigger"]
+color = Color(0.9, 0.6, 0.2, 0.15)
+polygon = PackedVector2Array(150, 0, 129.9, 75, 75, 129.9, 0, 150, -75, 129.9, -129.9, 75, -150, 0, -129.9, -75, -75, -129.9, 0, -150, 75, -129.9, 129.9, -75)
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(2480, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h1.tscn"
+metadata/target_room_id = "h1"
+metadata/spawn = Vector2(-1700, 100)
+metadata/lock_flag = "c1_tentacle_done"
+metadata/locked_hint = "The far shore lies ahead. (Finish the tentacle first.)"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ZoneVisual" type="Polygon2D" parent="ExitEast"]
+color = Color(0.4, 0.8, 0.5, 0.15)
+polygon = PackedVector2Array(110, 0, 95.3, 55, 55, 95.3, 0, 110, -55, 95.3, -95.3, 55, -110, 0, -95.3, -55, -55, -95.3, 0, -110, 55, -95.3, 95.3, -55)
+
+[node name="TideHunter" parent="." instance=ExtResource("5")]
+position = Vector2(250, 120)
+npc_name = "TIDE HUNTER"
+art_id = "tide_hunter"
+tint = Color(0.35, 0.55, 0.65, 1)
+is_trainer = true
+trainer_id = "c1_tidehunter"
+# Voice lines live in data/trainers.json (wiring placeholders — story bot owns trainer voice).
+talk_flag = "c1_tidehunter_met"

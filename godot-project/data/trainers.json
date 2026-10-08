@@ -1,0 +1,83 @@
+{
+  "_note": "Trainer NPC definitions for tactical battles. Rosters send out sequentially as each creature faints; no trainer AI. pre_dialogue/post_dialogue are wiring placeholders \u2014 the story bot owns trainer voice.",
+  "trainers": {
+    "c1_tidehunter": {
+      "name": "TIDE HUNTER",
+      "post_dialogue": [
+        "The river chose you. For now.",
+        "Spend those credits well. You'll earn them back in scars."
+      ],
+      "pre_dialogue": [
+        "The river gives, hunter. The river also takes.",
+        "Three of mine. Show me what the new reaper's made of."
+      ],
+      "reward_credits": 150,
+      "roster": [
+        {
+          "creature_id": "snapling",
+          "level": 5
+        },
+        {
+          "creature_id": "siltmaw",
+          "level": 6
+        },
+        {
+          "creature_id": "gravebind",
+          "level": 7
+        }
+      ]
+    },
+    "p3_scavenger": {
+      "name": "SHORE SCAVENGER",
+      "post_dialogue": [
+        "...Fine. You're the real thing.",
+        "Take the credits. The shore provides."
+      ],
+      "pre_dialogue": [
+        "Oi. You walk like a reaper. Prove it.",
+        "My scavenged pair against yours. No running."
+      ],
+      "reward_credits": 60,
+      "roster": [
+        {
+          "creature_id": "siltmaw",
+          "level": 3
+        },
+        {
+          "creature_id": "bellowscap",
+          "level": 4
+        }
+      ]
+    },
+    "wrath_rival_1": {
+      "name": "WRATH",
+      "pre_dialogue": [
+        "So. The new reaper finally crawled out of the river.",
+        "I've read your tally. One stray. How... tender.",
+        "Let's see if you can do more than shepherd."
+      ],
+      "post_dialogue": [
+        "...Huh. Maybe the river didn't make a mistake.",
+        "Don't get comfortable. I'm taking the contracts you pass up.",
+        "Next time, I won't be pulling my strikes."
+      ],
+      "post_dialogue_loss": [
+        "Tender. Just as I thought.",
+        "Stay out of my way, little reaper."
+      ],
+      "reward_credits": 0,
+      "roster": [
+        {
+          "creature_id": "siltmaw",
+          "level": 8
+        },
+        {
+          "creature_id": "thornchoir",
+          "level": 9
+        }
+      ],
+      "spare_on_loss": true,
+      "rivalry_flag": "wrath_rivalry"
+    }
+  }
+}

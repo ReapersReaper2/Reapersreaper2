@@ -1,0 +1,120 @@
+{
+ "_note": "Mollosar's Journal \u2014 quest definitions. Objectives complete when their GameState flag is set. Story bot: add quests here; the journal reads this file directly. Keep descriptions textbox-tight.",
+ "quests": [
+  {
+   "description": "The invaders are coming across Bellhollow Bridge. Hold the line \u2014 it's a memory, but it still matters.",
+   "id": "q_bridge",
+   "name": "Hold the Bridge",
+   "objectives": [
+    {
+     "flag": "p1_bridge_cleared",
+     "text": "Repel the invader waves"
+    },
+    {
+     "flag": "p2_collapse_seen",
+     "text": "Witness what follows"
+    }
+   ]
+  },
+  {
+   "description": "Something waits on the Black Sand Shore. A small light with wings.",
+   "id": "q_luna",
+   "name": "The Black Sand",
+   "objectives": [
+    {
+     "flag": "met_luna",
+     "text": "Meet Luna"
+    },
+    {
+     "flag": "p3_luna_intro_done",
+     "text": "Accept Form 2"
+    }
+   ]
+  },
+  {
+   "description": "A stray soul lingers by the river. Guide it home \u2014 gently.",
+   "id": "q_bounty",
+   "name": "The River Bounty",
+   "objectives": [
+    {
+     "flag": "c1_bounty_done",
+     "text": "Guide the stray soul"
+    }
+   ]
+  },
+  {
+   "description": "The plaza's bounty board tracks every hunter's tally. Read it. Know where you stand.",
+   "id": "q_board",
+   "name": "The Bounty Board",
+   "objectives": [
+    {
+     "flag": "h1_board_read",
+     "text": "Read the bounty board"
+    }
+   ]
+  },
+  {
+   "description": "The Soul Council has named a price on Kanryu. Fifty thousand Soul Credits and a vault item. Sealed \u2014 not for you. That's the point.",
+   "id": "q_kanryu",
+   "name": "The Kanryu Bounty",
+   "objectives": [
+    {
+     "flag": "h2_announcement_done",
+     "text": "Hear the announcement at Murray's"
+    }
+   ]
+  },
+  {
+   "description": "Wrath is taking the contracts you pass up. He remembers every one.",
+   "id": "q_wrath",
+   "name": "The Rival",
+   "objectives": [
+    {
+     "flag": "wrath_rivalry",
+     "text": "Face Wrath in the plaza"
+    }
+   ]
+  },
+  {
+   "description": "Something vast stirs on the Gloomy Path. The Silver Bell Bloom cluster trembles.",
+   "id": "q_bellmaw",
+   "name": "Bloom Maw",
+   "objectives": [
+    {
+     "flag": "bellmaw_defeated",
+     "text": "Defeat Bellmaw"
+    }
+   ]
+  },
+  {
+   "id": "q_cold_forge",
+   "name": "The Cold Forge",
+   "description": "The blacksmith of Forgehold won't repair the armor \u2014 and won't say why. Find another way in.",
+   "objectives": [
+    {
+     "flag": "dungeon_abandoned_mine",
+     "text": "Enter the abandoned mine"
+    },
+    {
+     "flag": "q_cold_forge_done",
+     "text": "Bring Joren home"
+    }
+   ]
+  },
+  {
+   "id": "q_sloths",
+   "name": "Tucker and the Sloths",
+   "description": "Tucker has gone down into the Warrens to ask his kin to stand with the garden. Follow \u2014 at a distance.",
+   "objectives": [
+    {
+     "flag": "q_sloths_started",
+     "text": "Follow Tucker down"
+    },
+    {
+     "flag": "sloth_oath",
+     "text": "Witness the oath"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,107 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
+[ext_resource type="Texture2D" path="res://assets/environments/h3-dockside-west.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/environments/h3-dockside-east.png" id="7"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2688, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[node name="RoomH3" type="Node2D"]
+script = ExtResource("1")
+room_id = "h3"
+room_rect = Rect2(-1280, -360, 2560, 720)
+player_spawn = Vector2(0, -200)
+
+[node name="BackgroundWest" type="Sprite2D" parent="."]
+position = Vector2(-640, 0)
+scale = Vector2(0.625, 0.625)
+texture = ExtResource("6")
+
+[node name="BackgroundEast" type="Sprite2D" parent="."]
+position = Vector2(640, 0)
+scale = Vector2(0.625, 0.625)
+texture = ExtResource("7")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1312, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1312, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, -200)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, -180)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="OddmentsDoor" parent="." instance=ExtResource("5")]
+position = Vector2(-800, -100)
+npc_name = "ODDMENTS"
+tint = Color(0.6, 0.5, 0.35, 1)
+is_shopkeeper = true
+shop_id = "oddments"
+lines = PackedStringArray("Oddments! Everything you forgot you needed.")
+talk_flag = "h3_oddments_met"
+
+[node name="ApothecaryDoor" parent="." instance=ExtResource("5")]
+position = Vector2(0, -100)
+npc_name = "APOTHECARY"
+tint = Color(0.45, 0.6, 0.45, 1)
+is_shopkeeper = true
+shop_id = "apothecary"
+lines = PackedStringArray("Cures, reagents, and things that shouldn't be mixed. Mind the shelf.")
+talk_flag = "h3_apothecary_met"
+
+[node name="FletcherDoor" parent="." instance=ExtResource("5")]
+position = Vector2(800, -100)
+npc_name = "NEEDLES & FLIGHTS"
+tint = Color(0.55, 0.45, 0.5, 1)
+is_shopkeeper = true
+shop_id = "needles_and_flights"
+lines = PackedStringArray("Needles and Flights! Arrows, bolts, string — Fenna's the name.")
+talk_flag = "h3_fletcher_met"
+
+[node name="Fenna" parent="." instance=ExtResource("5")]
+position = Vector2(950, 50)
+npc_name = "FENNA"
+art_id = "fenna"
+# Voice lines are wiring placeholders — story bot owns Fenna's voice.
+lines = PackedStringArray("Bowstrings, love? Fresh ones. My best customer used to swear by the silver-twist... haven't seen her in an age.", "Cruliette — oh, she was my best customer. Cheerful girl. Paid in exact change, always.")
+repeat_lines = PackedStringArray("Need string? I've got string.")
+talk_flag = "h3_fenna_met"
+
+[node name="ExitPlaza" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, -300)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h1.tscn"
+metadata/target_room_id = "h1"
+metadata/spawn = Vector2(200, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitPlaza"]
+shape = SubResource("ExitCircle")

@@ -1,0 +1,222 @@
+{
+  "shops": {
+    "ferry_stall": {
+      "name": "Ferry Stall",
+      "stock": [
+        {
+          "item_id": "soul_snare",
+          "price": 100
+        },
+        {
+          "item_id": "grave_moss_poultice",
+          "price": 70
+        },
+        {
+          "item_id": "mandrake_tea",
+          "price": 120
+        },
+        {
+          "item_id": "moon_ale",
+          "price": 40
+        },
+        {
+          "item_id": "lantern_oil",
+          "price": 60
+        }
+      ],
+      "blurb": "By the river, in Styx's shadow. Sells to souls who arrived with nothing. Fair prices — the alternative is swimming."
+    },
+    "murrays_bar": {
+      "name": "Murray's Bar",
+      "stock": [
+        {
+          "item_id": "moon_ale",
+          "price": 40
+        },
+        {
+          "item_id": "grave_moss_poultice",
+          "price": 70
+        },
+        {
+          "item_id": "mandrake_tea",
+          "price": 120
+        }
+      ],
+      "blurb": "Murray's. Cigars, ale, and dry advice. The shelf blend is not for sale."
+    },
+    "oddments": {
+      "name": "Oddments",
+      "stock": [
+        {
+          "item_id": "soul_snare",
+          "price": 100
+        },
+        {
+          "item_id": "lantern_oil",
+          "price": 60
+        },
+        {
+          "item_id": "thorn_pod",
+          "price": 90
+        },
+        {
+          "item_id": "spore_sac",
+          "price": 110
+        }
+      ]
+    },
+    "apothecary": {
+      "name": "Apothecary",
+      "stock": [
+        {
+          "item_id": "grave_moss_poultice",
+          "price": 70
+        },
+        {
+          "item_id": "sap_draught",
+          "price": 220
+        },
+        {
+          "item_id": "mandrake_tea",
+          "price": 120
+        },
+        {
+          "item_id": "ashen_salt",
+          "price": 140
+        },
+        {
+          "item_id": "second_bell",
+          "price": 650
+        }
+      ]
+    },
+    "needles_and_flights": {
+      "name": "Needles & Flights",
+      "stock": [
+        {
+          "item_id": "thorn_pod",
+          "price": 90
+        },
+        {
+          "item_id": "ironwood_bark",
+          "price": 200
+        },
+        {
+          "item_id": "gravebind_snare",
+          "price": 150
+        },
+        {
+          "item_id": "soul_snare",
+          "price": 100
+        }
+      ]
+    },
+    "nm_ivy": {
+      "name": "Ivy's Sign",
+      "no_haggle": true,
+      "stock": [
+        {
+          "item_id": "soul_snare",
+          "price": 150
+        },
+        {
+          "item_id": "lantern_oil",
+          "price": 90
+        },
+        {
+          "item_id": "mandrake_tea",
+          "price": 180
+        }
+      ],
+      "blurb": "The price is the price, little reaper."
+    },
+    "nm_rares": {
+      "name": "The Masked Stall",
+      "no_haggle": true,
+      "stock": [
+        {
+          "item_id": "moonlit_snare",
+          "price": 400
+        },
+        {
+          "item_id": "nightshade_poultice",
+          "price": 300
+        },
+        {
+          "item_id": "second_bell",
+          "price": 900
+        },
+        {
+          "item_id": "silver_bell_bloom",
+          "price": 500
+        },
+        {
+          "item_id": "sap_draught",
+          "price": 350
+        }
+      ],
+      "blurb": "No name. No face. The good stuff. Don't ask where it came from — the mask isn't for you."
+    },
+    "nm_twoprice": {
+      "name": "The Toll",
+      "no_haggle": true,
+      "stock": [
+        {
+          "item_id": "moonlit_snare",
+          "price": 200,
+          "second_price": {
+            "type": "release"
+          }
+        },
+        {
+          "item_id": "nightshade_poultice",
+          "price": 150,
+          "second_price": {
+            "type": "release"
+          }
+        },
+        {
+          "item_id": "second_bell",
+          "price": 400,
+          "second_price": {
+            "type": "release"
+          }
+        },
+        {
+          "item_id": "silver_bell_bloom",
+          "price": 250,
+          "second_price": {
+            "type": "release"
+          }
+        }
+      ],
+      "blurb": "The Tollkeeper counts your credits twice. Once for the Ledger. Once for himself. He doesn't hide it."
+    },
+    "forge_smithy": {
+      "name": "Forge Smithy",
+      "blurb": "[WIRING] Smithy goods. Armor-relevant stock.",
+      "stock": [
+        {
+          "item_id": "ironwood_bark",
+          "price": 200
+        },
+        {
+          "item_id": "ashen_salt",
+          "price": 140
+        },
+        {
+          "item_id": "lantern_oil",
+          "price": 60
+        },
+        {
+          "item_id": "grave_moss_poultice",
+          "price": 70
+        },
+        {
+          "item_id": "sap_draught",
+          "price": 220
+        }
+      ]
+    }
+  }
+}

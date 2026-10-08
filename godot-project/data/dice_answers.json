@@ -1,0 +1,30 @@
+{
+  "_comment": "Latch's answers at the Quiet Table — story-locked, verbatim. 'kanryu' id is internal only, never player-facing.",
+  "answers": [
+    {
+      "id": "council",
+      "topic": "What is the Soul Council hiding?",
+      "answer": "Latch: The vault isn't a room. It's a ledger of everything the Council decided never happened. Your name is in it twice."
+    },
+    {
+      "id": "bounties",
+      "topic": "Why do the bounties never expire?",
+      "answer": "Latch: Because the marks don't die, little reaper. They wait. The oldest of them has been waiting longer than this town has had a name."
+    },
+    {
+      "id": "fruits",
+      "topic": "What are the smuggled fruits?",
+      "answer": "Latch: What grows where something ended badly. Eat one and you'll understand the ending. That's the price — understanding."
+    },
+    {
+      "id": "kanryu",
+      "topic": "Who was he, before?",
+      "answer": "Latch: A gardener. The best one. Ask Grimley what he grew, and watch an old man's hands shake."
+    },
+    {
+      "id": "cycle",
+      "topic": "What comes after the cycle breaks?",
+      "answer": "Latch: Nobody knows. That's the point of breaking it. Even I don't have that answer — and I collect them."
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/d1-dragoni-approach.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2560, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="RectangleShape2D" id="WildRect_WildZoneD1"]
+size = Vector2(1800, 380)
+
+
+[node name="RoomD1" type="Node2D"]
+script = ExtResource("1")
+room_id = "d1"
+room_rect = Rect2(-1280, -360, 2560, 720)
+player_spawn = Vector2(0, 100)
+
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.30, 0.20, 0.18, 1)
+polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
+
+[node name="Scorch1" type="Polygon2D" parent="."]
+color = Color(0.08, 0.06, 0.06, 1)
+polygon = PackedVector2Array(-700, 150, -500, 150, -500, 50, -700, 50)
+
+[node name="Scorch2" type="Polygon2D" parent="."]
+color = Color(0.08, 0.06, 0.06, 1)
+polygon = PackedVector2Array(-230, -85, 30, -85, 30, -215, -230, -215)
+
+[node name="Scorch3" type="Polygon2D" parent="."]
+color = Color(0.08, 0.06, 0.06, 1)
+polygon = PackedVector2Array(310, 195, 490, 195, 490, 105, 310, 105)
+
+[node name="Scorch4" type="Polygon2D" parent="."]
+color = Color(0.08, 0.06, 0.06, 1)
+polygon = PackedVector2Array(690, 5, 910, 5, 910, -105, 690, -105)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineD1" parent="." instance=ExtResource("5")]
+position = Vector2(-1000, 200)
+shrine_id = "d1_1"
+
+[node name="WildZoneD1" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(0, 60)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "d1"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneD1"]
+shape = SubResource("WildRect_WildZoneD1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_d2.tscn"
+metadata/target_room_id = "d2"
+metadata/spawn = Vector2(-210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_b1.tscn"
+metadata/target_room_id = "b1"
+metadata/spawn = Vector2(860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

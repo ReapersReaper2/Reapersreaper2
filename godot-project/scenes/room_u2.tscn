@@ -1,0 +1,135 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/u2-absorption.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomU2" type="Node2D"]
+script = ExtResource("1")
+room_id = "u2"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 100)
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.16, 0.15, 0.12, 1)
+polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
+
+[node name="Dress1" type="Polygon2D" parent="."]
+color = Color(0.25, 0.20, 0.15, 1)
+polygon = PackedVector2Array(-410, -80, -230, -80, -260, -160, -380, -160)
+
+[node name="Dress2" type="Polygon2D" parent="."]
+color = Color(0.35, 0.25, 0.18, 1)
+polygon = PackedVector2Array(-90, 220, 90, 220, 60, 140, -60, 140)
+
+[node name="Dress3" type="Polygon2D" parent="."]
+color = Color(0.75, 0.73, 0.70, 1)
+polygon = PackedVector2Array(230, -40, 410, -40, 380, -120, 260, -120)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineU2" parent="." instance=ExtResource("5")]
+position = Vector2(-360, 200)
+shrine_id = "u2_1"
+
+[node name="Absorption" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(0, 0)
+collision_layer = 0
+collision_mask = 1
+prompt_text = ""
+label_text = "Tree Heart"
+tint = Color(0.75, 0.73, 0.70, 1)
+lines = PackedStringArray("[WIRING] Mollosar absorbs the Usurper Tree — to feel where the roots took Cruliette.", "[WIRING] 'This isn't a weapon. It's a map.'", "[WIRING] Form gate: absorption unlocks the map mechanic. Intimate and terrible.", "[WIRING] Depower eases to PARTIAL: map sense online (Roots tab), plant abilities flicker back weak. (ch13_repowered_partial set.)")
+repeat_lines = PackedStringArray()
+flag = "u2_absorption_done"
+extra_flags = PackedStringArray("u2_map_unlocked", "ch13_repowered_partial")
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = true
+
+[node name="Range" type="CollisionShape2D" parent="Absorption"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="Absorption"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="Absorption"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = ""
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(570, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_u3.tscn"
+metadata/target_room_id = "u3"
+metadata/spawn = Vector2(-350, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-570, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_u1.tscn"
+metadata/target_room_id = "u1"
+metadata/spawn = Vector2(990, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

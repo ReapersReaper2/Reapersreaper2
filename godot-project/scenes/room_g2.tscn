@@ -1,0 +1,233 @@
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/tendril.gd" id="9"]
+[ext_resource type="Texture2D" path="res://assets/environments/p2-tendril-canopy.png" id="8"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 1568)
+
+[sub_resource type="RectangleShape2D" id="WildRect_WildZoneG2"]
+size = Vector2(900, 500)
+
+
+[node name="RoomG2" type="Node2D"]
+script = ExtResource("1")
+room_id = "g2"
+room_rect = Rect2(-640, -720, 1280, 1440)
+player_spawn = Vector2(0, 0)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("8")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.20, 0.30, 0.18, 1)
+polygon = PackedVector2Array(-640, 720, 640, 720, 640, -720, -640, -720)
+
+[node name="Branch" type="Polygon2D" parent="."]
+color = Color(0.30, 0.22, 0.14, 1)
+polygon = PackedVector2Array(-500, -370, 500, -370, 500, -430, -500, -430)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -752.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 752.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 0)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 20)
+
+[node name="ShrineG2" parent="." instance=ExtResource("5")]
+position = Vector2(400, 600)
+shrine_id = "g2_1"
+
+[node name="WildZoneG2" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(0, 100)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "g2"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneG2"]
+shape = SubResource("WildRect_WildZoneG2")
+
+[node name="TendrilAnchor1" type="Area2D" parent="."]
+script = ExtResource("9")
+position = Vector2(0, -450)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] grab tendril"
+label_text = "Tendril"
+tint = Color(0.35, 0.50, 0.30, 1)
+waypoints = PackedVector2Array(0, -450, -150, -300, -300, -100, -400, 100)
+ride_speed = 420.0
+flag = "g2_tendril_1_ridden"
+locked_hint = "The tendril doesn't answer. Your plant arm is dead."
+
+[node name="Range" type="CollisionShape2D" parent="TendrilAnchor1"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="TendrilAnchor1"]
+polygon = PackedVector2Array(-10, 70, 10, 70, 6, -70, -6, -70)
+
+[node name="Prompt" type="Label" parent="TendrilAnchor1"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] grab tendril"
+
+[node name="TendrilAnchor2" type="Area2D" parent="."]
+script = ExtResource("9")
+position = Vector2(-400, 100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] grab tendril"
+label_text = "Tendril"
+tint = Color(0.35, 0.50, 0.30, 1)
+waypoints = PackedVector2Array(-400, 100, -150, 0, 150, 100, 400, 300)
+ride_speed = 420.0
+flag = "g2_tendril_2_ridden"
+locked_hint = "The tendril doesn't answer. Your plant arm is dead."
+
+[node name="Range" type="CollisionShape2D" parent="TendrilAnchor2"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="TendrilAnchor2"]
+polygon = PackedVector2Array(-10, 70, 10, 70, 6, -70, -6, -70)
+
+[node name="Prompt" type="Label" parent="TendrilAnchor2"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] grab tendril"
+
+[node name="TendrilAnchor3" type="Area2D" parent="."]
+script = ExtResource("9")
+position = Vector2(400, 300)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] grab tendril"
+label_text = "Tendril"
+tint = Color(0.35, 0.50, 0.30, 1)
+waypoints = PackedVector2Array(400, 300, 200, 400, 0, 500, -100, 600)
+ride_speed = 420.0
+flag = "g2_tendril_3_ridden"
+locked_hint = "The tendril doesn't answer. Your plant arm is dead."
+
+[node name="Range" type="CollisionShape2D" parent="TendrilAnchor3"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="TendrilAnchor3"]
+polygon = PackedVector2Array(-10, 70, 10, 70, 6, -70, -6, -70)
+
+[node name="Prompt" type="Label" parent="TendrilAnchor3"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] grab tendril"
+
+[node name="TendrilAnchor4" type="Area2D" parent="."]
+script = ExtResource("9")
+position = Vector2(-100, 600)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] grab tendril"
+label_text = "Tendril"
+tint = Color(0.35, 0.50, 0.30, 1)
+waypoints = PackedVector2Array(-100, 600, -200, 300, -100, 0, 0, -450)
+ride_speed = 420.0
+flag = "g2_tendril_4_ridden"
+locked_hint = "The tendril doesn't answer. Your plant arm is dead."
+
+[node name="Range" type="CollisionShape2D" parent="TendrilAnchor4"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="TendrilAnchor4"]
+polygon = PackedVector2Array(-10, 70, 10, 70, 6, -70, -6, -70)
+
+[node name="Prompt" type="Label" parent="TendrilAnchor4"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] grab tendril"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(560, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_s1.tscn"
+metadata/target_room_id = "s1"
+metadata/spawn = Vector2(-1490, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-560, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_g1.tscn"
+metadata/target_room_id = "g1"
+metadata/spawn = Vector2(210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

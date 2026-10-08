@@ -1,0 +1,107 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
+[ext_resource type="Texture2D" path="res://assets/environments/t5-marrows-chamber.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomT5" type="Node2D"]
+script = ExtResource("1")
+room_id = "t5"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 100)
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.32, 0.30, 0.28, 1)
+polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
+
+[node name="Dress1" type="Polygon2D" parent="."]
+color = Color(0.42, 0.38, 0.34, 1)
+polygon = PackedVector2Array(-410, -80, -230, -80, -260, -160, -380, -160)
+
+[node name="Dress2" type="Polygon2D" parent="."]
+color = Color(0.55, 0.52, 0.48, 1)
+polygon = PackedVector2Array(-90, 220, 90, 220, 60, 140, -60, 140)
+
+[node name="Dress3" type="Polygon2D" parent="."]
+color = Color(0.20, 0.19, 0.18, 1)
+polygon = PackedVector2Array(230, -40, 410, -40, 380, -120, 260, -120)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineT5" parent="." instance=ExtResource("5")]
+position = Vector2(-360, 200)
+shrine_id = "t5_1"
+
+[node name="Marrow" parent="." instance=ExtResource("8")]
+position = Vector2(300, 50)
+npc_name = "MARROW"
+talk_flag = "t5_marrow_met"
+lines = PackedStringArray("[WIRING] Marrow doesn't offer a seat. 'The Council didn't build the afterlife, boy. We just keep the lights on.'", "[WIRING] 'Ask your questions. I'll decide which ones were worth asking.'")
+repeat_lines = PackedStringArray("[WIRING] 'We're done being polite. Ask.'")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(570, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_t6.tscn"
+metadata/target_room_id = "t6"
+metadata/spawn = Vector2(-350, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-570, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_t4.tscn"
+metadata/target_room_id = "t4"
+metadata/spawn = Vector2(350, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

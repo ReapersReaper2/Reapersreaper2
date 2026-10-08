@@ -1,0 +1,114 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/creep_pod.gd" id="6"]
+[ext_resource type="Texture2D" path="res://assets/environments/h4-alleys.png" id="7"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2048, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="RectangleShape2D" id="WildRect"]
+size = Vector2(1100, 380)
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[node name="RoomH4" type="Node2D"]
+script = ExtResource("1")
+room_id = "h4"
+room_rect = Rect2(-960, -360, 1920, 720)
+player_spawn = Vector2(0, 250)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("7")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.10, 0.10, 0.13, 1)
+polygon = PackedVector2Array(-960, 360, 960, 360, 960, -360, -960, -360)
+
+[node name="DirtPatch" type="Polygon2D" parent="."]
+color = Color(0.28, 0.22, 0.16, 1)
+polygon = PackedVector2Array(-200, 180, 200, 180, 200, -60, -200, -60)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-992, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(992, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 250)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 270)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="WildZoneH4" type="Area2D" parent="."]
+script = ExtResource("5")
+position = Vector2(0, 60)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "h4"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneH4"]
+shape = SubResource("WildRect")
+
+[node name="CreepPodCluster" type="Area2D" parent="."]
+position = Vector2(-500, 220)
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("6")
+pod_id = "h4_1"
+
+[node name="Range" type="CollisionShape2D" parent="CreepPodCluster"]
+shape = SubResource("RangeCircle")
+
+[node name="Pods" type="Polygon2D" parent="CreepPodCluster"]
+color = Color(0.45, 0.65, 0.45, 1)
+polygon = PackedVector2Array(-24, 0, -16, -18, 0, -24, 16, -18, 24, 0, 16, 12, 0, 16, -16, 12)
+
+[node name="Prompt" type="Label" parent="CreepPodCluster"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] gather"
+
+[node name="ExitPlaza" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, 300)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h1.tscn"
+metadata/target_room_id = "h1"
+metadata/spawn = Vector2(-400, -200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitPlaza"]
+shape = SubResource("ExitCircle")

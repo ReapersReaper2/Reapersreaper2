@@ -1,0 +1,99 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_p3.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/p3_black_sand_shore_1280x720.png" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="6"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2688, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="RectangleShape2D" id="WildRect"]
+size = Vector2(760, 420)
+
+[node name="RoomP3" type="Node2D"]
+script = ExtResource("1")
+room_id = "p3"
+room_rect = Rect2(-1280, -360, 2560, 720)
+player_spawn = Vector2(-900, 200)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("5")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1312, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1312, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(-900, 200)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-940, 220)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ShrineP3" parent="." instance=ExtResource("6")]
+position = Vector2(-760, 260)
+shrine_id = "p3_1"
+
+[node name="WildZoneP3" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(300, 80)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "p3"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneP3"]
+shape = SubResource("WildRect")
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1200, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_c1.tscn"
+metadata/target_room_id = "c1"
+metadata/spawn = Vector2(-2300, 100)
+metadata/lock_flag = "p3_luna_intro_done"
+metadata/locked_hint = "Luna is still talking. (Finish her intro first.)"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ZoneVisual" type="Polygon2D" parent="ExitEast"]
+color = Color(0.4, 0.8, 0.5, 0.15)
+polygon = PackedVector2Array(110, 0, 95.3, 55, 55, 95.3, 0, 110, -55, 95.3, -95.3, 55, -110, 0, -95.3, -55, -55, -95.3, 0, -110, 55, -95.3, 95.3, -55)
+
+[node name="ShoreScavenger" parent="." instance=ExtResource("8")]
+position = Vector2(950, 120)
+npc_name = "SHORE SCAVENGER"
+art_id = "shore_scavenger"
+tint = Color(0.72, 0.55, 0.35, 1)
+is_trainer = true
+trainer_id = "p3_scavenger"
+# Voice lines live in data/trainers.json (wiring placeholders — story bot owns trainer voice).
+talk_flag = "p3_scavenger_met"

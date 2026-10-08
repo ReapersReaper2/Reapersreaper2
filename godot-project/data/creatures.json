@@ -1,0 +1,1452 @@
+{
+  "_note": "Game 1 founder creatures, parts transcribed from roster doc 03 (9 slots: root/stem/bloom/leafset/appendage/armor/accent/eyes/face). Base stats are tuning placeholders. genes = the 3 ACNH-style color-variant gene pairs (cosmetic only, stored for the future breeding system). Species records carry: silhouette (asset lookup key; art is the story bot's lane), variant_slots (bool map over the 9 slots \u2014 the eyes/face slots are variant, the rest are fixed), donor_parts (the species' natural parts library as {species, slot, part_id}). Canon note: the Bellmaw is non-combat in the Game 1 story (no HP bar, beaten by understanding) - it carries boss stats here because the engine prototype wires it as a boss and the data layer must support legendary-tier units.",
+  "creatures": {
+    "bellmaw": {
+      "name": "Bellmaw",
+      "silhouette": "bellmaw",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "bellmaw",
+          "slot": "root",
+          "part_id": "taproot_cluster"
+        },
+        {
+          "species": "bellmaw",
+          "slot": "stem",
+          "part_id": "braided_vines"
+        },
+        {
+          "species": "bellmaw",
+          "slot": "bloom",
+          "part_id": "vertical_flower_maw"
+        },
+        {
+          "species": "bellmaw",
+          "slot": "appendage",
+          "part_id": "root_legs"
+        },
+        {
+          "species": "bellmaw",
+          "slot": "armor",
+          "part_id": "bark_plates"
+        }
+      ],
+      "temperament": "BOSS",
+      "region": "Cloudbloom Plateau",
+      "traits": {
+        "root": "taproot_cluster",
+        "stem": "braided_vines",
+        "bloom": "vertical_flower_maw",
+        "leafset": "bare",
+        "appendage": "root_legs",
+        "armor": "bark_plates",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 120,
+        "might": 14,
+        "guard": 10,
+        "speed": 4
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.05
+    },
+    "snapling": {
+      "name": "Snapling",
+      "silhouette": "snapling",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "snapling",
+          "slot": "root",
+          "part_id": "walking_roots"
+        },
+        {
+          "species": "snapling",
+          "slot": "stem",
+          "part_id": "fleshy_stalk"
+        },
+        {
+          "species": "snapling",
+          "slot": "bloom",
+          "part_id": "snapping_maw"
+        },
+        {
+          "species": "snapling",
+          "slot": "leafset",
+          "part_id": "needle_spray"
+        },
+        {
+          "species": "snapling",
+          "slot": "appendage",
+          "part_id": "root_claws"
+        },
+        {
+          "species": "snapling",
+          "slot": "armor",
+          "part_id": "spike_quills"
+        }
+      ],
+      "temperament": "WARY",
+      "region": "Reaper's Reprieve",
+      "traits": {
+        "root": "walking_roots",
+        "stem": "fleshy_stalk",
+        "bloom": "snapping_maw",
+        "leafset": "needle_spray",
+        "appendage": "root_claws",
+        "armor": "spike_quills",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 30,
+        "might": 6,
+        "guard": 3,
+        "speed": 9
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.45
+    },
+    "siltmaw": {
+      "name": "Siltmaw",
+      "silhouette": "siltmaw",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "siltmaw",
+          "slot": "root",
+          "part_id": "taproot_cluster"
+        },
+        {
+          "species": "siltmaw",
+          "slot": "stem",
+          "part_id": "fleshy_stalk"
+        },
+        {
+          "species": "siltmaw",
+          "slot": "bloom",
+          "part_id": "snapping_maw"
+        },
+        {
+          "species": "siltmaw",
+          "slot": "appendage",
+          "part_id": "root_claws"
+        },
+        {
+          "species": "siltmaw",
+          "slot": "armor",
+          "part_id": "spike_quills"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "River of Souls",
+      "traits": {
+        "root": "taproot_cluster",
+        "stem": "fleshy_stalk",
+        "bloom": "snapping_maw",
+        "leafset": "bare",
+        "appendage": "root_claws",
+        "armor": "spike_quills",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 45,
+        "might": 8,
+        "guard": 5,
+        "speed": 3
+      },
+      "genes": {
+        "hue": [
+          "S",
+          "s"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.4
+    },
+    "gravebind": {
+      "name": "Gravebind Briar",
+      "silhouette": "gravebind",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "gravebind",
+          "slot": "root",
+          "part_id": "taproot_cluster"
+        },
+        {
+          "species": "gravebind",
+          "slot": "stem",
+          "part_id": "braided_vines"
+        },
+        {
+          "species": "gravebind",
+          "slot": "bloom",
+          "part_id": "thorn_crown"
+        },
+        {
+          "species": "gravebind",
+          "slot": "leafset",
+          "part_id": "needle_spray"
+        },
+        {
+          "species": "gravebind",
+          "slot": "appendage",
+          "part_id": "thorn_whips"
+        },
+        {
+          "species": "gravebind",
+          "slot": "armor",
+          "part_id": "bark_plates"
+        },
+        {
+          "species": "gravebind",
+          "slot": "accent",
+          "part_id": "spore_sacs"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "Subterranean Warrens",
+      "traits": {
+        "root": "taproot_cluster",
+        "stem": "braided_vines",
+        "bloom": "thorn_crown",
+        "leafset": "needle_spray",
+        "appendage": "thorn_whips",
+        "armor": "bark_plates",
+        "accent": "spore_sacs"
+      },
+      "base": {
+        "vigor": 55,
+        "might": 9,
+        "guard": 8,
+        "speed": 2
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "D",
+          "d"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.3
+    },
+    "thornchoir": {
+      "name": "Thorn Choir",
+      "silhouette": "thornchoir",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "thornchoir",
+          "slot": "root",
+          "part_id": "walking_roots"
+        },
+        {
+          "species": "thornchoir",
+          "slot": "stem",
+          "part_id": "woody_trunk"
+        },
+        {
+          "species": "thornchoir",
+          "slot": "bloom",
+          "part_id": "thorn_crown"
+        },
+        {
+          "species": "thornchoir",
+          "slot": "leafset",
+          "part_id": "needle_spray"
+        },
+        {
+          "species": "thornchoir",
+          "slot": "appendage",
+          "part_id": "root_claws"
+        },
+        {
+          "species": "thornchoir",
+          "slot": "armor",
+          "part_id": "bark_plates"
+        },
+        {
+          "species": "thornchoir",
+          "slot": "accent",
+          "part_id": "spore_sacs"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "Grimley's Reserve",
+      "traits": {
+        "root": "walking_roots",
+        "stem": "woody_trunk",
+        "bloom": "thorn_crown",
+        "leafset": "needle_spray",
+        "appendage": "root_claws",
+        "armor": "bark_plates",
+        "accent": "spore_sacs"
+      },
+      "base": {
+        "vigor": 50,
+        "might": 8,
+        "guard": 7,
+        "speed": 5
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "V",
+          "v"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.25
+    },
+    "bellowscap": {
+      "name": "Bellowscap Fungus",
+      "silhouette": "bellowscap",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "bellowscap",
+          "slot": "root",
+          "part_id": "bulb_base"
+        },
+        {
+          "species": "bellowscap",
+          "slot": "stem",
+          "part_id": "hollow_reed"
+        },
+        {
+          "species": "bellowscap",
+          "slot": "bloom",
+          "part_id": "spore_cap"
+        },
+        {
+          "species": "bellowscap",
+          "slot": "leafset",
+          "part_id": "moss_mantle"
+        },
+        {
+          "species": "bellowscap",
+          "slot": "armor",
+          "part_id": "resin_coat"
+        },
+        {
+          "species": "bellowscap",
+          "slot": "accent",
+          "part_id": "spore_sacs"
+        }
+      ],
+      "temperament": "DOCILE",
+      "region": "Grimley's Reserve",
+      "traits": {
+        "root": "bulb_base",
+        "stem": "hollow_reed",
+        "bloom": "spore_cap",
+        "leafset": "moss_mantle",
+        "appendage": "bare",
+        "armor": "resin_coat",
+        "accent": "spore_sacs"
+      },
+      "base": {
+        "vigor": 40,
+        "might": 3,
+        "guard": 6,
+        "speed": 1
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "A",
+          "a"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.35
+    },
+    "wispwillow": {
+      "name": "Wispwillow",
+      "silhouette": "wispwillow",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "wispwillow",
+          "slot": "root",
+          "part_id": "taproot_cluster"
+        },
+        {
+          "species": "wispwillow",
+          "slot": "stem",
+          "part_id": "hollow_reed"
+        },
+        {
+          "species": "wispwillow",
+          "slot": "leafset",
+          "part_id": "moss_mantle"
+        }
+      ],
+      "temperament": "DOCILE",
+      "region": "Reaper's Reprieve",
+      "traits": {
+        "root": "taproot_cluster",
+        "stem": "hollow_reed",
+        "bloom": "bare",
+        "leafset": "moss_mantle",
+        "appendage": "bare",
+        "armor": "bare",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 22,
+        "might": 4,
+        "guard": 4,
+        "speed": 6
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.65
+    },
+    "floatbladder": {
+      "name": "Floatbladder",
+      "silhouette": "floatbladder",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "floatbladder",
+          "slot": "root",
+          "part_id": "bulb_base"
+        },
+        {
+          "species": "floatbladder",
+          "slot": "stem",
+          "part_id": "hollow_reed"
+        },
+        {
+          "species": "floatbladder",
+          "slot": "bloom",
+          "part_id": "spore_cap"
+        },
+        {
+          "species": "floatbladder",
+          "slot": "armor",
+          "part_id": "resin_coat"
+        }
+      ],
+      "temperament": "WARY",
+      "region": "Reaper's Reprieve",
+      "traits": {
+        "root": "bulb_base",
+        "stem": "hollow_reed",
+        "bloom": "spore_cap",
+        "leafset": "bare",
+        "appendage": "bare",
+        "armor": "resin_coat",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 26,
+        "might": 5,
+        "guard": 3,
+        "speed": 8
+      },
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.5
+    },
+    "bloodleaf_grazer": {
+      "name": "Bloodleaf Grazer",
+      "silhouette": "bloodleaf_grazer",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "root",
+          "part_id": "taproot_cluster"
+        },
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "stem",
+          "part_id": "ironwood_trunk"
+        },
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "bloom",
+          "part_id": "bloodleaf_bloom"
+        },
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "leafset",
+          "part_id": "broad_red"
+        },
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "appendage",
+          "part_id": "root_legs"
+        },
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "armor",
+          "part_id": "ironwood_plates"
+        },
+        {
+          "species": "bloodleaf_grazer",
+          "slot": "accent",
+          "part_id": "ember_seeds"
+        }
+      ],
+      "temperament": "WARY",
+      "region": "Forgehold",
+      "traits": {
+        "root": "taproot_cluster",
+        "stem": "ironwood_trunk",
+        "bloom": "bloodleaf_bloom",
+        "leafset": "broad_red",
+        "appendage": "root_legs",
+        "armor": "ironwood_plates",
+        "accent": "ember_seeds"
+      },
+      "base": {
+        "vigor": 55,
+        "might": 8,
+        "guard": 14,
+        "speed": 6
+      },
+      "moves": [
+        "uphill_flight",
+        "broadside",
+        "shed_leaves"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.35,
+      "_note": "[WIRING] traits/moves from doc 03 Appendix B; numbers per story bot, retune on word."
+    },
+    "thornleech": {
+      "name": "Thornleech",
+      "silhouette": "thornleech",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "thornleech",
+          "slot": "root",
+          "part_id": "burrower"
+        },
+        {
+          "species": "thornleech",
+          "slot": "stem",
+          "part_id": "segmented_body"
+        },
+        {
+          "species": "thornleech",
+          "slot": "bloom",
+          "part_id": "gaping_maw"
+        },
+        {
+          "species": "thornleech",
+          "slot": "appendage",
+          "part_id": "hooked_claws"
+        },
+        {
+          "species": "thornleech",
+          "slot": "armor",
+          "part_id": "chitin_bands"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "Forgehold",
+      "traits": {
+        "root": "burrower",
+        "stem": "segmented_body",
+        "bloom": "gaping_maw",
+        "leafset": "bare",
+        "appendage": "hooked_claws",
+        "armor": "chitin_bands",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 22,
+        "might": 6,
+        "guard": 4,
+        "speed": 12
+      },
+      "moves": [
+        "latch",
+        "drain",
+        "scream"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.5,
+      "_note": "[WIRING] traits/moves from doc 03 Appendix B."
+    },
+    "cinderbloom": {
+      "name": "Cinderbloom",
+      "silhouette": "cinderbloom",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "cinderbloom",
+          "slot": "root",
+          "part_id": "ash_roots"
+        },
+        {
+          "species": "cinderbloom",
+          "slot": "stem",
+          "part_id": "charred_stalk"
+        },
+        {
+          "species": "cinderbloom",
+          "slot": "bloom",
+          "part_id": "ember_bloom"
+        },
+        {
+          "species": "cinderbloom",
+          "slot": "leafset",
+          "part_id": "ash_needles"
+        },
+        {
+          "species": "cinderbloom",
+          "slot": "armor",
+          "part_id": "bark_plates"
+        },
+        {
+          "species": "cinderbloom",
+          "slot": "accent",
+          "part_id": "ember_seeds"
+        }
+      ],
+      "temperament": "DOCILE",
+      "region": "Forgehold",
+      "traits": {
+        "root": "ash_roots",
+        "stem": "charred_stalk",
+        "bloom": "ember_bloom",
+        "leafset": "ash_needles",
+        "appendage": "bare",
+        "armor": "bark_plates",
+        "accent": "ember_seeds"
+      },
+      "base": {
+        "vigor": 30,
+        "might": 4,
+        "guard": 10,
+        "speed": 3
+      },
+      "moves": [
+        "snap_shut",
+        "heat_bloom",
+        "ember_seeds"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.7,
+      "_note": "[WIRING] docile non-combatant; battle handles Stillness/Snap Shut gracefully."
+    },
+    "echomarrow": {
+      "name": "Echomarrow",
+      "silhouette": "echomarrow",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "echomarrow",
+          "slot": "root",
+          "part_id": "deep_taproot"
+        },
+        {
+          "species": "echomarrow",
+          "slot": "stem",
+          "part_id": "pale_trunk"
+        },
+        {
+          "species": "echomarrow",
+          "slot": "bloom",
+          "part_id": "glow_nodes"
+        },
+        {
+          "species": "echomarrow",
+          "slot": "leafset",
+          "part_id": "pale_canopy"
+        },
+        {
+          "species": "echomarrow",
+          "slot": "armor",
+          "part_id": "bark_plates"
+        },
+        {
+          "species": "echomarrow",
+          "slot": "accent",
+          "part_id": "grave_touched"
+        }
+      ],
+      "temperament": "DOCILE",
+      "region": "Warrens",
+      "traits": {
+        "root": "deep_taproot",
+        "stem": "pale_trunk",
+        "bloom": "glow_nodes",
+        "leafset": "pale_canopy",
+        "appendage": "bare",
+        "armor": "bark_plates",
+        "accent": "grave_touched"
+      },
+      "base": {
+        "vigor": 70,
+        "might": 5,
+        "guard": 16,
+        "speed": 2
+      },
+      "moves": [
+        "echo",
+        "resonate",
+        "stillness"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.6,
+      "_note": "[WIRING] docile non-combatant; will not attack."
+    },
+    "gloomcap": {
+      "name": "Gloomcap",
+      "silhouette": "gloomcap",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "gloomcap",
+          "slot": "root",
+          "part_id": "mycelial_mat"
+        },
+        {
+          "species": "gloomcap",
+          "slot": "stem",
+          "part_id": "pale_stipe"
+        },
+        {
+          "species": "gloomcap",
+          "slot": "bloom",
+          "part_id": "dome_cap"
+        },
+        {
+          "species": "gloomcap",
+          "slot": "leafset",
+          "part_id": "tendril_wisps"
+        },
+        {
+          "species": "gloomcap",
+          "slot": "armor",
+          "part_id": "resin_coat"
+        },
+        {
+          "species": "gloomcap",
+          "slot": "accent",
+          "part_id": "soft_step"
+        }
+      ],
+      "temperament": "WARY",
+      "region": "Warrens",
+      "traits": {
+        "root": "mycelial_mat",
+        "stem": "pale_stipe",
+        "bloom": "dome_cap",
+        "leafset": "tendril_wisps",
+        "appendage": "bare",
+        "armor": "resin_coat",
+        "accent": "soft_step"
+      },
+      "base": {
+        "vigor": 40,
+        "might": 10,
+        "guard": 12,
+        "speed": 5
+      },
+      "moves": [
+        "retract",
+        "spore_cloud",
+        "tendril_lash"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.45,
+      "_note": "[WIRING] traits/moves from doc 03 Appendix B."
+    },
+    "deepjaw": {
+      "name": "Deepjaw",
+      "silhouette": "deepjaw",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "deepjaw",
+          "slot": "root",
+          "part_id": "anchor_roots"
+        },
+        {
+          "species": "deepjaw",
+          "slot": "stem",
+          "part_id": "gnarled_trunk"
+        },
+        {
+          "species": "deepjaw",
+          "slot": "bloom",
+          "part_id": "enormous_maw"
+        },
+        {
+          "species": "deepjaw",
+          "slot": "appendage",
+          "part_id": "root_limbs"
+        },
+        {
+          "species": "deepjaw",
+          "slot": "armor",
+          "part_id": "ironwood_plates"
+        },
+        {
+          "species": "deepjaw",
+          "slot": "accent",
+          "part_id": "grave_touched"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "Warrens",
+      "traits": {
+        "root": "anchor_roots",
+        "stem": "gnarled_trunk",
+        "bloom": "enormous_maw",
+        "leafset": "bare",
+        "appendage": "root_limbs",
+        "armor": "ironwood_plates",
+        "accent": "grave_touched"
+      },
+      "base": {
+        "vigor": 120,
+        "might": 22,
+        "guard": 15,
+        "speed": 8
+      },
+      "moves": [
+        "gorge",
+        "territory_roar",
+        "fossil_crush"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.15,
+      "_note": "[WIRING] mini-boss tier; scripted encounter."
+    },
+    "spinehopper": {
+      "name": "Spinehopper",
+      "silhouette": "spinehopper",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "spinehopper",
+          "slot": "root",
+          "part_id": "cliff_roots"
+        },
+        {
+          "species": "spinehopper",
+          "slot": "stem",
+          "part_id": "spined_body"
+        },
+        {
+          "species": "spinehopper",
+          "slot": "bloom",
+          "part_id": "petal_wings"
+        },
+        {
+          "species": "spinehopper",
+          "slot": "appendage",
+          "part_id": "raptor_claws"
+        },
+        {
+          "species": "spinehopper",
+          "slot": "armor",
+          "part_id": "spike_quills"
+        },
+        {
+          "species": "spinehopper",
+          "slot": "accent",
+          "part_id": "keen"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "Dragoni",
+      "traits": {
+        "root": "cliff_roots",
+        "stem": "spined_body",
+        "bloom": "petal_wings",
+        "leafset": "bare",
+        "appendage": "raptor_claws",
+        "armor": "spike_quills",
+        "accent": "keen"
+      },
+      "base": {
+        "vigor": 38,
+        "might": 14,
+        "guard": 8,
+        "speed": 18
+      },
+      "moves": [
+        "dive",
+        "thermal_ride",
+        "rake"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.35,
+      "_note": "[WIRING] fastest Act 2 creature; Dive needs Thermal Ride setup."
+    },
+    "dragonthorn": {
+      "name": "Dragonthorn",
+      "silhouette": "dragonthorn",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "dragonthorn",
+          "slot": "root",
+          "part_id": "ledge_roots"
+        },
+        {
+          "species": "dragonthorn",
+          "slot": "stem",
+          "part_id": "armored_trunk"
+        },
+        {
+          "species": "dragonthorn",
+          "slot": "bloom",
+          "part_id": "thorn_crown"
+        },
+        {
+          "species": "dragonthorn",
+          "slot": "leafset",
+          "part_id": "pine_spray"
+        },
+        {
+          "species": "dragonthorn",
+          "slot": "appendage",
+          "part_id": "climbing_claws"
+        },
+        {
+          "species": "dragonthorn",
+          "slot": "armor",
+          "part_id": "bark_plates"
+        },
+        {
+          "species": "dragonthorn",
+          "slot": "accent",
+          "part_id": "ember_seeds"
+        }
+      ],
+      "temperament": "AGGRESSIVE",
+      "region": "Dragoni",
+      "traits": {
+        "root": "ledge_roots",
+        "stem": "armored_trunk",
+        "bloom": "thorn_crown",
+        "leafset": "pine_spray",
+        "appendage": "climbing_claws",
+        "armor": "bark_plates",
+        "accent": "ember_seeds"
+      },
+      "base": {
+        "vigor": 65,
+        "might": 16,
+        "guard": 12,
+        "speed": 14
+      },
+      "moves": [
+        "relocate",
+        "thorn_volley",
+        "crown_slam"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.3,
+      "_note": "[WIRING] ledge AI hook: Relocate every third turn."
+    },
+    "carrion_bloom": {
+      "name": "Carrion Bloom",
+      "silhouette": "carrion_bloom",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "carrion_bloom",
+          "slot": "root",
+          "part_id": "grave_roots"
+        },
+        {
+          "species": "carrion_bloom",
+          "slot": "stem",
+          "part_id": "pale_stalk"
+        },
+        {
+          "species": "carrion_bloom",
+          "slot": "bloom",
+          "part_id": "mourning_bloom"
+        },
+        {
+          "species": "carrion_bloom",
+          "slot": "leafset",
+          "part_id": "tattered_petals"
+        },
+        {
+          "species": "carrion_bloom",
+          "slot": "accent",
+          "part_id": "grave_touched"
+        }
+      ],
+      "temperament": "DOCILE",
+      "region": "Dragoni",
+      "traits": {
+        "root": "grave_roots",
+        "stem": "pale_stalk",
+        "bloom": "mourning_bloom",
+        "leafset": "tattered_petals",
+        "appendage": "bare",
+        "armor": "bare",
+        "accent": "grave_touched"
+      },
+      "base": {
+        "vigor": 25,
+        "might": 3,
+        "guard": 6,
+        "speed": 2
+      },
+      "moves": [
+        "mourn",
+        "war_petal",
+        "stillness"
+      ],
+      "genes": {
+        "hue": [
+          "G",
+          "g"
+        ],
+        "bloom_tint": [
+          "B",
+          "b"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.65,
+      "_note": "[WIRING] docile non-combatant; will not attack even when struck."
+    },
+    "ash_wraith": {
+      "name": "Ash Wraith",
+      "silhouette": "ash_wraith",
+      "variant_slots": {
+        "root": false,
+        "stem": false,
+        "bloom": false,
+        "leafset": false,
+        "appendage": false,
+        "armor": false,
+        "accent": false,
+        "eyes": true,
+        "face": true
+      },
+      "donor_parts": [
+        {
+          "species": "ash_wraith",
+          "slot": "root",
+          "part_id": "cinder_tendrils"
+        },
+        {
+          "species": "ash_wraith",
+          "slot": "stem",
+          "part_id": "smoke_column"
+        },
+        {
+          "species": "ash_wraith",
+          "slot": "bloom",
+          "part_id": "ember_crown"
+        },
+        {
+          "species": "ash_wraith",
+          "slot": "leafset",
+          "part_id": "ash_flakes"
+        },
+        {
+          "species": "ash_wraith",
+          "slot": "armor",
+          "part_id": "soot_plates"
+        }
+      ],
+      "temperament": "WARY",
+      "region": "Ashen Peak",
+      "traits": {
+        "root": "cinder_tendrils",
+        "stem": "smoke_column",
+        "bloom": "ember_crown",
+        "leafset": "ash_flakes",
+        "appendage": "bare",
+        "armor": "soot_plates",
+        "accent": "bare"
+      },
+      "base": {
+        "vigor": 40,
+        "might": 8,
+        "guard": 6,
+        "speed": 9
+      },
+      "genes": {
+        "hue": [
+          "R",
+          "r"
+        ],
+        "bloom_tint": [
+          "O",
+          "o"
+        ],
+        "pattern": [
+          "P",
+          "p"
+        ]
+      },
+      "catch_rate": 0.35,
+      "_note": "[WIRING] stats provisional \u2014 story bot to revise"
+    }
+  }
+}

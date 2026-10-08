@@ -1,0 +1,79 @@
+[gd_scene load_steps=3 format=3 uid="uid://crrdialoguebox1"]
+
+[ext_resource type="Script" path="res://scripts/dialogue_box.gd" id="1_dbox"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.039, 0.039, 0.071, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.3, 0.58, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 28.0
+content_margin_top = 18.0
+content_margin_right = 28.0
+content_margin_bottom = 14.0
+
+[node name="DialogueBox" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_dbox")
+
+[node name="Panel" type="PanelContainer" parent="."]
+anchor_top = 0.68
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 64.0
+offset_right = -64.0
+offset_bottom = -28.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="Panel/Margin/VBox"]
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+text = "NAME"
+
+[node name="HBox" type="HBoxContainer" parent="Panel/Margin/VBox"]
+theme_override_constants/separation = 20
+
+[node name="Portrait" type="ColorRect" parent="Panel/Margin/VBox/HBox"]
+custom_minimum_size = Vector2(96, 96)
+color = Color(0.16, 0.14, 0.24, 1)
+
+[node name="InitialLabel" type="Label" parent="Panel/Margin/VBox/HBox/Portrait"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 40
+theme_override_colors/font_color = Color(0.7, 0.65, 0.9, 1)
+text = "?"
+
+[node name="TextLabel" type="RichTextLabel" parent="Panel/Margin/VBox/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 22
+theme_override_colors/default_color = Color(0.93, 0.93, 0.96, 1)
+scroll_active = false
+text = "Dialogue text."
+
+[node name="ChoiceBox" type="VBoxContainer" parent="Panel/Margin/VBox"]
+theme_override_constants/separation = 6
+
+[node name="HintLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.55, 0.55, 0.62, 1)
+text = "[E] continue"

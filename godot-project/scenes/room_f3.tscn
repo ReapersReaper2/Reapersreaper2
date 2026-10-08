@@ -1,0 +1,264 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/f3-the-mine.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 1568)
+
+[sub_resource type="RectangleShape2D" id="WildRect_WildZoneF3"]
+size = Vector2(900, 500)
+
+
+[node name="RoomF3" type="Node2D"]
+script = ExtResource("1")
+room_id = "f3"
+room_rect = Rect2(-640, -720, 1280, 1440)
+player_spawn = Vector2(0, 0)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.15, 0.13, 0.12, 1)
+polygon = PackedVector2Array(-640, 720, 640, 720, 640, -720, -640, -720)
+
+[node name="Timber1" type="Polygon2D" parent="."]
+color = Color(0.35, 0.25, 0.15, 1)
+polygon = PackedVector2Array(-320, 600, -280, 600, -280, -600, -320, -600)
+
+[node name="Timber2" type="Polygon2D" parent="."]
+color = Color(0.35, 0.25, 0.15, 1)
+polygon = PackedVector2Array(280, 600, 320, 600, 320, -600, 280, -600)
+
+[node name="Shaft" type="Polygon2D" parent="."]
+color = Color(0.05, 0.05, 0.05, 1)
+polygon = PackedVector2Array(-100, -470, 100, -470, 100, -530, -100, -530)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -752.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 752.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 0)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 20)
+
+[node name="ShrineF3" parent="." instance=ExtResource("5")]
+position = Vector2(-400, 600)
+shrine_id = "f3_1"
+
+[node name="WildZoneF3" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(0, 200)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "f3"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneF3"]
+shape = SubResource("WildRect_WildZoneF3")
+
+[node name="PaleRoot1" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-450, -400)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] inspect root"
+label_text = "Pale Root"
+tint = Color(0.85, 0.85, 0.90, 1)
+lines = PackedStringArray("[WIRING] Pale root-matter bleeds through the mine wall. It pulses, faintly.", "[WIRING] Older than the town. Older than the forge. No one here will say what it is.")
+repeat_lines = PackedStringArray()
+flag = "f3_root_1"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="PaleRoot1"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="PaleRoot1"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="PaleRoot1"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] inspect root"
+
+[node name="PaleRoot2" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(450, 100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] inspect root"
+label_text = "Pale Root"
+tint = Color(0.85, 0.85, 0.90, 1)
+lines = PackedStringArray("[WIRING] The root drinks the dark. You feel watched, kindly.")
+repeat_lines = PackedStringArray()
+flag = "f3_root_2"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="PaleRoot2"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="PaleRoot2"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="PaleRoot2"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] inspect root"
+
+[node name="PaleRoot3" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-100, 550)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] inspect root"
+label_text = "Pale Root"
+tint = Color(0.85, 0.85, 0.90, 1)
+lines = PackedStringArray("[WIRING] Deep water below. The armor will be quenched here. (Form 4 tie-in.)")
+repeat_lines = PackedStringArray()
+flag = "f3_root_3"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="PaleRoot3"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="PaleRoot3"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="PaleRoot3"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] inspect root"
+
+[node name="Longsword" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(100, -550)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] take sword"
+label_text = "Father's Longsword"
+tint = Color(0.75, 0.75, 0.80, 1)
+lines = PackedStringArray("[WIRING] Your father's longsword, returned by the blacksmith. The edge remembers.", "[WIRING] KEY ITEM acquired. (Scythe-break swap hooks later.)")
+repeat_lines = PackedStringArray()
+flag = "f3_longsword_taken"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = "fathers_longsword"
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="Longsword"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="Longsword"]
+polygon = PackedVector2Array(-8, 50, 8, 50, 4, -50, -4, -50)
+
+[node name="Prompt" type="Label" parent="Longsword"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] take sword"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(560, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_g1.tscn"
+metadata/target_room_id = "g1"
+metadata/spawn = Vector2(-210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-560, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f2.tscn"
+metadata/target_room_id = "f2"
+metadata/spawn = Vector2(860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

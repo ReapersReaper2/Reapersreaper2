@@ -1,0 +1,431 @@
+{
+ "_note": "Wild encounter tables, keyed by room_id. weight = relative encounter chance.",
+ "c1": [
+  {
+   "creature_id": "snapling",
+   "max_level": 5,
+   "min_level": 3,
+   "weight": 50
+  },
+  {
+   "creature_id": "siltmaw",
+   "max_level": 5,
+   "min_level": 3,
+   "weight": 30
+  },
+  {
+   "creature_id": "gravebind",
+   "max_level": 6,
+   "min_level": 4,
+   "weight": 20
+  }
+ ],
+ "p3": [
+  {
+   "creature_id": "siltmaw",
+   "max_level": 4,
+   "min_level": 2,
+   "weight": 60
+  },
+  {
+   "creature_id": "bellowscap",
+   "max_level": 3,
+   "min_level": 2,
+   "weight": 40
+  }
+ ],
+ "h4": [
+  {
+   "creature_id": "wispwillow",
+   "min_level": 2,
+   "max_level": 4,
+   "weight": 45
+  },
+  {
+   "creature_id": "floatbladder",
+   "min_level": 2,
+   "max_level": 4,
+   "weight": 35
+  },
+  {
+   "creature_id": "siltmaw",
+   "min_level": 3,
+   "max_level": 5,
+   "weight": 20
+  }
+ ],
+ "f1": [
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 12,
+   "max_level": 14,
+   "weight": 40
+  },
+  {
+   "creature_id": "thornleech",
+   "min_level": 12,
+   "max_level": 14,
+   "weight": 35
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 11,
+   "max_level": 13,
+   "weight": 25
+  },
+  {
+   "creature_id": "ash_wraith",
+   "min_level": 12,
+   "max_level": 14,
+   "weight": 30
+  }
+ ],
+ "f3": [
+  {
+   "creature_id": "thornleech",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 45
+  },
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 13,
+   "max_level": 15,
+   "weight": 30
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 13,
+   "max_level": 15,
+   "weight": 25
+  }
+ ],
+ "g2": [
+  {
+   "creature_id": "spinehopper",
+   "min_level": 15,
+   "max_level": 17,
+   "weight": 45
+  },
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 30
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 25
+  }
+ ],
+ "s1": [
+  {
+   "creature_id": "gloomcap",
+   "min_level": 15,
+   "max_level": 17,
+   "weight": 40
+  },
+  {
+   "creature_id": "echomarrow",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 35
+  },
+  {
+   "creature_id": "deepjaw",
+   "min_level": 16,
+   "max_level": 18,
+   "weight": 25
+  }
+ ],
+ "d1": [
+  {
+   "creature_id": "spinehopper",
+   "min_level": 16,
+   "max_level": 18,
+   "weight": 40
+  },
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 16,
+   "max_level": 18,
+   "weight": 35
+  },
+  {
+   "creature_id": "carrion_bloom",
+   "min_level": 15,
+   "max_level": 17,
+   "weight": 25
+  }
+ ],
+ "f2": [
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 13,
+   "max_level": 15,
+   "weight": 45
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 12,
+   "max_level": 14,
+   "weight": 30
+  },
+  {
+   "creature_id": "thornleech",
+   "min_level": 13,
+   "max_level": 15,
+   "weight": 25
+  }
+ ],
+ "g1": [
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 13,
+   "max_level": 15,
+   "weight": 40
+  },
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 35
+  },
+  {
+   "creature_id": "spinehopper",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 25
+  }
+ ],
+ "s2": [
+  {
+   "creature_id": "echomarrow",
+   "min_level": 14,
+   "max_level": 16,
+   "weight": 50
+  },
+  {
+   "creature_id": "gloomcap",
+   "min_level": 15,
+   "max_level": 17,
+   "weight": 50
+  }
+ ],
+ "d2": [
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 17,
+   "max_level": 19,
+   "weight": 50
+  },
+  {
+   "creature_id": "spinehopper",
+   "min_level": 17,
+   "max_level": 19,
+   "weight": 50
+  }
+ ],
+ "hl1": [
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 18,
+   "max_level": 20,
+   "weight": 40
+  },
+  {
+   "creature_id": "thornleech",
+   "min_level": 18,
+   "max_level": 20,
+   "weight": 35
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 17,
+   "max_level": 19,
+   "weight": 25
+  }
+ ],
+ "hl2": [
+  {
+   "creature_id": "thornleech",
+   "min_level": 18,
+   "max_level": 20,
+   "weight": 40
+  },
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 18,
+   "max_level": 20,
+   "weight": 35
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 18,
+   "max_level": 20,
+   "weight": 25
+  }
+ ],
+ "hl3": [
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 40
+  },
+  {
+   "creature_id": "thornleech",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 35
+  },
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 25
+  }
+ ],
+ "hl4": [
+  {
+   "creature_id": "thornleech",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 45
+  },
+  {
+   "creature_id": "bloodleaf_grazer",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 30
+  },
+  {
+   "creature_id": "spinehopper",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 25
+  }
+ ],
+ "t1": [
+  {
+   "creature_id": "spinehopper",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 40
+  },
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 35
+  },
+  {
+   "creature_id": "cinderbloom",
+   "min_level": 18,
+   "max_level": 20,
+   "weight": 25
+  }
+ ],
+ "t6": [
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 45
+  },
+  {
+   "creature_id": "spinehopper",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 35
+  },
+  {
+   "creature_id": "carrion_bloom",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 20
+  }
+ ],
+ "u1": [
+  {
+   "creature_id": "gloomcap",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 40
+  },
+  {
+   "creature_id": "echomarrow",
+   "min_level": 19,
+   "max_level": 21,
+   "weight": 30
+  },
+  {
+   "creature_id": "thornleech",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 30
+  }
+ ],
+ "gd1": [
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 40
+  },
+  {
+   "creature_id": "gloomcap",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 30
+  },
+  {
+   "creature_id": "spinehopper",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 30
+  }
+ ],
+ "gd4": [
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 21,
+   "max_level": 23,
+   "weight": 45
+  },
+  {
+   "creature_id": "spinehopper",
+   "min_level": 21,
+   "max_level": 23,
+   "weight": 35
+  },
+  {
+   "creature_id": "gloomcap",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 20
+  }
+ ],
+ "gd6": [
+  {
+   "creature_id": "dragonthorn",
+   "min_level": 21,
+   "max_level": 23,
+   "weight": 40
+  },
+  {
+   "creature_id": "carrion_bloom",
+   "min_level": 20,
+   "max_level": 22,
+   "weight": 30
+  },
+  {
+   "creature_id": "gloomcap",
+   "min_level": 21,
+   "max_level": 23,
+   "weight": 30
+  }
+ ]
+}

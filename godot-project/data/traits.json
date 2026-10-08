@@ -1,0 +1,708 @@
+{
+  "_note": "Part-trait table, Game 1 foundation. Each of the 42 part traits gets Might (attack) and Guard (armor); abilities come from parts (roster doc 03). This file starts with the 21 distinct parts used by the 6 founder lines (Snaplings, Spinehoppers excluded here - 6 chosen are the most concretely specified: Bellmaw, Snaplings, Siltmaw, Gravebind Briars, Thorn Choir, Bellowscap Fungi) plus ember_seeds so the rare fire-ability path has a home. Grows to the full 42 as art/breeding lands. might_mod/guard_mod are tuning placeholders. dominance is reserved for the breeding dominance rolls (not implemented yet).",
+  "traits": {
+    "taproot_cluster": {
+      "name": "Taproot Cluster",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": []
+    },
+    "walking_roots": {
+      "name": "Walking Roots",
+      "slot": "root",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "bulb_base": {
+      "name": "Bulb Base",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": []
+    },
+    "braided_vines": {
+      "name": "Braided Vines",
+      "slot": "root",
+      "might_mod": 1,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "root_legs": {
+      "name": "Root Legs",
+      "slot": "appendage",
+      "might_mod": 1,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "fleshy_stalk": {
+      "name": "Fleshy Stalk",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": []
+    },
+    "woody_trunk": {
+      "name": "Woody Trunk",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": []
+    },
+    "hollow_reed": {
+      "name": "Hollow Reed",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.3,
+      "tags": []
+    },
+    "snapping_maw": {
+      "name": "Snapping Maw",
+      "slot": "bloom",
+      "might_mod": 3,
+      "guard_mod": 0,
+      "ability_ids": [
+        "snap_bite"
+      ],
+      "dominance": 0.6,
+      "tags": []
+    },
+    "vertical_flower_maw": {
+      "name": "Vertical Flower-Maw",
+      "slot": "bloom",
+      "might_mod": 4,
+      "guard_mod": 0,
+      "ability_ids": [
+        "maw_gulp"
+      ],
+      "dominance": 0.8,
+      "tags": [
+        "boss_only"
+      ]
+    },
+    "thorn_crown": {
+      "name": "Thorn Crown",
+      "slot": "bloom",
+      "might_mod": 2,
+      "guard_mod": 1,
+      "ability_ids": [
+        "thorn_lash"
+      ],
+      "dominance": 0.6,
+      "tags": []
+    },
+    "spore_cap": {
+      "name": "Spore Cap",
+      "slot": "bloom",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [
+        "spore_cloud"
+      ],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "needle_spray": {
+      "name": "Needle Spray",
+      "slot": "leafset",
+      "might_mod": 1,
+      "guard_mod": 1,
+      "ability_ids": [
+        "needle_spray"
+      ],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "moss_mantle": {
+      "name": "Moss Mantle",
+      "slot": "leafset",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": []
+    },
+    "root_claws": {
+      "name": "Root Claws",
+      "slot": "appendage",
+      "might_mod": 2,
+      "guard_mod": 0,
+      "ability_ids": [
+        "claw_rake"
+      ],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "thorn_whips": {
+      "name": "Thorn Whips",
+      "slot": "appendage",
+      "might_mod": 3,
+      "guard_mod": 0,
+      "ability_ids": [
+        "thorn_lash"
+      ],
+      "dominance": 0.6,
+      "tags": []
+    },
+    "bark_plates": {
+      "name": "Bark Plates",
+      "slot": "armor",
+      "might_mod": 0,
+      "guard_mod": 3,
+      "ability_ids": [],
+      "dominance": 0.7,
+      "tags": []
+    },
+    "spike_quills": {
+      "name": "Spike Quills",
+      "slot": "armor",
+      "might_mod": 2,
+      "guard_mod": 2,
+      "ability_ids": [
+        "quill_volley"
+      ],
+      "dominance": 0.6,
+      "tags": []
+    },
+    "resin_coat": {
+      "name": "Resin Coat",
+      "slot": "armor",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": []
+    },
+    "spore_sacs": {
+      "name": "Spore Sacs",
+      "slot": "accent",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [
+        "spore_cloud"
+      ],
+      "dominance": 0.4,
+      "tags": []
+    },
+    "ember_seeds": {
+      "name": "Ember Seeds",
+      "slot": "accent",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [
+        "ember_spit"
+      ],
+      "dominance": 0.3,
+      "tags": [
+        "fire_source",
+        "rare"
+      ]
+    },
+    "bare": {
+      "name": "Bare",
+      "slot": "any",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.0,
+      "tags": []
+    },
+    "ironwood_trunk": {
+      "name": "Ironwood Trunk",
+      "slot": "stem",
+      "might_mod": 1,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "bloodleaf_bloom": {
+      "name": "Bloodleaf Bloom",
+      "slot": "bloom",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "broad_red": {
+      "name": "Broad Red Leaves",
+      "slot": "leafset",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "ironwood_plates": {
+      "name": "Ironwood Plates",
+      "slot": "armor",
+      "might_mod": 0,
+      "guard_mod": 4,
+      "ability_ids": [],
+      "dominance": 0.7,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "burrower": {
+      "name": "Burrower",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [
+        "ambush"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "segmented_body": {
+      "name": "Segmented Body",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "gaping_maw": {
+      "name": "Gaping Maw",
+      "slot": "bloom",
+      "might_mod": 2,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "hooked_claws": {
+      "name": "Hooked Claws",
+      "slot": "appendage",
+      "might_mod": 2,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "chitin_bands": {
+      "name": "Chitin Bands",
+      "slot": "armor",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "ash_roots": {
+      "name": "Ash Roots",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [
+        "fire_resist"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "charred_stalk": {
+      "name": "Charred Stalk",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [
+        "fire_resist"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "ember_bloom": {
+      "name": "Ember Bloom",
+      "slot": "bloom",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [
+        "ember_spit"
+      ],
+      "dominance": 0.5,
+      "tags": [
+        "fire_source"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "ash_needles": {
+      "name": "Ash Needles",
+      "slot": "leafset",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "deep_taproot": {
+      "name": "Deep Taproot",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "pale_trunk": {
+      "name": "Pale Trunk",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "glow_nodes": {
+      "name": "Glow Nodes",
+      "slot": "bloom",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.3,
+      "tags": [
+        "light"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "pale_canopy": {
+      "name": "Pale Canopy",
+      "slot": "leafset",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "grave_touched": {
+      "name": "Grave-Touched",
+      "slot": "accent",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [
+        "grave"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "mycelial_mat": {
+      "name": "Mycelial Mat",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "pale_stipe": {
+      "name": "Pale Stipe",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.3,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "dome_cap": {
+      "name": "Dome Cap",
+      "slot": "bloom",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "tendril_wisps": {
+      "name": "Tendril Wisps",
+      "slot": "leafset",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "soft_step": {
+      "name": "Soft Step",
+      "slot": "accent",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.3,
+      "tags": [
+        "stealth"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "anchor_roots": {
+      "name": "Anchor Roots",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 3,
+      "ability_ids": [],
+      "dominance": 0.7,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "gnarled_trunk": {
+      "name": "Gnarled Trunk",
+      "slot": "stem",
+      "might_mod": 1,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "enormous_maw": {
+      "name": "Enormous Maw",
+      "slot": "bloom",
+      "might_mod": 3,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.8,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "root_limbs": {
+      "name": "Root Limbs",
+      "slot": "appendage",
+      "might_mod": 1,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "cliff_roots": {
+      "name": "Cliff Roots",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "spined_body": {
+      "name": "Spined Body",
+      "slot": "stem",
+      "might_mod": 1,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "petal_wings": {
+      "name": "Petal Wings",
+      "slot": "bloom",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [
+        "flying"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "raptor_claws": {
+      "name": "Raptor Claws",
+      "slot": "appendage",
+      "might_mod": 2,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "keen": {
+      "name": "Keen",
+      "slot": "accent",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [
+        "ambush"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "ledge_roots": {
+      "name": "Ledge Roots",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "armored_trunk": {
+      "name": "Armored Trunk",
+      "slot": "stem",
+      "might_mod": 1,
+      "guard_mod": 3,
+      "ability_ids": [],
+      "dominance": 0.7,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "pine_spray": {
+      "name": "Pine Spray",
+      "slot": "leafset",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "climbing_claws": {
+      "name": "Climbing Claws",
+      "slot": "appendage",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "grave_roots": {
+      "name": "Grave Roots",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [
+        "grave"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "pale_stalk": {
+      "name": "Pale Stalk",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.3,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "mourning_bloom": {
+      "name": "Mourning Bloom",
+      "slot": "bloom",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.3,
+      "tags": [
+        "grave"
+      ],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "tattered_petals": {
+      "name": "Tattered Petals",
+      "slot": "leafset",
+      "might_mod": 0,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.2,
+      "tags": [],
+      "_note": "[WIRING] added for Act 2 roster; numbers provisional."
+    },
+    "cinder_tendrils": {
+      "name": "Cinder Tendrils",
+      "slot": "root",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [
+        "fire_resist"
+      ],
+      "_note": "[WIRING] ash_wraith rows missing from the table; provisional numbers, story-bot canon call on final values."
+    },
+    "smoke_column": {
+      "name": "Smoke Column",
+      "slot": "stem",
+      "might_mod": 0,
+      "guard_mod": 1,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [],
+      "_note": "[WIRING] ash_wraith rows missing from the table; provisional numbers, story-bot canon call on final values."
+    },
+    "ember_crown": {
+      "name": "Ember Crown",
+      "slot": "bloom",
+      "might_mod": 2,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.6,
+      "tags": [
+        "fire_source"
+      ],
+      "_note": "[WIRING] ash_wraith rows missing from the table; provisional numbers, story-bot canon call on final values."
+    },
+    "ash_flakes": {
+      "name": "Ash Flakes",
+      "slot": "leafset",
+      "might_mod": 1,
+      "guard_mod": 0,
+      "ability_ids": [],
+      "dominance": 0.4,
+      "tags": [],
+      "_note": "[WIRING] ash_wraith rows missing from the table; provisional numbers, story-bot canon call on final values."
+    },
+    "soot_plates": {
+      "name": "Soot Plates",
+      "slot": "armor",
+      "might_mod": 0,
+      "guard_mod": 2,
+      "ability_ids": [],
+      "dominance": 0.5,
+      "tags": [
+        "fire_resist"
+      ],
+      "_note": "[WIRING] ash_wraith rows missing from the table; provisional numbers, story-bot canon call on final values."
+    }
+  }
+}

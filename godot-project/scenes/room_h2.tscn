@@ -1,0 +1,105 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_h2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
+[ext_resource type="Texture2D" path="res://assets/environments/h2-murrays-bar.png" id="6"]
+[ext_resource type="Script" path="res://scripts/dice_table_interact.gd" id="7"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1408, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="TrigCircle"]
+radius = 200.0
+
+[node name="RoomH2" type="Node2D"]
+script = ExtResource("1")
+room_id = "h2"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(400, 200)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("6")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(400, 200)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(360, 220)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="Murray" parent="." instance=ExtResource("5")]
+position = Vector2(-400, 50)
+npc_name = "MURRAY"
+art_id = "murray"
+is_shopkeeper = true
+shop_id = "murrays_bar"
+# Voice lines are wiring placeholders — story bot owns Murray's voice.
+talk_flag = "h2_murray_met"
+
+[node name="KanryuAnnounce" type="Area2D" parent="." groups=["trigger"]]
+position = Vector2(200, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/trigger_id = "kanryu_announce"
+metadata/one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KanryuAnnounce"]
+shape = SubResource("TrigCircle")
+
+[node name="ExitPlaza" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(550, 250)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h1.tscn"
+metadata/target_room_id = "h1"
+metadata/spawn = Vector2(1200, -150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitPlaza"]
+shape = SubResource("ExitCircle")
+
+[node name="DiceTable" type="Area2D" parent="."]
+position = Vector2(450, -200)
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("7")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DiceTable"]
+shape = SubResource("TrigCircle")
+
+[node name="Visual" type="Polygon2D" parent="DiceTable"]
+color = Color(0.16, 0.35, 0.2, 1)
+polygon = PackedVector2Array(-70, -45, 70, -45, 85, 0, 70, 45, -70, 45, -85, 0)
+
+[node name="Prompt" type="Label" parent="DiceTable"]
+offset_left = -90.0
+offset_top = -80.0
+offset_right = 90.0
+offset_bottom = -56.0

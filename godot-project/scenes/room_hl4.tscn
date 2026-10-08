@@ -1,0 +1,149 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/hl4-stairs.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1280, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 1568)
+
+[sub_resource type="RectangleShape2D" id="WildRect_WildZoneRoomHl4"]
+size = Vector2(896, 380)
+
+
+[node name="RoomHl4" type="Node2D"]
+script = ExtResource("1")
+room_id = "hl4"
+room_rect = Rect2(-640, -720, 1280, 1440)
+player_spawn = Vector2(0, 100)
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.10, 0.11, 0.14, 1)
+polygon = PackedVector2Array(-640, 720, 640, 720, 640, -720, -640, -720)
+
+[node name="Dress1" type="Polygon2D" parent="."]
+color = Color(0.05, 0.06, 0.09, 1)
+polygon = PackedVector2Array(-390, -410, -210, -410, -240, -490, -360, -490)
+
+[node name="Dress2" type="Polygon2D" parent="."]
+color = Color(0.22, 0.20, 0.19, 1)
+polygon = PackedVector2Array(160, 40, 340, 40, 310, -40, 190, -40)
+
+[node name="Dress3" type="Polygon2D" parent="."]
+color = Color(0.25, 0.45, 0.65, 1)
+polygon = PackedVector2Array(-240, 490, -60, 490, -90, 410, -210, 410)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -752)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 752)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-672, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(672, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineHl4" parent="." instance=ExtResource("5")]
+position = Vector2(-360, 200)
+shrine_id = "hl4_1"
+
+[node name="WildZoneHl4" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(0, 60)
+collision_layer = 0
+collision_mask = 1
+monitoring = true
+table_key = "hl4"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WildZoneHl4"]
+shape = SubResource("WildRect_WildZoneRoomHl4")
+
+[node name="StairsTop" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(0, -500)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] climb"
+label_text = "Ancient Stairs"
+tint = Color(0.22, 0.20, 0.19, 1)
+lines = PackedStringArray("[WIRING] The stairs are older than the war. Each step is earned.", "[WIRING] At the top: the Temple. Whatever that means now.")
+repeat_lines = PackedStringArray()
+flag = "hl4_stairs_climbed"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="StairsTop"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="StairsTop"]
+polygon = PackedVector2Array(-20, 60, 20, 60, 12, -60, -12, -60)
+
+[node name="Prompt" type="Label" parent="StairsTop"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] climb"
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitNorth" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, -650)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_t1.tscn"
+metadata/target_room_id = "t1"
+metadata/spawn = Vector2(-350, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitNorth"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitSouth" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, 650)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_hl3.tscn"
+metadata/target_room_id = "hl3"
+metadata/spawn = Vector2(350, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitSouth"]
+shape = SubResource("ExitCircle")

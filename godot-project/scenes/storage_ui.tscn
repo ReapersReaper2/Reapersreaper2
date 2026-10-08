@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1soulvault0ui"]
+
+[ext_resource type="Script" path="res://scripts/storage_ui.gd" id="1"]
+
+[node name="StorageUI" type="CanvasLayer"]
+script = ExtResource("1")

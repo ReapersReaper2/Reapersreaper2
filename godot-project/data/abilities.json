@@ -1,0 +1,252 @@
+{
+  "_note": "Abilities come from parts (roster doc 03). Fire abilities are rare and usually effective vs plants (1.5x, negated by fire_resist tags). Powers are tuning placeholders.",
+  "abilities": {
+    "snap_bite": {
+      "name": "Snap Bite",
+      "power": 1.2,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "claw_rake": {
+      "name": "Claw Rake",
+      "power": 1.0,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "thorn_lash": {
+      "name": "Thorn Lash",
+      "power": 1.1,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "quill_volley": {
+      "name": "Quill Volley",
+      "power": 0.9,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "needle_spray": {
+      "name": "Needle Spray",
+      "power": 0.8,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "spore_cloud": {
+      "name": "Spore Cloud",
+      "power": 0.5,
+      "element": "physical",
+      "status": "wilt",
+      "status_turns": 3
+    },
+    "maw_gulp": {
+      "name": "Maw Gulp",
+      "power": 2.0,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "ember_spit": {
+      "name": "Ember Spit",
+      "power": 1.0,
+      "element": "fire",
+      "status": "",
+      "status_turns": 0
+    },
+    "gorge": {
+      "name": "Gorge",
+      "power": 0.0,
+      "element": "heal",
+      "heal_fraction": 0.25,
+      "special": "gorge_heal",
+      "status": "",
+      "status_turns": 0
+    },
+    "fossil_crush": {
+      "name": "Fossil Crush",
+      "power": 2.5,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "territory_roar": {
+      "name": "Territory Roar",
+      "power": 0.0,
+      "element": "physical",
+      "special": "intimidate",
+      "status": "",
+      "status_turns": 0
+    },
+    "thermal_ride": {
+      "name": "Thermal Ride",
+      "power": 0.0,
+      "element": "physical",
+      "special": "thermal_ride",
+      "status": "",
+      "status_turns": 0
+    },
+    "dive": {
+      "name": "Dive",
+      "power": 2.0,
+      "element": "physical",
+      "special": "dive",
+      "status": "",
+      "status_turns": 0
+    },
+    "rake": {
+      "name": "Rake",
+      "power": 1.1,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "relocate": {
+      "name": "Relocate",
+      "power": 0.0,
+      "element": "physical",
+      "special": "relocate",
+      "status": "",
+      "status_turns": 0
+    },
+    "thorn_volley": {
+      "name": "Thorn Volley",
+      "power": 1.0,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "crown_slam": {
+      "name": "Crown Slam",
+      "power": 1.6,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "latch": {
+      "name": "Latch",
+      "power": 0.6,
+      "element": "physical",
+      "status": "rootbound",
+      "status_turns": 2
+    },
+    "drain": {
+      "name": "Drain",
+      "power": 0.8,
+      "element": "physical",
+      "special": "drain",
+      "status": "",
+      "status_turns": 0
+    },
+    "scream": {
+      "name": "Scream",
+      "power": 0.5,
+      "element": "physical",
+      "special": "scream",
+      "status": "",
+      "status_turns": 0
+    },
+    "uphill_flight": {
+      "name": "Uphill Flight",
+      "power": 0.0,
+      "element": "physical",
+      "special": "evade",
+      "status": "",
+      "status_turns": 0
+    },
+    "broadside": {
+      "name": "Broadside",
+      "power": 1.2,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "shed_leaves": {
+      "name": "Shed Leaves",
+      "power": 0.0,
+      "element": "physical",
+      "special": "shed_leaves",
+      "status": "",
+      "status_turns": 0
+    },
+    "snap_shut": {
+      "name": "Snap Shut",
+      "power": 0.8,
+      "element": "physical",
+      "special": "snap_shut",
+      "status": "",
+      "status_turns": 0
+    },
+    "heat_bloom": {
+      "name": "Heat Bloom",
+      "power": 1.0,
+      "element": "fire",
+      "status": "",
+      "status_turns": 0
+    },
+    "ember_seeds": {
+      "name": "Ember Seeds",
+      "power": 0.7,
+      "element": "fire",
+      "status": "",
+      "status_turns": 0
+    },
+    "echo": {
+      "name": "Echo",
+      "power": 0.0,
+      "element": "physical",
+      "special": "echo",
+      "status": "",
+      "status_turns": 0
+    },
+    "resonate": {
+      "name": "Resonate",
+      "power": 0.9,
+      "element": "physical",
+      "special": "resonate",
+      "status": "",
+      "status_turns": 0
+    },
+    "stillness": {
+      "name": "Stillness",
+      "power": 0.0,
+      "element": "physical",
+      "special": "stillness",
+      "status": "",
+      "status_turns": 0
+    },
+    "retract": {
+      "name": "Retract",
+      "power": 0.0,
+      "element": "physical",
+      "special": "retract",
+      "status": "",
+      "status_turns": 0
+    },
+    "tendril_lash": {
+      "name": "Tendril Lash",
+      "power": 1.1,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    },
+    "mourn": {
+      "name": "Mourn",
+      "power": 0.0,
+      "element": "physical",
+      "special": "mourn",
+      "status": "",
+      "status_turns": 0
+    },
+    "war_petal": {
+      "name": "War Petal",
+      "power": 0.5,
+      "element": "physical",
+      "status": "",
+      "status_turns": 0
+    }
+  }
+}

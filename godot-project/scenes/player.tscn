@@ -1,0 +1,77 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/player.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/scythe.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/camera_shake.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/guide_touch.gd" id="4"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
+radius = 20.0
+height = 128.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_scythe"]
+radius = 95.0
+
+[node name="Player" type="CharacterBody2D" groups=["player"]]
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_1")
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="Cloak" type="Polygon2D" parent="Visuals"]
+color = Color(0.137, 0.137, 0.18, 1)
+polygon = PackedVector2Array(-30, -44, 30, -44, 42, 64, -42, 64)
+
+[node name="Hood" type="Polygon2D" parent="Visuals"]
+color = Color(0.102, 0.102, 0.133, 1)
+polygon = PackedVector2Array(-26, -50, -20, -72, 0, -78, 20, -72, 26, -50, 18, -38, -18, -38)
+
+[node name="EyeL" type="ColorRect" parent="Visuals"]
+offset_left = -13.0
+offset_top = -60.0
+offset_right = -7.0
+offset_bottom = -54.0
+color = Color(0.302, 0.89, 1, 1)
+
+[node name="EyeR" type="ColorRect" parent="Visuals"]
+offset_left = 7.0
+offset_top = -60.0
+offset_right = 13.0
+offset_bottom = -54.0
+color = Color(0.302, 0.89, 1, 1)
+
+[node name="Scythe" type="Line2D" parent="Visuals"]
+points = PackedVector2Array(34, -72, 34, 44)
+width = 5.0
+default_color = Color(0.42, 0.2, 0.62, 1)
+
+[node name="ScytheRig" type="Node2D" parent="."]
+script = ExtResource("2")
+
+[node name="Hitbox" type="Area2D" parent="ScytheRig"]
+position = Vector2(75, 0)
+collision_layer = 0
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ScytheRig/Hitbox"]
+shape = SubResource("CircleShape2D_scythe")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+script = ExtResource("3")
+
+[node name="GuideRig" type="Node2D" parent="."]
+script = ExtResource("4")
+
+[node name="BeamGlow" type="Line2D" parent="GuideRig"]
+visible = false
+width = 16.0
+default_color = Color(0.78, 0.72, 1, 0.18)
+
+[node name="Beam" type="Line2D" parent="GuideRig"]
+visible = false
+width = 7.0
+default_color = Color(0.78, 0.72, 1, 0.55)

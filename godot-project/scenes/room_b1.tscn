@@ -1,0 +1,250 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/b1-cloudbloom-plateau.png" id="9"]
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(2560, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+
+[node name="RoomB1" type="Node2D"]
+script = ExtResource("1")
+room_id = "b1"
+room_rect = Rect2(-1280, -360, 2560, 720)
+player_spawn = Vector2(0, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("9")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.45, 0.45, 0.42, 1)
+polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
+
+[node name="Shelf1" type="Polygon2D" parent="."]
+color = Color(0.55, 0.55, 0.50, 1)
+polygon = PackedVector2Array(-800, -220, -400, -220, -400, -280, -800, -280)
+
+[node name="Shelf2" type="Polygon2D" parent="."]
+color = Color(0.52, 0.52, 0.48, 1)
+polygon = PackedVector2Array(225, -250, 575, -250, 575, -310, 225, -310)
+
+[node name="Meadow" type="Polygon2D" parent="."]
+color = Color(0.50, 0.55, 0.45, 1)
+polygon = PackedVector2Array(-900, 260, 900, 260, 900, 140, -900, 140)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392.0)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392.0)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1312.0, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-40, 120)
+
+[node name="ShrineB1" parent="." instance=ExtResource("5")]
+position = Vector2(-1000, 200)
+shrine_id = "b1_1"
+
+[node name="SilverBloom1" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-800, 100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] pick bloom"
+label_text = "Silver Bell Bloom"
+tint = Color(0.85, 0.85, 0.95, 1)
+lines = PackedStringArray("[WIRING] A Silver Bell Bloom. It chimes when the wind moves.", "[WIRING] Taken. The Bellmaw will notice. (Bloom count: inventory.)")
+repeat_lines = PackedStringArray()
+flag = "b1_bloom_1"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = "silver_bell_bloom"
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="SilverBloom1"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="SilverBloom1"]
+polygon = PackedVector2Array(-12, 30, 12, 30, 8, -30, -8, -30)
+
+[node name="Prompt" type="Label" parent="SilverBloom1"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] pick bloom"
+
+[node name="SilverBloom2" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(-200, -100)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] pick bloom"
+label_text = "Silver Bell Bloom"
+tint = Color(0.85, 0.85, 0.95, 1)
+lines = PackedStringArray("[WIRING] A Silver Bell Bloom. It chimes when the wind moves.", "[WIRING] Taken. The Bellmaw will notice. (Bloom count: inventory.)")
+repeat_lines = PackedStringArray()
+flag = "b1_bloom_2"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = "silver_bell_bloom"
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="SilverBloom2"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="SilverBloom2"]
+polygon = PackedVector2Array(-12, 30, 12, 30, 8, -30, -8, -30)
+
+[node name="Prompt" type="Label" parent="SilverBloom2"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] pick bloom"
+
+[node name="SilverBloom3" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(300, 150)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] pick bloom"
+label_text = "Silver Bell Bloom"
+tint = Color(0.85, 0.85, 0.95, 1)
+lines = PackedStringArray("[WIRING] A Silver Bell Bloom. It chimes when the wind moves.", "[WIRING] Taken. The Bellmaw will notice. (Bloom count: inventory.)")
+repeat_lines = PackedStringArray()
+flag = "b1_bloom_3"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = "silver_bell_bloom"
+give_credits = 0
+one_shot = true
+trigger_mode = false
+
+[node name="Range" type="CollisionShape2D" parent="SilverBloom3"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="SilverBloom3"]
+polygon = PackedVector2Array(-12, 30, 12, 30, 8, -30, -8, -30)
+
+[node name="Prompt" type="Label" parent="SilverBloom3"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] pick bloom"
+
+[node name="Bellmaw" type="Area2D" parent="."]
+script = ExtResource("7")
+position = Vector2(700, 0)
+collision_layer = 0
+collision_mask = 1
+prompt_text = ""
+label_text = "The Bellmaw"
+tint = Color(0.70, 0.75, 0.85, 1)
+lines = PackedStringArray("[WIRING] The Bellmaw. No HP bar. No fight. It watches the blooms in your hands.", "[WIRING] Observation, not combat. Survival through understanding.")
+repeat_lines = PackedStringArray("[WIRING] The Bellmaw settles. The arrangement holds.")
+flag = "b1_bellmaw_met"
+extra_flags = PackedStringArray()
+lock_flag = ""
+locked_hint = ""
+give_item = ""
+give_credits = 0
+one_shot = true
+trigger_mode = true
+
+[node name="Range" type="CollisionShape2D" parent="Bellmaw"]
+shape = SubResource("RangeCircle")
+
+[node name="Visual" type="Polygon2D" parent="Bellmaw"]
+polygon = PackedVector2Array(-100, 80, 100, 80, 60, -80, -60, -80)
+
+[node name="Prompt" type="Label" parent="Bellmaw"]
+visible = false
+offset_left = -48.0
+offset_top = -70.0
+offset_right = 48.0
+offset_bottom = -46.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = ""
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitEast" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_d1.tscn"
+metadata/target_room_id = "d1"
+metadata/spawn = Vector2(-860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitEast"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-1210, 100)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_v1.tscn"
+metadata/target_room_id = "v1"
+metadata/spawn = Vector2(210, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")

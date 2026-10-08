@@ -1,0 +1,206 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_h1.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="6"]
+[ext_resource type="Script" path="res://scripts/bounty_board.gd" id="7"]
+[ext_resource type="Texture2D" path="res://assets/environments/h1-plaza.png" id="8"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(3968, 64)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(64, 848)
+
+[sub_resource type="CircleShape2D" id="ExitCircle"]
+radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RangeCircle"]
+radius = 96.0
+
+[sub_resource type="CircleShape2D" id="TrigCircle"]
+radius = 160.0
+
+[node name="RoomH1" type="Node2D"]
+script = ExtResource("1")
+room_id = "h1"
+room_rect = Rect2(-1920, -360, 3840, 720)
+player_spawn = Vector2(-1700, 100)
+
+[node name="Background" type="Sprite2D" parent="."]
+texture = ExtResource("8")
+
+[node name="Ground" type="Polygon2D" parent="."]
+color = Color(0.16, 0.14, 0.18, 1)
+polygon = PackedVector2Array(-1920, 360, 1920, 360, 1920, -360, -1920, -360)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -392)
+shape = SubResource("WallH")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, 392)
+shape = SubResource("WallH")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-1952, 0)
+shape = SubResource("WallV")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(1952, 0)
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(-1700, 100)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-1740, 120)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ShrineH1" parent="." instance=ExtResource("5")]
+position = Vector2(-1400, 100)
+shrine_id = "h1_1"
+
+[node name="BountyBoard" type="Area2D" parent="."]
+position = Vector2(-1100, -250)
+collision_layer = 0
+collision_mask = 1
+script = ExtResource("7")
+
+[node name="Range" type="CollisionShape2D" parent="BountyBoard"]
+shape = SubResource("RangeCircle")
+
+[node name="Board" type="Polygon2D" parent="BountyBoard"]
+color = Color(0.35, 0.28, 0.18, 1)
+polygon = PackedVector2Array(-50, 0, 50, 0, 50, -110, -50, -110)
+
+[node name="Prompt" type="Label" parent="BountyBoard"]
+visible = false
+offset_left = -60.0
+offset_top = -160.0
+offset_right = 60.0
+offset_bottom = -136.0
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+text = "[E] read"
+
+[node name="Townsfolk1" parent="." instance=ExtResource("6")]
+position = Vector2(-600, 150)
+npc_name = "TOWNSFOLK"
+tint = Color(0.6, 0.55, 0.5, 1)
+lines = PackedStringArray("Heard about the Kanryu bounty? Fifty thousand. I'd sell my own shadow for half.", "Wrath took six contracts last week. Six. The man's a machine.")
+repeat_lines = PackedStringArray("You after the Kanryu mark too? ...Didn't think so.")
+talk_flag = "h1_townsfolk1_met"
+
+[node name="Townsfolk2" parent="." instance=ExtResource("6")]
+position = Vector2(100, -100)
+npc_name = "TOWNSFOLK"
+tint = Color(0.5, 0.6, 0.55, 1)
+lines = PackedStringArray("Murray's bar, east side. Best ale in the Reprieve. Don't ask about the shelf blend.", "The alleys north of here? Creatures, mostly harmless. Mostly.")
+repeat_lines = PackedStringArray("Back alleys are north. Mind the siltmaw dirt.")
+talk_flag = "h1_townsfolk2_met"
+
+[node name="Townsfolk3" parent="." instance=ExtResource("6")]
+position = Vector2(900, 200)
+npc_name = "TOWNSFOLK"
+tint = Color(0.55, 0.5, 0.6, 1)
+lines = PackedStringArray("Dockside shops are south. Fenna's the fletcher — best customer she ever had just... stopped coming.", "They say the bar's messenger fairy only comes for big bounties.")
+repeat_lines = PackedStringArray("Shops are south, bar's east. You'll find your way.")
+talk_flag = "h1_townsfolk3_met"
+
+[node name="Wrath" parent="." instance=ExtResource("6")]
+position = Vector2(400, 100)
+npc_name = "WRATH"
+art_id = "wrath"
+lines = PackedStringArray("So. The new reaper finally shows his face.", "I've read your bounty sheet. Try not to die before I get to you.")
+repeat_lines = PackedStringArray("We finish this when you're ready. Not before.")
+talk_flag = "h1_wrath_met"
+
+[node name="WrathConfront" type="Area2D" parent="." groups=["trigger"]]
+position = Vector2(300, 50)
+collision_layer = 0
+collision_mask = 1
+metadata/trigger_id = "wrath_confront"
+metadata/one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WrathConfront"]
+shape = SubResource("TrigCircle")
+
+[node name="ZoneVisual" type="Polygon2D" parent="WrathConfront"]
+color = Color(0.85, 0.25, 0.2, 0.12)
+polygon = PackedVector2Array(160, 0, 138.6, 80, 80, 138.6, 0, 160, -80, 138.6, -138.6, 80, -160, 0, -138.6, -80, -80, -138.6, 0, -160, 80, -138.6, 138.6, -80)
+
+[node name="ExitWest" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-1850, 0)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_c1.tscn"
+metadata/target_room_id = "c1"
+metadata/spawn = Vector2(2300, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitBar" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1200, -250)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h2.tscn"
+metadata/target_room_id = "h2"
+metadata/spawn = Vector2(400, 200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitBar"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitShops" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(200, 300)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h3.tscn"
+metadata/target_room_id = "h3"
+metadata/spawn = Vector2(0, -200)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitShops"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitAlley" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-400, -300)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_h4.tscn"
+metadata/target_room_id = "h4"
+metadata/spawn = Vector2(0, 250)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitAlley"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitMoonGate" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1700, 200)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_nm.tscn"
+metadata/target_room_id = "nm"
+metadata/spawn = Vector2(300, 250)
+metadata/lock_flag = "h2_announcement_done"
+metadata/locked_hint = "The moon-gate sleeps. It will wake after the announcement."
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitMoonGate"]
+shape = SubResource("ExitCircle")
+
+[node name="ExitM3" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(1700, -200)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_f1.tscn"
+metadata/target_room_id = "f1"
+metadata/spawn = Vector2(-860, 100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitM3"]
+shape = SubResource("ExitCircle")
