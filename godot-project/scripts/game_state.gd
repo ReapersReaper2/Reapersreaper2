@@ -17,6 +17,8 @@ const PartyScript := preload("res://scripts/party.gd")
 const DepowerScript := preload("res://scripts/depower.gd")
 const ScytheBreak := preload("res://scripts/scythe_break.gd")
 const SpeedrunScript := preload("res://scripts/speedrun.gd")
+## Step driver (state["run"] step clock; spec STEP-DRIVER-SPEC REV 2 §2-§4).
+const StepDriver := preload("res://scripts/step_driver.gd")
 
 var state: Dictionary = {}
 var save_system = null
@@ -40,6 +42,9 @@ func _ready() -> void:
 
 func new_game() -> void:
 	state = SaveSystemScript.default_save()
+	# Step clock: every new game gets a real run_id/started_at (the
+	# default_save() placeholder zeros are never what a live run carries).
+	StepDriver.reset_run(self)
 	# The scythe starts unlocked; Ch12-14 unlocks the rest via story events.
 	for wid in WeaponDataScript.starting_weapons():
 		WeaponDataScript.unlock(self, wid)
@@ -73,6 +78,10 @@ func load_from_slot(slot: int) -> bool:
 	if data.is_empty():
 		return false
 	state = data
+	# Step clock (C3): upgrade the migrated "" run_id sentinel to a real
+	# identity and field-wise repair the run section before anything
+	# reads it — not only on first step.
+	StepDriver.ensure_run(self)
 	state_loaded.emit()
 	return true
 

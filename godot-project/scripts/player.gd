@@ -6,6 +6,9 @@ const Depower := preload("res://scripts/depower.gd")
 const DepowerIndicator := preload("res://scripts/depower_indicator.gd")
 const Flight := preload("res://scripts/flight.gd")
 const CombatTime := preload("res://scripts/combat_time.gd")
+## Step driver (state["run"] step clock; spec STEP-DRIVER-SPEC REV 2 §4).
+## Preloaded (not autoload) so the odometer works under headless -s too.
+const StepDriver := preload("res://scripts/step_driver.gd")
 ## M0 player controller: top-down 8-direction movement with
 ## acceleration/deceleration smoothing. Placeholder visuals only.
 
@@ -33,6 +36,12 @@ var guide_active: bool = false
 ## damage is ignored while true (can't be hit mid-ride).
 var tendril_riding: bool = false
 
+## Step odometer (spec §4): accumulated ACTUAL displacement in pixels not
+## yet converted to steps. Fed by global_position.distance_to() per frame
+## (C1) — never velocity * delta. Reset on scene entry (_ready); the
+## leftover fraction < 1 step dies with the scene (negligible).
+var _step_odo: float = 0.0
+
 ## Form 9 flight mode (unlocked at U3 wings). While flying: faster
 ## movement, fly-over barriers (collision layer 4) are ignored, and the
 ## Visuals node lifts for an altitude cue. Toggle with [F] (fly_toggle).
@@ -49,6 +58,8 @@ var sprites = null
 
 
 func _physics_process(delta: float) -> void:
+	var gs = _game_state()
+	var before := global_position  # C1: per-frame baseline, captured every frame
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	# Ch13-14 depower: walk speed slightly reduced while fully depowered.
 	# Flight (Form 9) is faster and ignores fly-over barriers.
@@ -66,6 +77,22 @@ func _physics_process(delta: float) -> void:
 	_update_flight_visual()
 	if sprites != null:
 		sprites.tick(delta, facing, velocity.length() > 20.0)
+	# --- StepDriver odometer (spec §4) ---
+	# C2: no-count guards — tendril_riding, move_locked, input_locked.
+	# Flight is NOT a guard (spec §8 Q2, v1 behavior: flight counts).
+	# C1: actual displacement (distance_to), never velocity * delta, so
+	# pressing into a wall accrues ~0. The baseline is re-captured every
+	# frame — guarded/locked frames refresh it without accumulating, so
+	# teleports, room transitions, and ride exits never appear as one
+	# giant displacement. When _game_state() returns null
+	# (headless/out-of-tree), nothing is recorded.
+	if gs != null:
+		if not (tendril_riding or move_locked or input_locked):
+			_step_odo += global_position.distance_to(before)
+		if _step_odo >= StepDriver.PX_PER_STEP:
+			var n := int(_step_odo / StepDriver.PX_PER_STEP)
+			_step_odo -= n * StepDriver.PX_PER_STEP
+			StepDriver.advance(gs, n)
 
 
 ## Altitude cue: lift the Visuals node while flying.
@@ -174,6 +201,7 @@ func _ready() -> void:
 	_wire_depower_indicator()
 	# Walking mask includes the fly-over barrier layer (see flight.gd).
 	collision_mask = Flight.WALK_MASK
+	_step_odo = 0.0  # C1: odometer baseline reset on scene entry
 
 
 ## Depower status indicator (CanvasLayer label, hidden when not depowered).

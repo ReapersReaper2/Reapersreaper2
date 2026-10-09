@@ -15,7 +15,7 @@ extends Node
 ##
 ## Registered as an autoload (project.godot) ahead of GameState.
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const SAVE_DIR := "user://saves"
 const AUTOSAVE_SLOT := 0
 const MANUAL_SLOTS: Array[int] = [1, 2, 3]
@@ -60,6 +60,9 @@ static func default_save() -> Dictionary:
 		"inventory": {},
 		"party": [],
 		"stats": StatsScript.default_stats(),
+		# Step clock (spec §2/§3): placeholder sentinels — GameState.new_game()
+		# upgrades these to a real run_id/started_at via StepDriver.reset_run().
+		"run": {"run_id": "", "started_at": 0, "steps_total": 0},
 	}
 
 
@@ -159,6 +162,8 @@ func migrate(data: Dictionary) -> Dictionary:
 		match version:
 			1:
 				data = migrate_v1_to_v2(data)
+			2:
+				data = migrate_v2_to_v3(data)
 			_:
 				push_error("SaveSystem: no migration path from save v%d" % version)
 				break
@@ -176,4 +181,32 @@ func migrate_v1_to_v2(data: Dictionary) -> Dictionary:
 	if not data.has("party"):
 		data["party"] = [PartyScript.make_starter_entry()]
 	data["save_version"] = 2
+	return data
+
+
+## v2 -> v3: grant the run section (StepDriver basis, spec §3/C4).
+## v2 saves predate the step driver, so a save with no "run" key gets the
+## placeholder (empty run_id sentinel, upgraded to a real identity by
+## StepDriver.ensure_run on load — steps start at 0 for pre-driver saves;
+## no retroactive step invention). Never overwrites a valid existing run.
+## A malformed run section gets field-wise repair in place (per-field
+## definitions from spec §2/C3) — a valid steps_total is never reset.
+##
+## NOTE: SaveSystem deliberately does NOT preload StepDriver here.
+## Identity generation lives at the GameState/StepDriver layer (avoids a
+## preload-cycle risk; keeps the "SaveSystem sole file writer, gameplay
+## through GameState" boundary). Non-static like migrate_v1_to_v2.
+func migrate_v2_to_v3(data: Dictionary) -> Dictionary:
+	var run = data.get("run", null)
+	if not (run is Dictionary):
+		data["run"] = {"run_id": "", "started_at": 0, "steps_total": 0}
+	else:
+		var r: Dictionary = run
+		if not (r.get("run_id", "") is String) or (r.get("run_id", "") as String).is_empty():
+			r["run_id"] = ""
+		if not (r.get("started_at", -1) is int) or int(r.get("started_at", -1)) < 0:
+			r["started_at"] = 0
+		if not (r.get("steps_total", -1) is int) or int(r.get("steps_total", -1)) < 0:
+			r["steps_total"] = 0
+	data["save_version"] = 3
 	return data

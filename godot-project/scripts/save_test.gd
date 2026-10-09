@@ -31,7 +31,7 @@ func _init() -> void:
 
 	# 1. Default structure.
 	var d: Dictionary = save_system_script.default_save()
-	_check("default has save_version 2", int(d.get("save_version", 0)) == 2)
+	_check("default has save_version 3", int(d.get("save_version", 0)) == 3)
 	_check("default player form 1", int((d["player"] as Dictionary).get("form", 0)) == 1)
 	_check("default position room", str(((d["player"] as Dictionary)["position"] as Dictionary).get("room", "")) == "P1_BELLHOLLOW_BRIDGE")
 	_check("default has flags/ledger/inventory/party", d.has("flags") and d.has("ledger") and d.has("inventory") and d.has("party"))
@@ -62,7 +62,7 @@ func _init() -> void:
 	# 4. Save info header.
 	var info: Dictionary = ss.get_save_info(91)
 	_check("info exists", bool(info.get("exists", false)))
-	_check("info version 2", int(info.get("version", 0)) == 2)
+	_check("info version 3", int(info.get("version", 0)) == 3)
 	_check("info chapter prologue", str(info.get("chapter", "")) == "prologue")
 	_check("info timestamp stamped", int(info.get("timestamp", 0)) > 0)
 	var info_missing: Dictionary = ss.get_save_info(99)
@@ -102,7 +102,35 @@ func _init() -> void:
 
 	# 9. migrate() is a no-op on current version.
 	var cur: Dictionary = ss.migrate(save_system_script.default_save())
-	_check("migrate no-op on v2", int(cur.get("save_version", 0)) == 2)
+	_check("migrate no-op on v3", int(cur.get("save_version", 0)) == 3)
+
+	# 9b. Migration v2 -> v3: grants the run section (step-driver wiring).
+	# A v2 save (no "run" key) gets the placeholder sentinels.
+	var v2save: Dictionary = save_system_script.default_save()
+	v2save.erase("run")
+	v2save["save_version"] = 2
+	var v3: Dictionary = ss.migrate_v2_to_v3(v2save)
+	_check("migration stamps version 3", int(v3.get("save_version", 0)) == 3)
+	_check("migration grants run section", (v3.get("run", {}) as Dictionary).has("steps_total"))
+	var granted: Dictionary = v3["run"]
+	_check("migration grants empty run_id sentinel", str(granted.get("run_id", "x")) == "")
+	_check("migration grants zeroed steps", int(granted.get("steps_total", -1)) == 0)
+	# A valid existing run is never overwritten.
+	var v2keep: Dictionary = save_system_script.default_save()
+	v2keep["save_version"] = 2
+	v2keep["run"] = {"run_id": "run_1791234567_a3f9c2e1", "started_at": 1791234567, "steps_total": 900}
+	var v3keep: Dictionary = ss.migrate_v2_to_v3(v2keep)
+	var kept: Dictionary = v3keep["run"]
+	_check("migration keeps valid run_id", str(kept.get("run_id", "")) == "run_1791234567_a3f9c2e1")
+	_check("migration keeps valid steps_total", int(kept.get("steps_total", 0)) == 900)
+	# A malformed run gets field-wise repair, never a steps reset.
+	var v2fix: Dictionary = save_system_script.default_save()
+	v2fix["save_version"] = 2
+	v2fix["run"] = {"run_id": 123, "started_at": "oops", "steps_total": 42}
+	var v3fix: Dictionary = ss.migrate_v2_to_v3(v2fix)
+	var fixed: Dictionary = v3fix["run"]
+	_check("migration repairs run_id", str(fixed.get("run_id", "x")) == "")
+	_check("migration preserves valid steps on repair", int(fixed.get("steps_total", 0)) == 42)
 
 	# 10. Delete + cleanup.
 	_check("delete_save(91)", ss.delete_save(91))
