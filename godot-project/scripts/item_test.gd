@@ -124,8 +124,16 @@ func _run() -> void:
 	b.queue_free()
 
 	# --- 4. heal: correct amount, no overheal, consumed, costs the turn ---
+	# Fixture note (Wrath 2026-10-10): the shared wild cfg uses a DOCILE
+	# bellowscap, which stands still when unprovoked (CreatureAI docile
+	# Stillness — canon Act 2 behavior), so it never damages the player and
+	# the 40-heal from 10 clamps to max_hp, leaving hp == maxhp. That is
+	# correct implementation behavior; this section needs an enemy that
+	# actually attacks to observe the turn cost, so it overrides the fixture.
 	_nav.clear()
-	b = _make_battle(gs, _wild_cfg())
+	var cfg4: Dictionary = _wild_cfg()
+	cfg4["enemy_creature_id"] = "siltmaw"  # AGGRESSIVE: answers after the item
+	b = _make_battle(gs, cfg4)
 	await _frames(3)
 	b._player.hp = 10
 	var maxhp: int = b._player.max_hp
