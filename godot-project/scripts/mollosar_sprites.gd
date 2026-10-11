@@ -5,13 +5,16 @@ class_name MollosarSprites
 ## Given a form number + facing direction, shows the right walk-strip
 ## frame. spec384 sheets live in res://sprites/mollosar/ as
 ## form{N}_walk_{down,up,left,right}_spec384.png — each a row of
-## 384x384 cells (3 or 4 frames depending on the strip).
+## 384x384 cells (3 or 4 frames depending on the strip). Optional
+## form{N}_idle_{dir}_spec384.png sheets animate while standing still.
 ##
 ## 8-direction movement maps to the 4 strips by dominant axis:
 ## up-left / up-right -> up, down-left / down-right -> down.
 ##
 ## Greybox fallback: if a form has no strips, the sprite hides itself
-## and the old greybox polygons stay visible.
+## and the old greybox polygons stay visible. Load failures are LOUD
+## (push_error with the exact path + LFS hint) so a silent polygon can
+## never ship unnoticed again.
 
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
@@ -23,9 +26,24 @@ const SPRITE_SCALE := 0.5
 
 const DIRS := ["down", "up", "left", "right"]
 
+## Idle animation speed (idle sheets are 2-frame loops).
+const IDLE_FPS := 3.0
+## Vertical grounding: form sheets draw the figure ~350px tall inside the
+## 384 cell, feet ~86px below the cell center at 0.5 scale. Offset the
+## sprite so the feet land on the CollisionShape2D capsule bottom (+64)
+## instead of floating 22px below it.
+const SPRITE_Y_OFFSET := -22.0
+
 var _form: int = 0
 var _strips: Dictionary = {}
 var _frames: Dictionary = {}
+## Optional idle strips: form{N}_idle_{down,up,left,right}_spec384.png.
+## Shown (animated) when the player is standing still; directions without
+## an idle sheet keep the old behavior (walk strip, frame 0).
+var _idle: Dictionary = {}
+var _idle_frames: Dictionary = {}
+var _idle_on: bool = false
+var _idle_t: float = 0.0
 var _strip_dir: String = "down"
 var _mirrored: bool = false
 var _frame: int = 0
@@ -48,6 +66,7 @@ func _ready() -> void:
 	_ready_done = true
 	_sprite = Sprite2D.new()
 	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
+	_sprite.position.y = SPRITE_Y_OFFSET
 	_sprite.centered = true
 	add_child(_sprite)
 	# Everything else under the parent (the greybox polygons) is the
@@ -89,23 +108,52 @@ static func _load_tex(path: String) -> Texture2D:
 	return ImageTexture.create_from_image(img)
 
 
+## True when the file is a Git LFS pointer stub (131-byte text) rather
+## than the real PNG. This is the silent-polygon trap: Image.load_from_file
+## on a pointer fails, _load_form finds no strips, and the greybox stays
+## visible with no error anywhere. Callers use this to say so loudly.
+static func _is_lfs_pointer(path: String) -> bool:
+	if not FileAccess.file_exists(path):
+		return false
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return false
+	var line := f.get_line()
+	f.close()
+	return line.begins_with("version https://git-lfs.github.com")
+
+
 func _load_form(form: int) -> void:
 	_form = form
 	_strips.clear()
 	_frames.clear()
+	_idle.clear()
+	_idle_frames.clear()
 	_swing_tex = null
 	_swing_frames = 0
 	for d in DIRS:
-		var tex := _load_tex("%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d])
+		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
+		var tex := _load_tex(wpath)
 		if tex == null and d == "right":
 			# Form 7 shipped without a right strip (Gage's ChatGPT
 			# retry pending): mirror the left strip until it lands.
 			tex = _load_tex("%sform%d_walk_left_spec384.png" % [SPRITE_DIR, form])
 			if tex != null:
 				_strips["right_mirrored"] = true
-		if tex != null:
+		if tex == null:
+			if FileAccess.file_exists(wpath) and _is_lfs_pointer(wpath):
+				push_error("[MollosarSprites] walk strip is an LFS pointer stub, not a PNG: " + wpath + " — run 'git lfs pull' on this machine (or enable LFS smudge on the build machine); the greybox polygon stays visible until the real sheet lands.")
+			elif d != "right":
+				push_error("[MollosarSprites] walk strip missing or undecodable: " + wpath)
+		else:
 			_strips[d] = tex
 			_frames[d] = maxi(1, int(tex.get_width() / CELL))
+		# Optional idle sheet for this direction (Form 1 ships idle_down).
+		var ipath := "%sform%d_idle_%s_spec384.png" % [SPRITE_DIR, form, d]
+		var itex := _load_tex(ipath)
+		if itex != null:
+			_idle[d] = itex
+			_idle_frames[d] = maxi(1, int(itex.get_width() / CELL))
 	# Form 3's reap-swing strip exists: use it during scythe swings.
 	_swing_tex = _load_tex("%sform%d_reap_swing_spec384.png" % [SPRITE_DIR, form])
 	if _swing_tex != null:
@@ -113,6 +161,8 @@ func _load_form(form: int) -> void:
 	else:
 		_swing_frames = 0
 		_swinging = false
+	if _strips.is_empty():
+		push_error("[MollosarSprites] NO walk strips loaded for form %d — greybox fallback engaged, the player renders as a polygon. Check the sheet paths and LFS state above." % form)
 	_apply_greybox_visibility()
 	_set_strip(_strip_dir)
 
@@ -148,6 +198,7 @@ func _set_strip(d: String) -> void:
 	_mirrored = bool(_strips.get(d + "_mirrored", false))
 	_frame = 0
 	_walk_t = 0.0
+	_idle_t = 0.0
 	_draw_frame()
 
 
@@ -162,11 +213,16 @@ func _draw_frame() -> void:
 		_sprite.region_rect = Rect2((_frame % n) * CELL, 0, CELL, CELL)
 		return
 	var tex: Texture2D = _strips.get(_strip_dir, null)
+	var count: int = int(_frames.get(_strip_dir, 1))
+	if _idle_on:
+		var itex: Texture2D = _idle.get(_strip_dir, null)
+		if itex != null:
+			tex = itex
+			count = int(_idle_frames.get(_strip_dir, 1))
 	if tex == null:
 		return
 	_sprite.texture = tex
 	_sprite.flip_h = _mirrored
-	var count: int = int(_frames.get(_strip_dir, 1))
 	_sprite.region_enabled = true
 	_sprite.region_rect = Rect2((_frame % count) * CELL, 0, CELL, CELL)
 
@@ -187,11 +243,26 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 			_frame = sf
 			_draw_frame()
 		return
+	# Standing still with an idle sheet for this direction: play the
+	# idle loop instead of freezing on walk frame 0.
+	var want_idle := (not moving) and _idle.has(_strip_dir)
+	if want_idle != _idle_on:
+		_idle_on = want_idle
+		_frame = 0
+		_idle_t = 0.0
+		_walk_t = 0.0
+		_draw_frame()
 	if moving:
 		_walk_t += delta
 		var f := int(_walk_t * WALK_FPS)
 		if f != _frame:
 			_frame = f
+			_draw_frame()
+	elif _idle_on:
+		_idle_t += delta
+		var f2 := int(_idle_t * IDLE_FPS)
+		if f2 != _frame:
+			_frame = f2
 			_draw_frame()
 	elif _frame != 0:
 		_frame = 0

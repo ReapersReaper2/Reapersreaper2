@@ -8,6 +8,8 @@ extends SceneTree
 
 var _failures: Array[String] = []
 
+const Mgr := preload("res://scripts/mollosar_sprites.gd")
+
 
 func _check(name: String, cond: bool) -> void:
 	if cond:
@@ -35,6 +37,13 @@ func _make_mgr():
 
 func _initialize() -> void:
 	print("sprite_test: starting")
+	# The full-matrix checks below need the real PNGs (git LFS). With
+	# pointer stubs every form errors mid-run and the tree hangs because
+	# quit() is never reached — skip cleanly instead.
+	if Mgr._is_lfs_pointer("res://sprites/mollosar/form1_walk_down_spec384.png"):
+		print("sprite_test: SKIP — sheets are LFS stubs here (run 'git lfs pull')")
+		quit(0)
+		return
 
 	# --- 1. strip_for: 8 vectors -> 4 strips (dominant axis) ---
 	var cases := [
