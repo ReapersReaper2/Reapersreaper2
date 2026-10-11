@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_act2.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -7,6 +7,8 @@
 [ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/dragoni_boss.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/wave_spawner.gd" id="10"]
 [ext_resource type="Texture2D" path="res://assets/environments/d2-dragoni-summit.png" id="9"]
 
 [sub_resource type="CircleShape2D" id="ExitCircle"]
@@ -66,6 +68,23 @@ position = Vector2(-40, 120)
 [node name="ShrineD2" parent="." instance=ExtResource("5")]
 position = Vector2(-400, 200)
 shrine_id = "d2_1"
+
+[node name="DragoniBossFight" type="Node2D" parent="."]
+script = ExtResource("8")
+position = Vector2(200, 0)
+
+[node name="WaveSpawner" type="Node2D" parent="."]
+script = ExtResource("10")
+player_reset_position = Vector2(0, 100)
+
+[node name="SpawnNorth" type="Marker2D" parent="WaveSpawner" groups=["invader_spawn"]]
+position = Vector2(200, -320)
+
+[node name="SpawnWest" type="Marker2D" parent="WaveSpawner" groups=["invader_spawn"]]
+position = Vector2(-320, -100)
+
+[node name="SpawnEast" type="Marker2D" parent="WaveSpawner" groups=["invader_spawn"]]
+position = Vector2(720, -100)
 
 [node name="SummitBoss" type="Area2D" parent="."]
 script = ExtResource("7")
