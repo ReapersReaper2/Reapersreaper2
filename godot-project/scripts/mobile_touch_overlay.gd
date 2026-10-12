@@ -161,7 +161,7 @@ func _draw() -> void:
 	draw_circle(knob, jr * 0.39, Color(0.54, 0.59, 0.60, 0.61))
 	draw_arc(knob, jr * 0.39, 0.0, TAU, 36, PALE, 2.5, true)
 	_draw_button(_attack_center(), _button_radius(), _weapon_caption(), _attack_id >= 0)
-	_draw_button(_interact_center(), _button_radius(), "TALK", _interact_id >= 0)
+	_draw_button(_interact_center(), _button_radius(), "USE", _interact_id >= 0)
 
 func _draw_button(center: Vector2, radius: float, caption: String, pressed: bool) -> void:
 	draw_circle(center, radius + 5.0, Color(0.02, 0.025, 0.03, 0.3))
