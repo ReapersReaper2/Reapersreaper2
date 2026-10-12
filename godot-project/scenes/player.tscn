@@ -45,6 +45,7 @@ offset_bottom = -54.0
 color = Color(0.302, 0.89, 1, 1)
 
 [node name="Scythe" type="Line2D" parent="Visuals"]
+visible = false
 points = PackedVector2Array(34, -72, 34, 44)
 width = 5.0
 default_color = Color(0.42, 0.2, 0.62, 1)
