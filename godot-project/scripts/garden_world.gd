@@ -117,6 +117,8 @@ func _draw() -> void:
 	draw_line(landmark + Vector2(-32, -50), landmark + Vector2(-32, 26), STONE, 10.0)
 	draw_line(landmark + Vector2(32, -50), landmark + Vector2(32, 26), STONE, 10.0)
 	draw_arc(landmark + Vector2(0, -45), 32, PI, TAU, 16, STONE.lightened(0.2), 8)
+	_draw_gate(Vector2(bounds.position.x + 70.0, 100.0))
+	_draw_gate(Vector2(bounds.end.x - 70.0, 100.0))
 
 func draw_ellipse_tree(p: Vector2) -> void:
 	draw_circle(p + Vector2(8, 24), 32, Color(0.03, 0.05, 0.045, 0.45))
@@ -127,3 +129,19 @@ func draw_ellipse_tree(p: Vector2) -> void:
 	draw_circle(p + Vector2(-23, -57), 31, LEAF_LIGHT.darkened(0.18))
 	draw_circle(p + Vector2(20, -69), 33, LEAF)
 	draw_circle(p + Vector2(-9, -82), 25, LEAF_LIGHT)
+
+
+func _draw_gate(p: Vector2) -> void:
+	# Framed trail opening at each existing exit trigger.
+	var dark := STONE.darkened(0.38)
+	draw_rect(Rect2(p + Vector2(-58, -92), Vector2(19, 130)), dark)
+	draw_rect(Rect2(p + Vector2(39, -92), Vector2(19, 130)), dark)
+	draw_rect(Rect2(p + Vector2(-58, -105), Vector2(116, 23)), STONE)
+	draw_rect(Rect2(p + Vector2(-48, -100), Vector2(96, 7)), STONE.lightened(0.23))
+	for dx in [-50.0, 49.0]:
+		draw_circle(p + Vector2(dx, 36), 15.0, MOSS)
+	# A warm threshold signals traversability without extra collision.
+	draw_line(p + Vector2(-35, 34), p + Vector2(35, 34), GOLD_GATE(), 5.0)
+
+func GOLD_GATE() -> Color:
+	return Color(0.57, 0.42, 0.24, 0.85)
