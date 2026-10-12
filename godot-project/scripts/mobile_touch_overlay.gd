@@ -1,7 +1,7 @@
 extends Control
 ## Screen-space mobile HUD. Rendering and touch capture are kept together,
 ## while the parent CanvasLayer decides when mobile controls are visible.
-## Supports independent joystick, scythe and interaction fingers.
+## Supports independent joystick, scythe, interaction, and pause touches.
 
 @export var joystick_radius: float = 82.0
 @export var action_radius: float = 53.0
@@ -15,6 +15,7 @@ const PALE := Color(0.90, 0.92, 0.86, 0.85)
 var _joystick_id: int = -1
 var _attack_id: int = -1
 var _interact_id: int = -1
+var _pause_id: int = -1
 var _joystick_vector: Vector2 = Vector2.ZERO
 var _held_directions: Dictionary = {
 	"move_left": false, "move_right": false,
@@ -48,6 +49,12 @@ func _interact_center() -> Vector2:
 	var r := _button_radius()
 	return Vector2(size.x - edge_margin - r * 3.4, size.y - edge_margin - r)
 
+## Top-right pause control never overlaps the lower combat/joystick cluster.
+## The room handles a synthetic ui_cancel exactly like Escape.
+func _pause_center() -> Vector2:
+	return Vector2(size.x - edge_margin - 32.0, edge_margin + 32.0)
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
@@ -62,9 +69,18 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 
 func _begin_touch(index: int, point: Vector2) -> void:
-	if index == _joystick_id or index == _attack_id or index == _interact_id:
+	if index == _joystick_id or index == _attack_id or index == _interact_id or index == _pause_id:
 		return
-	if _joystick_id < 0 and point.distance_to(_joy_center()) <= _radius() * 1.55:
+	if _pause_id < 0 and point.distance_to(_pause_center()) <= 42.0:
+		_pause_id = index
+		# Never carry held gameplay buttons into a paused scene. This also
+		# prevents a finger lifted while paused from leaving a stuck attack.
+		_cancel_gameplay_touches()
+		_send_action("ui_cancel", true)
+		_send_action("ui_cancel", false)
+		queue_redraw()
+		get_viewport().set_input_as_handled()
+	elif _joystick_id < 0 and point.distance_to(_joy_center()) <= _radius() * 1.55:
 		_joystick_id = index
 		_set_joystick(point)
 		get_viewport().set_input_as_handled()
@@ -80,7 +96,11 @@ func _begin_touch(index: int, point: Vector2) -> void:
 		get_viewport().set_input_as_handled()
 
 func _end_touch(index: int) -> void:
-	if index == _joystick_id:
+	if index == _pause_id:
+		_pause_id = -1
+		queue_redraw()
+		get_viewport().set_input_as_handled()
+	elif index == _joystick_id:
 		_joystick_id = -1
 		_joystick_vector = Vector2.ZERO
 		_apply_movement()
@@ -96,6 +116,20 @@ func _end_touch(index: int) -> void:
 		_send_action("interact", false)
 		queue_redraw()
 		get_viewport().set_input_as_handled()
+
+## Explicitly release all action captures before a pause or scene change.
+func _cancel_gameplay_touches() -> void:
+	_joystick_id = -1
+	_joystick_vector = Vector2.ZERO
+	_apply_movement()
+	if _attack_id >= 0:
+		_attack_id = -1
+		_send_action("scythe_swing", false)
+	if _interact_id >= 0:
+		_interact_id = -1
+		_send_action("interact", false)
+	queue_redraw()
+
 
 func _set_joystick(point: Vector2) -> void:
 	var delta := (point - _joy_center()) / _radius()
@@ -130,14 +164,8 @@ func _send_action(action: String, pressed: bool) -> void:
 	Input.parse_input_event(synthetic)
 
 func _exit_tree() -> void:
-	_joystick_vector = Vector2.ZERO
-	_apply_movement()
-	if _attack_id >= 0:
-		_attack_id = -1
-		_send_action("scythe_swing", false)
-	if _interact_id >= 0:
-		_interact_id = -1
-		_send_action("interact", false)
+	_cancel_gameplay_touches()
+	_pause_id = -1
 
 func _weapon_caption() -> String:
 	var gs = get_node_or_null("/root/GameState")
@@ -164,6 +192,7 @@ func _draw() -> void:
 	draw_arc(knob, jr * 0.39, 0.0, TAU, 36, PALE, 2.5, true)
 	_draw_button(_attack_center(), _button_radius(), _weapon_caption(), _attack_id >= 0)
 	_draw_button(_interact_center(), _button_radius(), "USE", _interact_id >= 0)
+	_draw_button(_pause_center(), 31.0, "MENU", _pause_id >= 0)
 
 func _draw_button(center: Vector2, radius: float, caption: String, pressed: bool) -> void:
 	draw_circle(center, radius + 5.0, Color(0.02, 0.025, 0.03, 0.3))
