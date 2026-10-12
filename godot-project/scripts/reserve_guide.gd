@@ -27,10 +27,10 @@ func _ready() -> void:
 	for child in _creatures.get_children():
 		if not _is_resident(child):
 			continue
-		if not child.interacted.is_connected(_on_interacted):
-			child.interacted.connect(_on_interacted)
-		if not child.noticed.is_connected(_on_noticed):
-			child.noticed.connect(_on_noticed)
+		if not child.is_connected("interacted", Callable(self, "_on_interacted")):
+			child.connect("interacted", Callable(self, "_on_interacted"))
+		if not child.is_connected("noticed", Callable(self, "_on_noticed")):
+			child.connect("noticed", Callable(self, "_on_noticed"))
 	_build_hud()
 	_update_hud()
 
@@ -49,7 +49,7 @@ func _select_nearest() -> void:
 		if not _is_resident(child):
 			continue
 		var creature := child as Sprite2D
-		var eligible: bool = creature.is_player_in_range()
+		var eligible: bool = bool(creature.call("is_player_in_range"))
 		var distance: float = creature.global_position.distance_squared_to(_player.global_position)
 		if eligible and (distance < best_distance or (is_equal_approx(distance, best_distance) and
 				(closest == null or str(creature.name) < str(closest.name)))):
@@ -57,7 +57,7 @@ func _select_nearest() -> void:
 			best_distance = distance
 	for child in _creatures.get_children():
 		if _is_resident(child):
-			child.set_selected(child == closest)
+			child.call("set_selected", child == closest)
 	_selected = closest
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -72,7 +72,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if cs != null and cs.has_method("is_playing") and cs.is_playing():
 		return
 	get_viewport().set_input_as_handled()
-	_selected.trigger_interaction()
+	_selected.call("trigger_interaction")
 
 func _on_noticed(creature: Node2D) -> void:
 	_highlight_text = "%s NOTICED YOU" % String(creature.name).to_upper()
