@@ -317,6 +317,37 @@ func spend_soul_credits(n: int) -> bool:
 	return true
 
 
+# --- Soul-thread ledger -------------------------------------------------
+## One shared balance for future capture/ritual costs (director D-43).
+## Intentionally separate from Soul Credits. No starting gift, earn rate,
+## tithe amount, or ritual trigger is invented here. Old v3 saves with no
+## soul_thread key read as zero without destructive migrations.
+
+func get_soul_thread() -> int:
+	var value = state.get("soul_thread", 0)
+	if value is int or value is float:
+		return maxi(0, int(value))
+	return 0
+
+
+## Only positive, explicit awards are allowed. Callers own the rule for
+## earning thread once the Muse lane has supplied a signed design.
+func add_soul_thread(amount: int) -> bool:
+	if amount <= 0:
+		return false
+	state["soul_thread"] = get_soul_thread() + amount
+	return true
+
+
+## One debit at offer time. Reject invalid or insufficient amounts with no
+## change to either thread or the independent Soul Credits currency.
+func spend_soul_thread(amount: int) -> bool:
+	if amount <= 0 or get_soul_thread() < amount:
+		return false
+	state["soul_thread"] = get_soul_thread() - amount
+	return true
+
+
 # --- Inventory -----------------------------------------------------------
 ## Item counts live in state["inventory"] ({item_id: count}). Soul Snares
 ## (the catch item) are granted on new_game; shops/loot are later work.
