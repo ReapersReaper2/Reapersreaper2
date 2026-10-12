@@ -4,6 +4,8 @@ extends Sprite2D
 ## future Lullmother-bonding systems listen to the interacted signal.
 
 const SpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
+const AmbientMotion := preload("res://scripts/reserve_creature_motion.gd")
+const ContactShadow := preload("res://scripts/reserve_creature_shadow.gd")
 const ART_DIR := "res://assets/creatures/"
 ## Three source paintings carry white paper around the subject. Preserve the
 ## original illustrations and mask the paper only in the gameplay renderer.
@@ -39,6 +41,8 @@ signal interacted(creature: Node2D)
 @export var bob_speed: float = 1.6
 @export var awareness_radius: float = 132.0
 @export var sway_degrees: float = 2.5
+## Presentation-only motion; no pathfinding, attacks, or capture side effects.
+@export_enum("Rooted", "Drift", "Hop", "Prowl") var motion_style: int = 0
 
 var _base_position := Vector2.ZERO
 var _base_scale := Vector2.ONE
@@ -47,6 +51,12 @@ var _phase: float = 0.0
 var _reaction_time: float = 0.0
 var _in_range: bool = false
 var _selected: bool = false
+var _elapsed: float = 0.0
+var _motion_seed: float = 0.0
+var _attention: float = 0.0
+var _startle_time: float = 0.0
+var _ground_offset: float = 45.0
+var _shadow: Node2D = null
 var _sensor: Area2D = null
 var _prompt: Label = null
 var _using_overworld_art: bool = false
@@ -73,8 +83,12 @@ func _ready() -> void:
 	_base_rotation = rotation
 	# Offset motion by stable creature identity (not random restart flicker).
 	_phase = float(abs(hash(String(name))) % 628) * 0.01
+	_motion_seed = _phase
+	if texture != null:
+		_ground_offset = clampf(texture.get_height() * absf(_base_scale.y) * 0.32, 24.0, 100.0)
 	if is_inside_tree() and get_parent() != null:
 		_create_awareness()
+		_create_contact_shadow()
 
 
 ## Production overworld sprites are transparent, not white-matted. Use a
@@ -132,6 +146,32 @@ func _create_awareness() -> void:
 	get_parent().add_child(_prompt)
 	_update_prompt_position()
 
+func _create_contact_shadow() -> void:
+	if _shadow != null:
+		return
+	var shadow := ContactShadow.new()
+	shadow.name = "ContactShadow"
+	shadow.top_level = true
+	shadow.z_as_relative = false
+	var visual_width := 120.0
+	if texture != null:
+		visual_width = texture.get_width() * absf(_base_scale.x)
+	shadow.radius_x = clampf(visual_width * 0.28, 22.0, 55.0)
+	shadow.radius_y = shadow.radius_x * 0.34
+	add_child(shadow)
+	_shadow = shadow
+	_update_contact_shadow(Vector2.ZERO, 0.0)
+
+func _update_contact_shadow(offset: Vector2, lift: float) -> void:
+	if _shadow == null or get_parent() == null:
+		return
+	# The shadow follows horizontal/ground steps, never a vertical hop.
+	var floor_offset := Vector2(offset.x, offset.y + lift + _ground_offset)
+	_shadow.global_position = get_parent().to_global(_base_position + floor_offset)
+	_shadow.z_index = clampi(int(round(_shadow.global_position.y)) - 3, -1899, 1899)
+	var alpha := clampf(1.0 - lift / 52.0, 0.38, 1.0)
+	_shadow.modulate.a = alpha
+
 func _update_prompt_position() -> void:
 	if _prompt == null:
 		return
@@ -141,29 +181,43 @@ func _update_prompt_position() -> void:
 	_prompt.position = position + Vector2(-85.0, -maxf(half_height, 65.0) - 55.0)
 
 func _process(delta: float) -> void:
+	_elapsed += maxf(delta, 0.0)
 	_phase += delta * bob_speed
-	position = _base_position + Vector2(0, sin(_phase) * bob_amp)
-	rotation = _base_rotation + sin(_phase * 0.62) * deg_to_rad(sway_degrees)
-	var breath := 1.0 + sin(_phase * 0.91) * 0.034
-	scale = _base_scale * breath
+	_attention = move_toward(_attention, 1.0 if _in_range else 0.0, maxf(delta, 0.0) * 2.8)
+	var motion: Dictionary = AmbientMotion.sample(motion_style, _elapsed, _motion_seed, _attention)
+	var offset: Vector2 = motion["offset"]
+	var lift: float = float(motion["lift"])
+	var tilt: float = float(motion["tilt"])
+	var breath: float = float(motion["breath"])
+	# Brief, gentle acknowledgement when the player enters awareness.
+	if _startle_time > 0.0:
+		_startle_time = maxf(0.0, _startle_time - maxf(delta, 0.0))
+		var recoil := sin(PI * (1.0 - _startle_time / 0.42))
+		offset.y -= recoil * 6.0
+	position = _base_position + offset + Vector2(0, sin(_phase) * bob_amp)
+	rotation = _base_rotation + tilt + sin(_phase * 0.62) * deg_to_rad(sway_degrees)
+	var scale_factor := 1.0 + breath + sin(_phase * 0.91) * 0.023
+	scale = _base_scale * scale_factor
+	_update_contact_shadow(offset, lift)
 	if _sensor != null:
 		_sensor.position = position
 	if _prompt != null and _in_range:
 		_update_prompt_position()
 	if _reaction_time > 0.0:
-		_reaction_time = maxf(0.0, _reaction_time - delta)
+		_reaction_time = maxf(0.0, _reaction_time - maxf(delta, 0.0))
 		modulate = Color(1.15, 1.10, 1.24, 1.0)
 		if _prompt != null:
 			_prompt.text = "NOTICED"
 	else:
 		modulate = Color.WHITE
 		if _prompt != null:
-			_prompt.text = "E / INTERACT"
+			_prompt.text = interaction_caption(DisplayServer.is_touchscreen_available())
 
 func _on_body_entered(body: Node2D) -> void:
 	if not body.is_in_group("player"):
 		return
 	_in_range = true
+	_startle_time = 0.42
 	if _prompt != null:
 		_prompt.visible = _selected
 	_update_prompt_position()
