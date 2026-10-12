@@ -61,6 +61,10 @@ func _select_nearest() -> void:
 			child.call("set_selected", child == closest)
 	_selected = closest
 
+func is_observing_resident() -> bool:
+	return _selected != null and is_instance_valid(_selected)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _selected == null or not event.is_action_pressed("interact"):
 		return
