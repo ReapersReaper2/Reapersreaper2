@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/reserve_clock.gd" id="30"]
 [ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 
 [sub_resource type="CircleShape2D" id="ExitCircle"]
@@ -53,6 +54,11 @@ script = ExtResource("22")
 position = Vector2(420, 221)
 destination = "IVY'S SANCTUM"
 direction = "→"
+
+[node name="ReserveClock" type="Node2D" parent="."]
+script = ExtResource("30")
+cycle_seconds = 720.0
+starting_hour = 9.0
 
 [node name="Dress1" type="Polygon2D" parent="."]
 visible = false
