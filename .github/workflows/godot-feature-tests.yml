@@ -47,5 +47,7 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/garden_world_test.gd
       - name: Test atomic save replacement
         run: godot --headless --path godot-project --script res://scripts/save_atomic_test.gd
+      - name: Test mantle rules and shared soul-thread ledger
+        run: godot --headless --path godot-project --script res://scripts/mantle_ledger_test.gd
       - name: Play through the critical story and gameplay path
         run: godot --headless --path godot-project --script res://scripts/playthrough_test.gd

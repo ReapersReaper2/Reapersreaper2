@@ -33,6 +33,7 @@ extends RefCounted
 
 const CreatureData = preload("res://scripts/creature_data.gd")
 const Party = preload("res://scripts/party.gd")
+const MantleRecords = preload("res://scripts/mantle_records.gd")
 
 ## Part slots, in canon order (9-slot model, signed off 2026-10-04:
 ## root/stem/bloom/leafset/appendage/armor/accent plus eyes and face).
@@ -326,6 +327,12 @@ static func _abilities_for(entry: Dictionary) -> Array:
 	CreatureData.ensure_loaded()
 	var pseudo := {"traits": effective_traits(entry), "moves": []}
 	return CreatureData.creature_abilities(pseudo)
+
+
+## Read-only qualitative affinity. No mantle data enters genotype or
+## offspring snapshots, and no numeric breeding bonus has been approved.
+static func has_mantle_affinity(entry: Dictionary) -> bool:
+	return MantleRecords.breeding_affinity(entry)
 
 
 ## ---- effective (override-aware) accessors ----
