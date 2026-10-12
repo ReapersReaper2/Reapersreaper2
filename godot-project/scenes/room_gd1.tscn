@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -11,6 +11,8 @@
 [ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/garden_cottage.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/reserve_creature.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/reserve_clock.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/reserve_guide.gd" id="31"]
 [ext_resource type="Texture2D" path="res://assets/creatures/dragonthorn.png" id="11"]
 [ext_resource type="Texture2D" path="res://assets/creatures/gloomcap.png" id="12"]
 [ext_resource type="Texture2D" path="res://assets/creatures/spinehopper.png" id="13"]
@@ -107,6 +109,14 @@ horizontal_alignment = 1
 text = "ENTER REFUGE"
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.9, 0.72, 0.45, 1)
+
+[node name="ReserveClock" type="Node2D" parent="."]
+script = ExtResource("30")
+cycle_seconds = 720.0
+starting_hour = 9.0
+
+[node name="ReserveGuide" type="Node2D" parent="."]
+script = ExtResource("31")
 
 [node name="Creatures" type="Node2D" parent="."]
 
