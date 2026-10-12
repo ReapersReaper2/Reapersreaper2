@@ -27,6 +27,12 @@ func _run() -> void:
 		if texture != null:
 			_check(texture.get_width() == 1024 and texture.get_height() == 1536,
 				"%s portrait has proper master dimensions" % name)
+	var idle := Loader.load_texture("res://sprites/mollosar/form1_idle_down_spec384.png")
+	_check(idle != null and idle.get_width() == 768 and idle.get_height() == 384,
+		"Form 1 idle animation loads two actual frames")
+	var bridge := Loader.load_texture("res://assets/backgrounds/p1_bellhollow_bridge_1280x720.png")
+	_check(bridge != null and bridge.get_width() == 1280 and bridge.get_height() == 720,
+		"Opening skyline loads without LFS")
 	_check(FileAccess.file_exists("res://assets/critical_sprites/form1_walk_down_spec384.b64"),
 		"critical art bundled in project")
 	print("[PROLOGUE ART TEST] %d passed / %d failed" % [passed, failed])
