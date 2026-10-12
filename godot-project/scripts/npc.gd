@@ -120,6 +120,8 @@ func _apply_art() -> void:
 		return
 	var tex := _load_tex(ART_DIR + aid + ".png")
 	if tex == null:
+		if npc_name in ["MIRA", "SOLDIER"]:
+			push_error("[NPC] Prologue art unavailable for %s; check Git LFS and assets/critical_sprites/%s.b64" % [npc_name, aid])
 		return
 	var h := tex.get_height()
 	if h <= 0:
