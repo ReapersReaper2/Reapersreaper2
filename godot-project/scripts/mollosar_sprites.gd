@@ -115,7 +115,8 @@ static func _is_lfs_pointer(path: String) -> bool:
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:
 		return false
-	var line := f.get_line()
+	# Check the raw file header; valid PNG bytes are not UTF-8 lines.
+	var line := f.get_buffer(64).get_string_from_ascii()
 	f.close()
 	return line.begins_with("version https://git-lfs.github.com")
 
@@ -148,12 +149,15 @@ func _load_form(form: int) -> void:
 			_frames[d] = maxi(1, int(tex.get_width() / CELL))
 		# Optional idle sheet for this direction (Form 1 ships idle_down).
 		var ipath := "%sform%d_idle_%s_spec384.png" % [SPRITE_DIR, form, d]
-		var itex := _load_tex(ipath)
+		var itex: Texture2D = null
+		if CriticalSpriteLoader.has_source(ipath):
+			itex = _load_tex(ipath)
 		if itex != null:
 			_idle[d] = itex
 			_idle_frames[d] = maxi(1, int(itex.get_width() / CELL))
 	# Form 3's reap-swing strip exists: use it during scythe swings.
-	_swing_tex = _load_tex("%sform%d_reap_swing_spec384.png" % [SPRITE_DIR, form])
+	var swing_path := "%sform%d_reap_swing_spec384.png" % [SPRITE_DIR, form]
+	_swing_tex = _load_tex(swing_path) if CriticalSpriteLoader.has_source(swing_path) else null
 	if _swing_tex != null:
 		_swing_frames = maxi(1, int(_swing_tex.get_width() / CELL))
 	else:
