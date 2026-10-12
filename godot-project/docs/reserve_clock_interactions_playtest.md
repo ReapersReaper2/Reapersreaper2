@@ -43,3 +43,26 @@ A GitHub Actions workflow (`.github/workflows/godot-feature-tests.yml`) was adde
 - **Ivy:** Test overlaid residents, UI on Android, time tint, exit transitions, initial observation and save/reload.
 
 Future implementation: a Lullmother planting/offer/walk-away state machine, consumption of actual fruit inventory, and dusk-time creature choice. No current implementation claims to offer those features.
+
+
+## Additional integration pass — 2026-10-12
+
+**What changed after the initial QA handoff**
+
+- `critical_sprite_loader.gd`: fixed a real naming mismatch. The opening uses `<stem>.b64`; Reserve art uses `<stem>.png.b64`. Either suffix now loads automatically. The headless test explicitly decodes **both** the canonical PNG path and its separate bundled backup so successful Git LFS downloads cannot mask a broken fallback.
+- `title_screen.gd`: editor and debug Android builds show a **TEST RESERVE [DEV]** shortcut at the top right. It starts fresh **in memory** and opens `room_gd1.tscn` without modifying save files. Release builds hide it unless the explicit `reaper/dev_shortcuts` project setting is enabled.
+- `reserve_reaction_vfx.gd` and `reserve_guide.gd`: pressing Interact near a focused living creature now creates an understated, world-scale soul-thread ripple and rising motes as visible feedback. This records observation only, not a bond or capture.
+- `reserve_clock.gd`: every crossed dusk now emits a separate day number even for fast-forward tests; exact fractional progress is recorded upon leaving a room.
+- `garden_refuge.tscn`: the clock continues indoors without darkening the warm refuge interior. Also repaired the south-right doorway wall so both halves use the same unscaled collision shape.
+- `wild_zone.gd`: random tall-grass battles pause and their step counter clears while the player is within a visible creature's interaction ring. Walk away to resume normal encounter travel. In gd1 the grass visual is rendered *behind* residents and the player.
+
+**Recommended phone QA sequence**
+
+1. Install a **new debug build** from this feature branch, not a previously exported APK. Confirm title page shows **TEST RESERVE [DEV]**. Verify normal **NEW GAME** still begins at Bellhollow Bridge.
+2. Tap **TEST RESERVE [DEV]**, approach Gloomcap near x=-350, y=180 and press INTERACT. Confirm a single prompt, an observation-counter increment and the gold ripple. Observe again: the counter remains stable.
+3. Stand close to a creature and walk around for a while: a random grass encounter must *not* interrupt observation; leave its awareness ring and normal exploration/battles may resume.
+4. Enter the refuge at x=-500, y=118. Walk through its southern doorway to leave. Verify you don't bounce immediately back through the doorway or hit an invisible wall.
+5. Set the Reserve clock to about **16:55** in the editor for a fast dusk run (or use the 60-second day setting on a fresh game); confirm day → dusk tint, and that returning from the refuge preserves elapsed time.
+6. Test an Android export after intentionally omitting Git LFS image downloads in a separate checkout: creatures should still appear from the bundled files. **Android export presets aren't checked into the repository yet**, so Tucker must set Resources → include non-resource files to `assets/critical_sprites/*.b64`. A local preset that misses this filter will omit critical sprites in the APK.
+
+**Validation status:** Source files and resource counts have been checked, and regression tests have been expanded, but Godot 4.3 is not installed in the authoring environment; automated tests and a new Android APK have **not** been executed/verified here. Tucker/Ivy should report import errors and phone results before merging `develop`.
