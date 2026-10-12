@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -19,6 +19,9 @@
 [sub_resource type="CircleShape2D" id="ExitCircle"]
 radius = 110.0
 
+[sub_resource type="CircleShape2D" id="RefugeDoorRange"]
+radius = 38.0
+
 [sub_resource type="CircleShape2D" id="RangeCircle"]
 radius = 96.0
 
@@ -27,6 +30,12 @@ size = Vector2(2560, 64)
 
 [sub_resource type="RectangleShape2D" id="WallV"]
 size = Vector2(64, 848)
+
+[sub_resource type="RectangleShape2D" id="CottageSide"]
+size = Vector2(62, 92)
+
+[sub_resource type="RectangleShape2D" id="CottageRear"]
+size = Vector2(175, 42)
 
 [sub_resource type="RectangleShape2D" id="WildRect_WildZoneRoomGd1"]
 size = Vector2(1792, 380)
@@ -49,6 +58,7 @@ shrine = Vector2(-1000, 200)
 landmark = Vector2(300, 100)
 seed_value = 117
 density = 0.48
+feature_points = PackedVector2Array(-500, 165, -750, -140, -350, 180, 420, -120, 700, 160, 950, -100)
 
 ## SPRINT 2026-10-11 (Jenn plays today): ambient plant-creature residents.
 ## Pure Sprite2D + ReserveCreature sine bob. No collision, no AI — they don't
@@ -56,6 +66,33 @@ density = 0.48
 [node name="GardenRefugeCottage" type="Node2D" parent="."]
 script = ExtResource("21")
 position = Vector2(-500, 45)
+
+[node name="CottageWalls" type="StaticBody2D" parent="."]
+position = Vector2(-500, 45)
+collision_layer = 1
+collision_mask = 0
+
+[node name="WestFront" type="CollisionShape2D" parent="CottageWalls"]
+position = Vector2(-65, 25)
+shape = SubResource("CottageSide")
+
+[node name="EastFront" type="CollisionShape2D" parent="CottageWalls"]
+position = Vector2(65, 25)
+shape = SubResource("CottageSide")
+
+[node name="RearWall" type="CollisionShape2D" parent="CottageWalls"]
+position = Vector2(0, -44)
+shape = SubResource("CottageRear")
+
+[node name="RefugeSign" type="Label" parent="GardenRefugeCottage"]
+offset_left = -71.0
+offset_top = 78.0
+offset_right = 71.0
+offset_bottom = 102.0
+horizontal_alignment = 1
+text = "ENTER REFUGE"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.9, 0.72, 0.45, 1)
 
 [node name="Creatures" type="Node2D" parent="."]
 
@@ -214,7 +251,7 @@ metadata/spawn = Vector2(350, 100)
 shape = SubResource("ExitCircle")
 
 [node name="EnterGardenRefuge" type="Area2D" parent="." groups=["exit"]]
-position = Vector2(-500, 111)
+position = Vector2(-500, 118)
 collision_layer = 0
 collision_mask = 1
 metadata/target_scene = "res://scenes/garden_refuge.tscn"
@@ -222,5 +259,4 @@ metadata/target_room_id = "gd_refuge"
 metadata/spawn = Vector2(0, 130)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnterGardenRefuge"]
-shape = SubResource("ExitCircle")
-scale = Vector2(0.48, 0.48)
+shape = SubResource("RefugeDoorRange")
