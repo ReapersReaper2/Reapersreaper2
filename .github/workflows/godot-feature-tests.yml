@@ -39,5 +39,7 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/step_driver_test.gd
       - name: Test garden routes and continue mappings
         run: godot --headless --path godot-project --script res://scripts/garden_world_test.gd
+      - name: Test atomic save replacement
+        run: godot --headless --path godot-project --script res://scripts/save_atomic_test.gd
       - name: Play through the critical story and gameplay path
         run: godot --headless --path godot-project --script res://scripts/playthrough_test.gd
