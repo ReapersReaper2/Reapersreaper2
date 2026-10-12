@@ -35,6 +35,22 @@ func _run() -> void:
 				texture.get_height() == int(spec[2]),
 				path + " matches approved Drive artwork size")
 
+	# Simulate a delivered native overworld master without introducing art
+	# or changing Muse-owned visuals. Replacement must retain world height
+	# and disable the temporary white-paper matte.
+	var fake_image := Image.create(384, 384, false, Image.FORMAT_RGBA8)
+	fake_image.fill(Color(0.2, 0.5, 0.3, 1.0))
+	var preview = Resident.new()
+	preview.overworld_display_height = 168.0
+	preview.scale = Vector2(0.105, 0.105)
+	preview.material = ShaderMaterial.new()
+	preview._set_overworld_texture(ImageTexture.create_from_image(fake_image))
+	_check(is_equal_approx(preview.scale.y, 168.0 / 384.0),
+		"delivered overworld art preserves prior in-world display height")
+	_check(preview.texture.get_width() == 384 and preview.material == null,
+		"native transparent master replaces matte without resizing source")
+	preview.free()
+
 	_check(Guide.observation_summary("gloomcap").contains("WARY"),
 		"creature observation displays existing temperament data")
 	_check(Guide.observation_summary("dragonthorn").contains("Dragoni"),
