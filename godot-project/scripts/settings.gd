@@ -103,8 +103,16 @@ static func _apply_volumes() -> void:
 	_bus_volume_db("SFX", int(_cache.get("sfx_volume", 80)))
 
 
+## Fullscreen/windowed mode belongs to desktop only. Mobile and Web
+## own their surface dimensions; asking for OS window modes on Android
+## exposes an unusable setting and may generate unsupported driver calls.
+static func supports_window_mode() -> bool:
+	return not (OS.has_feature("web") or OS.has_feature("android")
+		or OS.has_feature("ios") or OS.has_feature("mobile"))
+
+
 static func _apply_fullscreen() -> void:
-	if OS.has_feature("web"):
+	if not supports_window_mode():
 		return
 	var fs := bool(_cache.get("fullscreen", true))
 	# Headless/dummy display servers may not support this — guard it.
@@ -162,7 +170,7 @@ func _build() -> void:
 	_add_slider(box, "master_volume", "Master Volume")
 	_add_slider(box, "music_volume", "Music Volume")
 	_add_slider(box, "sfx_volume", "SFX Volume")
-	if not OS.has_feature("web"):
+	if supports_window_mode():
 		_add_toggle(box, "fullscreen", "Fullscreen")
 	_add_toggle(box, "vibration", "Controller Vibration")
 	_add_button(box, "reset", "RESET TO DEFAULTS")
