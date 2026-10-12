@@ -53,6 +53,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/save_atomic_test.gd
       - name: Test future-version saves and safe Continue
         run: godot --headless --path godot-project --script res://scripts/save_compat_test.gd
+      - name: Test playtime counting and paused-title exclusions
+        run: godot --headless --path godot-project --script res://scripts/playtime_test.gd
       - name: Test shrine healing, position and save transaction
         run: godot --headless --path godot-project --script res://scripts/shrine_test.gd
       - name: Test mantle rules and shared soul-thread ledger
