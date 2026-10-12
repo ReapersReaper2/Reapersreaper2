@@ -27,7 +27,7 @@ func _run() -> void:
 	var player_scene := PlayerScene.instantiate()
 	var touch_scene = player_scene.get_node_or_null("TouchControls")
 	_check(touch_scene != null, "player scene contains touch controls")
-	_check(touch_scene != null and touch_scene.layer == 8,
+	_check(touch_scene != null and (touch_scene as CanvasLayer).layer == 8,
 		"touch canvas draws above the bridge scenery and below pause menu")
 	player_scene.free()
 
@@ -51,9 +51,9 @@ func _run() -> void:
 			"mobile control root stretches to full viewport height")
 		_check(hud.size.x >= 640.0 and hud.size.y >= 360.0,
 			"overlay has real screen dimensions, not a zero-size canvas")
-		var joystick: Vector2 = hud._joy_center()
-		var attack: Vector2 = hud._attack_center()
-		var use: Vector2 = hud._interact_center()
+		var joystick: Vector2 = hud.call("_joy_center")
+		var attack: Vector2 = hud.call("_attack_center")
+		var use: Vector2 = hud.call("_interact_center")
 		_check(joystick.x > 0.0 and joystick.x < hud.size.x * 0.3,
 			"joystick drawn inside lower-left viewport")
 		_check(attack.x < hud.size.x and use.x < hud.size.x,
