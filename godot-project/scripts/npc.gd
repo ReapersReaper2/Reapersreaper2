@@ -114,11 +114,15 @@ func _apply_art() -> void:
 	var aid := resolve_art_id()
 	if aid == "":
 		return
-	var idle_tex := _load_tex(ART_DIR + aid + "_idle.png")
+	var idle_path := ART_DIR + aid + "_idle.png"
+	var idle_tex: Texture2D = null
+	if CriticalSpriteLoader.has_source(idle_path):
+		idle_tex = _load_tex(idle_path)
 	if idle_tex != null:
 		_apply_idle_art(idle_tex)
 		return
-	var tex := _load_tex(ART_DIR + aid + ".png")
+	var art_path := ART_DIR + aid + ".png"
+	var tex: Texture2D = _load_tex(art_path) if CriticalSpriteLoader.has_source(art_path) else null
 	if tex == null:
 		if npc_name in ["MIRA", "SOLDIER"]:
 			push_error("[NPC] Prologue art unavailable for %s; check Git LFS and assets/critical_sprites/%s.b64" % [npc_name, aid])
