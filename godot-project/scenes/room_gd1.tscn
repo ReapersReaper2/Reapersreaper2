@@ -194,6 +194,8 @@ position = Vector2(-1000, 200)
 shrine_id = "gd1_1"
 
 [node name="WildZoneGd1" type="Area2D" parent="."]
+z_as_relative = false
+z_index = -1950
 script = ExtResource("6")
 position = Vector2(0, 60)
 collision_layer = 0
