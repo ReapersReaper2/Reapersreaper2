@@ -49,10 +49,12 @@ func _interact_center() -> Vector2:
 	var r := _button_radius()
 	return Vector2(size.x - edge_margin - r * 3.4, size.y - edge_margin - r)
 
-## Top-right pause control never overlaps the lower combat/joystick cluster.
+## ReserveClockHUD occupies the top-right 16..62px strip (CanvasLayer 11).
+## Give the touch menu its own clearance below that display, away from the
+## bottom-right attack/use cluster, so the clock cannot obscure its label.
 ## The room handles a synthetic ui_cancel exactly like Escape.
 func _pause_center() -> Vector2:
-	return Vector2(size.x - edge_margin - 32.0, edge_margin + 32.0)
+	return Vector2(size.x - edge_margin - 32.0, edge_margin + 110.0)
 
 
 func _input(event: InputEvent) -> void:
