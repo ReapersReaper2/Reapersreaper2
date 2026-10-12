@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/garden_cottage.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/reserve_creature.gd" id="10"]
 [ext_resource type="Texture2D" path="res://assets/creatures/dragonthorn.png" id="11"]
@@ -64,6 +65,18 @@ feature_points = PackedVector2Array(-500, 165, -750, -140, -350, 180, 420, -120,
 ## SPRINT 2026-10-11 (Jenn plays today): ambient plant-creature residents.
 ## Pure Sprite2D + ReserveCreature sine bob. No collision, no AI — they don't
 ## block player movement. The first three are gd1's encounter-table species.
+[node name="WestTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(-1020, 221)
+destination = "WESTERN TRAIL"
+direction = "←"
+
+[node name="EastTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(1000, 221)
+destination = "WRATH'S CORNER"
+direction = "→"
+
 [node name="GardenRefugeCottage" type="Node2D" parent="."]
 script = ExtResource("21")
 position = Vector2(-500, 45)
