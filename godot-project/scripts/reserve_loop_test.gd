@@ -35,6 +35,12 @@ func _run() -> void:
 				texture.get_height() == int(spec[2]),
 				path + " matches approved Drive artwork size")
 
+	_check(Guide.observation_summary("gloomcap").contains("WARY"),
+		"creature observation displays existing temperament data")
+	_check(Guide.observation_summary("dragonthorn").contains("Dragoni"),
+		"creature observation shows canonical region, not invented lore")
+	_check(not Guide.observation_summary("bellmaw").contains("BOSS"),
+		"observation summary does not spoil boss classification")
 	_check(Clock.phase_for(0.0) == "night", "midnight is night")
 	_check(Clock.phase_for(360.0) == "dawn", "06:00 is dawn")
 	_check(Clock.phase_for(540.0) == "day", "09:00 is day")
