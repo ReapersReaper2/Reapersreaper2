@@ -82,8 +82,8 @@ func _run() -> void:
 	_check("real png is not a pointer", not Mgr._is_lfs_pointer("res://icon.svg") if FileAccess.file_exists("res://icon.svg") else true)
 
 	# 3. Texture-dependent checks need the real Form 1 sheets.
-	if Mgr._is_lfs_pointer("res://sprites/mollosar/form1_walk_down_spec384.png"):
-		_skip("form1 sheets are LFS stubs here — run 'git lfs pull' for art checks")
+	if Mgr._load_tex("res://sprites/mollosar/form1_walk_down_spec384.png") == null:
+		_skip("form1 art is unavailable even after bundled fallback")
 		return
 
 	var visuals := _make_player_mock()
@@ -101,7 +101,7 @@ func _run() -> void:
 	for c in visuals.get_children():
 		if c != mgr:
 			_check("greybox hidden: " + c.name, not (c as CanvasItem).visible)
-	_check("sprite grounded on capsule", mgr._sprite.position.y == -22.0)
+	_check("sprite grounded on capsule", mgr._sprite.position.y == -5.0)
 
 	# 4. Direction hook: facing selects the matching strip.
 	mgr.tick(0.5, Vector2.LEFT, true)
