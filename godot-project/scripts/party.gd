@@ -129,7 +129,7 @@ static func append_entry(gs: Node, entry: Dictionary) -> bool:
 	var p: Array = _party(gs)
 	if p.size() >= MAX_SIZE or entry.is_empty():
 		return false
-	p.append(entry.duplicate())
+	p.append(entry.duplicate(true))
 	_maybe_full_house(gs)
 	return true
 
@@ -140,7 +140,7 @@ static func insert_entry(gs: Node, index: int, entry: Dictionary) -> bool:
 		return false
 	if index < 0 or index > p.size():
 		return false
-	p.insert(index, entry.duplicate())
+	p.insert(index, entry.duplicate(true))
 	return true
 
 
