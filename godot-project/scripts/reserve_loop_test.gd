@@ -7,6 +7,7 @@ const Guide := preload("res://scripts/reserve_guide.gd")
 const Resident := preload("res://scripts/reserve_creature.gd")
 const Loader := preload("res://scripts/critical_sprite_loader.gd")
 const TitleScreen := preload("res://scripts/title_screen.gd")
+const WildZone := preload("res://scripts/wild_zone.gd")
 
 var _failed := 0
 var _checks := 0
@@ -63,6 +64,17 @@ func _run() -> void:
 	_check(_dusk_days.size() == 2 and _dusk_days[0] == 1 and _dusk_days[1] == 2,
 		"large time skip emits each dusk once")
 	c.queue_free()
+	# The lamplit cottage should keep time without darkening interior art.
+	var inside = Clock.new()
+	inside.show_clock = false
+	inside.apply_world_tint = false
+	root.add_child(inside)
+	_check(inside.get_node_or_null("ReserveWorldTint") == null,
+		"indoor clock leaves room tint unchanged")
+	inside.set_total_minutes(1018.0)
+	inside.advance_seconds(2.0)
+	_check(inside.get_phase() == "dusk", "indoor clock continues through dusk")
+	inside.queue_free()
 
 	# The title-screen QA shortcut should reach the scene from an Android
 	# debug build without changing the standard NEW GAME progression.
@@ -112,6 +124,12 @@ func _run() -> void:
 	_check(guide._resident_count() == 2,
 		"VFX and sensor nodes are not counted as living residents")
 	_check(guide.is_observing_resident(), "guide advertises nearby observation focus")
+	var wild = WildZone.new()
+	wild.name = "TestWildZone"
+	wild.table_key = "gd1"
+	room.add_child(wild)
+	_check(wild._near_visible_resident(),
+		"random encounter controller yields to visible creature interaction")
 	near._on_body_exited(player)
 	guide._select_nearest()
 	_check(guide.get("_selected") == far,
@@ -119,6 +137,8 @@ func _run() -> void:
 	far._on_body_exited(player)
 	guide._select_nearest()
 	_check(guide.get("_selected") == null, "focus clears outside all ranges")
+	_check(not wild._near_visible_resident(),
+		"wild encounters resume after leaving observation range")
 	room.queue_free()
 
 	if _failed == 0:
