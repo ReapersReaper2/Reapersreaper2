@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
 [ext_resource type="Texture2D" path="res://assets/environments/gd1-garden-perimeter.png" id="9"]
 [ext_resource type="Script" path="res://scripts/reserve_creature.gd" id="10"]
 [ext_resource type="Texture2D" path="res://assets/creatures/dragonthorn.png" id="11"]
@@ -38,10 +39,19 @@ room_rect = Rect2(-1280, -360, 2560, 720)
 player_spawn = Vector2(0, 100)
 
 [node name="Background" type="Sprite2D" parent="."]
+visible = false
 texture = ExtResource("9")
 [node name="Ground" type="Polygon2D" parent="."]
 color = Color(0.18, 0.24, 0.18, 1)
 polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
+
+[node name="PlayableGarden" type="Node2D" parent="."]
+script = ExtResource("20")
+bounds = Rect2(-1280, -360, 2560, 720)
+shrine = Vector2(-1000, 200)
+landmark = Vector2(300, 100)
+seed_value = 117
+density = 0.48
 
 ## SPRINT 2026-10-11 (Jenn plays today): ambient plant-creature residents.
 ## Pure Sprite2D + ReserveCreature sine bob. No collision, no AI — they don't
