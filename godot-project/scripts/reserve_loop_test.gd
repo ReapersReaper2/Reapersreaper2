@@ -6,10 +6,12 @@ const Clock := preload("res://scripts/reserve_clock.gd")
 const Guide := preload("res://scripts/reserve_guide.gd")
 const Resident := preload("res://scripts/reserve_creature.gd")
 const Loader := preload("res://scripts/critical_sprite_loader.gd")
+const TitleScreen := preload("res://scripts/title_screen.gd")
 
 var _failed := 0
 var _checks := 0
 var _dusk_days: Array[int] = []
+var _navigated_to: String = ""
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -50,7 +52,25 @@ func _run() -> void:
 	_check(_dusk_days.size() == 1, "dusk signal does not repeat")
 	_check(c.get_phase() == "dusk", "clock phase changes at dusk")
 	_check(c.get_total_minutes() > 1020.0, "clock continues advancing")
+	# Time-skip over two dusks should emit two distinct day numbers.
+	_dusk_days.clear()
+	c.set_total_minutes(1000.0)
+	c.advance_seconds(1440.0)
+	_check(_dusk_days.size() == 2 and _dusk_days[0] == 1 and _dusk_days[1] == 2,
+		"large time skip emits each dusk once")
 	c.queue_free()
+
+	# The title-screen QA shortcut should reach the scene from an Android
+	# debug build without changing the standard NEW GAME progression.
+	var original_dev_setting: Variant = ProjectSettings.get_setting("reaper/dev_shortcuts", false)
+	ProjectSettings.set_setting("reaper/dev_shortcuts", true)
+	var title = TitleScreen.new()
+	title.scene_changer = Callable(self, "_capture_scene")
+	title._enter_reserve_test()
+	_check(_navigated_to == "res://scenes/room_gd1.tscn",
+		"debug title-screen shortcut opens Reserve immediately")
+	title.free()
+	ProjectSettings.set_setting("reaper/dev_shortcuts", original_dev_setting)
 
 	var room := Node2D.new()
 	room.name = "ReserveTestRoom"
@@ -83,6 +103,11 @@ func _run() -> void:
 	_check(bool(near.trigger_interaction()), "focused creature can be observed")
 	_check(float(near.get("_reaction_time")) > 0.0,
 		"interaction triggers a visible reaction")
+	_check(residents.get_node_or_null("ObservedSoulThread") != null,
+		"interaction generates a visible soul-thread response")
+	_check(guide._resident_count() == 2,
+		"VFX and sensor nodes are not counted as living residents")
+	_check(guide.is_observing_resident(), "guide advertises nearby observation focus")
 	near._on_body_exited(player)
 	guide._select_nearest()
 	_check(guide.get("_selected") == far,
@@ -97,6 +122,10 @@ func _run() -> void:
 	else:
 		push_error("[RESERVE LOOP TEST] FAIL %d/%d" % [_failed, _checks])
 	quit(1 if _failed > 0 else 0)
+
+func _capture_scene(path: String) -> void:
+	_navigated_to = path
+
 
 func _record_dusk(day: int) -> void:
 	_dusk_days.append(day)
