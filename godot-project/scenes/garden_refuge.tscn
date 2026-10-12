@@ -64,8 +64,7 @@ shape = SubResource("SouthSegment")
 
 [node name="SouthRight" type="CollisionShape2D" parent="Walls"]
 position = Vector2(300, 298)
-shape = SubResource("WallH")
-scale = Vector2(0.444, 1)
+shape = SubResource("SouthSegment")
 
 [node name="Furniture" type="StaticBody2D" parent="."]
 collision_layer = 1
