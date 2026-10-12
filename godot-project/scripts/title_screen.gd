@@ -22,6 +22,20 @@ const ROOM_SCENES := {
 }
 const FALLBACK_SCENE := "res://scenes/room_p1.tscn"
 
+## Restore the real scene for any saved room, including newer world areas.
+## Explicit exceptions are needed only when filename != "room_<id>.tscn".
+static func scene_for_room(room_id: String) -> String:
+	if ROOM_SCENES.has(room_id):
+		return str(ROOM_SCENES[room_id])
+	if room_id == "gd_refuge":
+		return "res://scenes/garden_refuge.tscn"
+	if not room_id.is_valid_identifier():
+		return FALLBACK_SCENE
+	var candidate := "res://scenes/room_%s.tscn" % room_id
+	if FileAccess.file_exists(candidate):
+		return candidate
+	return FALLBACK_SCENE
+
 var game_state = null  # GameState autoload or injected (headless tests)
 var scene_changer = null  # callable(path) override for tests
 
@@ -282,7 +296,7 @@ func _continue() -> void:
 	if game_state != null and game_state.has_method("load_from_slot"):
 		if game_state.load_from_slot(_slot):
 			var pos: Dictionary = game_state.get_position()
-			path = str(ROOM_SCENES.get(str(pos.get("room", "p1")), FALLBACK_SCENE))
+			path = scene_for_room(str(pos.get("room", "p1")))
 	_goto(path)
 
 
