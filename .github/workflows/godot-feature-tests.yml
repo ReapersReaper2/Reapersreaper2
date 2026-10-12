@@ -67,5 +67,7 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/creature_identity_test.gd
       - name: Test per-individual offer memory and refusal safeguards
         run: godot --headless --path godot-project --script res://scripts/offer_memory_test.gd
+      - name: Test fruit-offer spending without player-eating effects
+        run: godot --headless --path godot-project --script res://scripts/fruit_offer_test.gd
       - name: Play through the critical story and gameplay path
         run: godot --headless --path godot-project --script res://scripts/playthrough_test.gd
