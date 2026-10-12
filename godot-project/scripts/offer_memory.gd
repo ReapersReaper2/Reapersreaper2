@@ -48,6 +48,14 @@ static func record_outcome(creature: Dictionary, individual_ref: String,
 		return {"ok": false, "reason": "missing_individual_or_encounter_ref"}
 	if not ALL_OUTCOMES.has(outcome):
 		return {"ok": false, "reason": "unknown_outcome"}
+	# The individual reference MUST be this creature's permanent identity.
+	# Accepting an arbitrary caller string allowed a species ID (or another
+	# same-species animal's ID) to contaminate visit and refusal histories.
+	var bound_ref := str(creature.get("instance_ref", ""))
+	if bound_ref.is_empty():
+		return {"ok": false, "reason": "creature_instance_ref_required"}
+	if bound_ref != individual_ref:
+		return {"ok": false, "reason": "individual_identity_mismatch"}
 	var memory = creature.get("offer_memory", {})
 	if not (memory is Dictionary):
 		return {"ok": false, "reason": "malformed_offer_memory"}
