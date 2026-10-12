@@ -35,6 +35,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/sprite_grounding_test.gd
       - name: Test Reserve clock, creature interaction and artwork
         run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
+      - name: Test living Reserve motion, shadows and awareness
+        run: godot --headless --path godot-project --script res://scripts/reserve_creature_motion_test.gd
       - name: Test proportional battle artwork and fallbacks
         run: godot --headless --path godot-project --script res://scripts/battle_art_fit_test.gd
       - name: Test battle return routing across every world region
