@@ -20,13 +20,25 @@ static func load_texture(path: String) -> Texture2D:
 		_cache[path] = result
 	return result
 
+## Check presence without emitting missing-art errors. Use this ONLY for
+## optional idle/NPC animation sheets; required gameplay sprites still load
+## through load_texture(), which reports missing art loudly.
+static func has_source(path: String) -> bool:
+	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
+		return true
+	var stem := path.get_file().get_basename()
+	return FileAccess.file_exists(CRITICAL_DIR + stem + ".b64") or \
+		FileAccess.file_exists(CRITICAL_DIR + path.get_file() + ".b64")
+
 static func is_lfs_pointer(path: String) -> bool:
 	if not FileAccess.file_exists(path):
 		return false
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return false
-	var heading := file.get_line()
+	# Reading binary PNGs through get_line() caused UTF-8 decoding errors.
+	# LFS pointer files are ASCII; checking raw bytes is safe for both types.
+	var heading := file.get_buffer(64).get_string_from_ascii()
 	file.close()
 	return heading.begins_with("version https://git-lfs.github.com/spec/v1")
 
