@@ -1,0 +1,70 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/garden_interior.gd" id="5"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1080, 50)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(50, 610)
+
+[sub_resource type="CircleShape2D" id="DoorRange"]
+radius = 52.0
+
+[node name="GardenRefuge" type="Node2D"]
+script = ExtResource("1")
+room_id = "gd_refuge"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 130)
+
+[node name="RoomArt" type="Node2D" parent="."]
+script = ExtResource("5")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="North" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -305)
+shape = SubResource("WallH")
+
+[node name="West" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-530, 0)
+shape = SubResource("WallV")
+
+[node name="East" type="CollisionShape2D" parent="Walls"]
+position = Vector2(530, 0)
+shape = SubResource("WallV")
+
+[node name="SouthLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-300, 298)
+shape = SubResource("WallH")
+scale = Vector2(0.444, 1)
+
+[node name="SouthRight" type="CollisionShape2D" parent="Walls"]
+position = Vector2(300, 298)
+shape = SubResource("WallH")
+scale = Vector2(0.444, 1)
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 130)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-44, 150)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitToGarden" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, 295)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_gd1.tscn"
+metadata/target_room_id = "gd1"
+metadata/spawn = Vector2(-500, 215)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitToGarden"]
+shape = SubResource("DoorRange")
