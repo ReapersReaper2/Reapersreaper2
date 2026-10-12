@@ -118,6 +118,11 @@ func load_game(slot: int) -> Dictionary:
 	if typeof(parsed) != TYPE_DICTIONARY:
 		push_error("SaveSystem: corrupt save at %s (JSON parse failed)" % path)
 		return {}
+	var saved_version := int((parsed as Dictionary).get("save_version", 1))
+	if saved_version > SAVE_VERSION:
+		push_warning("SaveSystem: slot %d was written by newer game version %d; refusing downgrade to %d" % [
+			slot, saved_version, SAVE_VERSION])
+		return {}
 	return migrate(parsed)
 
 
@@ -184,11 +189,14 @@ func migrate(data: Dictionary) -> Dictionary:
 				data = migrate_v2_to_v3(data)
 			_:
 				push_error("SaveSystem: no migration path from save v%d" % version)
-				break
+				return {}
 		version = int(data.get("save_version", before))
 		if version <= before:
 			push_error("SaveSystem: migration v%d did not advance save_version" % before)
-			break
+			return {}
+	if version != SAVE_VERSION:
+		push_warning("SaveSystem: refusing unsupported save version %d" % version)
+		return {}
 	return data
 
 
