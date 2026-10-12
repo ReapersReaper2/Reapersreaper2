@@ -45,6 +45,10 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/battle_art_fit_test.gd
       - name: Test battle return routing across every world region
         run: godot --headless --path godot-project --script res://scripts/battle_return_test.gd
+      - name: Test Android joystick visibility and player HUD placement
+        run: godot --headless --path godot-project --script res://scripts/mobile_touch_visibility_test.gd
+      - name: Test NPC/bridge character art and display scale
+        run: godot --headless --path godot-project --script res://scripts/art_test.gd
       - name: Test multi-touch controls and teardown
         run: godot --headless --path godot-project --script res://scripts/mobile_touch_test.gd
       - name: Test seamless battle touch focus and restoration
