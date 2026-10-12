@@ -64,6 +64,7 @@ func _ready() -> void:
 	_build_text()
 	_build_slots()
 	_build_menu()
+	_build_dev_reserve_shortcut()
 	_refresh()
 
 
@@ -196,6 +197,40 @@ func _build_menu() -> void:
 	hint.position = Vector2(-640, 656)
 	hint.size = Vector2(1280, 28)
 	add_child(hint)
+
+
+## Fast QA access to the Reserve in editor/debug APKs. Never present in
+## release builds: the actual story continues to start at Bellhollow Bridge.
+static func dev_shortcuts_enabled() -> bool:
+	return OS.is_debug_build() or bool(ProjectSettings.get_setting("reaper/dev_shortcuts", false))
+
+
+func _build_dev_reserve_shortcut() -> void:
+	if not dev_shortcuts_enabled():
+		return
+	var b := Button.new()
+	b.name = "PlayReserveTest"
+	b.text = "TEST RESERVE  [DEV]"
+	b.tooltip_text = "Enter the playable Reserve for testing. Does not overwrite save slots."
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", 19)
+	b.add_theme_color_override("font_color", Color(0.95, 0.82, 0.58))
+	b.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	b.position = Vector2(-290, 24)
+	b.size = Vector2(270, 48)
+	b.pressed.connect(_enter_reserve_test)
+	add_child(b)
+
+
+func _enter_reserve_test() -> void:
+	if not dev_shortcuts_enabled():
+		return
+	# In-memory fresh state avoids modifying the user's saved progress.
+	if game_state != null and game_state.has_method("new_game"):
+		game_state.new_game()
+		if game_state.has_method("set_position"):
+			game_state.set_position("gd1", 0.0, 100.0)
+	_goto("res://scenes/room_gd1.tscn")
 
 
 func _refresh() -> void:
