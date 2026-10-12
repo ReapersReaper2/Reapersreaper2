@@ -41,6 +41,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/battle_return_test.gd
       - name: Test multi-touch controls and teardown
         run: godot --headless --path godot-project --script res://scripts/mobile_touch_test.gd
+      - name: Test seamless battle touch focus and restoration
+        run: godot --headless --path godot-project --script res://scripts/seamless_battle_test.gd
       - name: Test pause, save feedback and menu lifecycle
         run: godot --headless --path godot-project --script res://scripts/pause_menu_test.gd
       - name: Test cutscene input locks
