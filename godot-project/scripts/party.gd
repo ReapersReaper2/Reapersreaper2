@@ -102,6 +102,8 @@ static func _make_entry(creature_id: String, level: int) -> Dictionary:
 		"sex": _sex,
 		"ability_ids": CreatureData.creature_abilities(c),
 		"statuses": [],
+		# Variant A: creature-sheet mantle ledger, never a breeding slot.
+		"mantles": [],
 	}
 
 
