@@ -40,6 +40,24 @@ func _ready() -> void:
 		new_game()
 
 
+## The title-screen slot summaries use real playtime. Track it only while
+## a gameplay scene is active; never count menus, title idle time, pauses,
+## or workbench/headless test harnesses with no current scene.
+static func is_gameplay_scene(path: String) -> bool:
+	return (path.begins_with("res://scenes/room_") and path.ends_with(".tscn")) or \
+		path == "res://scenes/battle.tscn" or \
+		path == "res://scenes/garden_refuge.tscn"
+
+
+func _process(delta: float) -> void:
+	if delta <= 0.0 or state.is_empty() or get_tree().paused:
+		return
+	var scene := get_tree().current_scene
+	if scene == null or not is_gameplay_scene(scene.scene_file_path):
+		return
+	add_playtime(delta)
+
+
 func new_game() -> void:
 	state = SaveSystemScript.default_save()
 	# Step clock: every new game gets a real run_id/started_at (the
@@ -261,7 +279,10 @@ func set_vigor(vigor: int, vigor_max: int = -1) -> void:
 
 
 func add_playtime(delta: float) -> void:
-	state["playtime"] = float(state.get("playtime", 0.0)) + delta
+	# Never let a negative delta underflow the saved playtime counter.
+	if delta <= 0.0:
+		return
+	state["playtime"] = maxf(0.0, float(state.get("playtime", 0.0))) + delta
 
 
 # --- Last shrine (blackout respawn) --------------------------------------
