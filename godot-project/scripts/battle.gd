@@ -62,6 +62,22 @@ class CreatureDot:
 ## Returns a Node2D positioned at `pos`; caller sets .position like before.
 const CREATURE_ART_DIR := "res://assets/creatures/"
 const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
+## Reserve already defines which approved paintings carry opaque white
+## paper and the exact reversible matte shader. Reuse those rules for
+## battle instead of inventing a second threshold or changing source art.
+const ReserveCreatureArt := preload("res://scripts/reserve_creature.gd")
+static var _battle_paper_shader: Shader = null
+
+static func paper_mat_for(creature_id: String) -> Material:
+	if not ReserveCreatureArt.PAPER_BACKGROUND_ART.has(creature_id):
+		return null
+	if _battle_paper_shader == null:
+		_battle_paper_shader = Shader.new()
+		_battle_paper_shader.code = ReserveCreatureArt.PAPER_CUTOUT_SHADER
+	var matte := ShaderMaterial.new()
+	matte.shader = _battle_paper_shader
+	return matte
+
 ## An approved 384px cell already rendered at ~210px with the old 0.55
 ## scale. Preserve that read while fitting taller painting masters in
 ## the same battle presentation bounds instead of covering the whole UI.
@@ -90,6 +106,10 @@ static func make_creature_visual(creature_id: String, pos: Vector2, fallback_col
 	if tex != null:
 		var spr := Sprite2D.new()
 		spr.texture = tex
+		# Three temporary battle paintings have white paper behind the
+		# subject. They use the same reversible matte as their Reserve
+		# versions; native-alpha sprites are never altered.
+		spr.material = paper_mat_for(creature_id)
 		var fit: float = battle_art_scale(tex)
 		spr.scale = Vector2(fit, fit)
 		spr.position = pos
