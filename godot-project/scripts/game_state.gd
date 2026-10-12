@@ -332,7 +332,10 @@ func add_soul_credits(n: int) -> void:
 
 ## Spend credits. Returns false (no write) when funds are insufficient.
 func spend_soul_credits(n: int) -> bool:
-	if get_soul_credits() < n:
+	# A negative 'price' must never mint credits. Keep zero-cost
+	# transactions legal: several shop/merchant flows use them for free
+	# actions and backwards-compatible cost tables.
+	if n < 0 or get_soul_credits() < n:
 		return false
 	state["soul_credits"] = get_soul_credits() - n
 	return true
