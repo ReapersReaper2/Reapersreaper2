@@ -149,27 +149,71 @@ func _stats_hook(method: String) -> void:
 
 
 func _draw() -> void:
-	var center := Vector2(0, -32)
-	var col: Color = body_color.lerp(Color(1, 1, 1), _flash)
-	# Body: dark red disc.
-	draw_circle(center, 20.0, col)
-	draw_arc(center, 20.0, 0.0, TAU, 20, col.darkened(0.35), 3.0)
-	# Direction tick: small triangle pointing at the facing.
-	var tip: Vector2 = center + _facing * 30.0
-	var side: Vector2 = _facing.rotated(PI * 0.5) * 8.0
+	# Silhouette-first ash marauder; replace the old red test circle with a
+	# hostile humanoid who reads at native Android resolution.
+	var metal := Color(0.32, 0.34, 0.37).lerp(Color.WHITE, _flash)
+	var cloth := Color(0.20, 0.13, 0.15).lerp(Color.WHITE, _flash)
+	var blood := Color(0.55, 0.21, 0.17).lerp(Color.WHITE, _flash)
+	var edge := Color(0.57, 0.44, 0.34).lerp(Color.WHITE, _flash)
+	var charcoal := Color(0.07, 0.08, 0.10)
+	draw_circle(Vector2(7, 7), 26.0, Color(0.02, 0.02, 0.03, 0.36))
+	# Legs + layered boots.
 	draw_colored_polygon(PackedVector2Array([
-		tip, center + _facing * 12.0 + side, center + _facing * 12.0 - side,
-	]), col.lightened(0.25))
-	# Wind-up telegraph: arc that fills as the swipe charges.
+		Vector2(-14, -26), Vector2(-2, -26), Vector2(-5, 5),
+		Vector2(-17, 9), Vector2(-20, 0)
+	]), cloth)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(3, -26), Vector2(15, -28), Vector2(21, 2),
+		Vector2(10, 10), Vector2(4, 3)
+	]), cloth)
+	# Ragged rear cloak for a distinct silhouette.
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-23, -66), Vector2(23, -66), Vector2(27, -20),
+		Vector2(19, -4), Vector2(7, -17), Vector2(-2, -8),
+		Vector2(-16, -18), Vector2(-29, -3)
+	]), cloth)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-18, -66), Vector2(13, -67), Vector2(20, -27),
+		Vector2(9, -24), Vector2(-8, -28), Vector2(-23, -18)
+	]), metal.darkened(0.34))
+	# Steel chest and split harness.
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-17, -70), Vector2(16, -70), Vector2(21, -43),
+		Vector2(13, -25), Vector2(-16, -25), Vector2(-21, -44)
+	]), metal)
+	draw_line(Vector2(-15, -59), Vector2(16, -40), edge, 4.0, true)
+	draw_rect(Rect2(-19, -32, 38, 7), charcoal)
+	# Armored pauldrons, shield and ragged blade.
+	draw_circle(Vector2(-22, -65), 13.0, metal.darkened(0.16))
+	draw_circle(Vector2(21, -65), 13.0, metal.darkened(0.18))
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-33, -51), Vector2(-21, -54), Vector2(-18, -28),
+		Vector2(-28, -21), Vector2(-37, -28)
+	]), blood.darkened(0.32))
+	draw_line(Vector2(28, -41), Vector2(44, -79), edge.darkened(0.2), 6.0, true)
+	draw_line(Vector2(44, -79), Vector2(51, -112), metal.lightened(0.3), 5.0, true)
+	draw_line(Vector2(31, -49), Vector2(48, -45), edge, 5.0, true)
+	# Heavy masked helmet, narrow glowing eye slit.
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-15, -76), Vector2(-20, -96), Vector2(-10, -111),
+		Vector2(13, -110), Vector2(21, -95), Vector2(15, -75)
+	]), charcoal)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-17, -100), Vector2(-7, -111), Vector2(12, -110),
+		Vector2(18, -98), Vector2(12, -91), Vector2(-10, -92)
+	]), metal.darkened(0.2))
+	draw_line(Vector2(-12, -92), Vector2(13, -92), blood.lightened(0.37), 4.0, true)
+	draw_line(Vector2(0, -90), Vector2(0, -78), metal, 4.0, true)
+	# Readable windup and hit impact remain tied to the real combat timers.
+	var center := Vector2(0, -43)
 	if _windup_t >= 0.0:
 		var p: float = clampf(_windup_t / attack_windup, 0.0, 1.0)
 		var a0: float = _facing.angle() - 0.9
-		draw_arc(center, 34.0, a0, a0 + 1.8 * p, 16,
-			Color(1.0, 0.25, 0.2, 0.9), 5.0)
-	# Swipe flash: quick white arc on landing.
+		draw_arc(center, 55.0, a0, a0 + 1.8 * p, 20,
+			Color(1.0, 0.32, 0.19, 0.95), 5.0)
 	if _swipe_flash > 0.0:
 		var a: float = _facing.angle()
-		draw_arc(center, 30.0, a - 0.9, a + 0.9, 16,
+		draw_arc(center, 48.0, a - 0.9, a + 0.9, 16,
 			Color(1, 1, 1, 0.85 * _swipe_flash), 6.0)
 
 
