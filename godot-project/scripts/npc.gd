@@ -71,6 +71,7 @@ func _ready() -> void:
 	($Name as Label).text = npc_name
 	($Body as Polygon2D).color = tint
 	_apply_art()
+	queue_redraw()
 	if is_shopkeeper:
 		($Prompt as Label).text = "[E] shop"
 	elif is_stall:
@@ -361,3 +362,12 @@ func _open_stall() -> void:
 		stall_ui.queue_free()
 		if _player_in_range:
 			$Prompt.visible = true
+
+
+## Painted NPCs stand on the walkable ground, not on top of the backdrop.
+func _draw() -> void:
+	if not has_art():
+		return
+	draw_set_transform(Vector2(0, 0), 0.0, Vector2(1.0, 0.24))
+	draw_circle(Vector2.ZERO, 35.0, Color(0.01, 0.015, 0.02, 0.33))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
