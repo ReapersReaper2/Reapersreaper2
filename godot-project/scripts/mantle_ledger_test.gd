@@ -32,6 +32,8 @@ func _run() -> void:
 		"approved expression can be written to creature sheet")
 	_check(Mantles.breeding_affinity(creature),
 		"breeding can read qualitative mantle affinity")
+	_check(Breeding.has_mantle_affinity(creature),
+		"breeding interface exposes the mantle as a read-only flag")
 	primary["effect_family"] = "INVALID"
 	_check(str((Mantles.records(creature)[0] as Dictionary).get("effect_family", "")) == "CALM",
 		"mantle store takes a deep copy, not mutable caller data")
@@ -68,6 +70,16 @@ func _run() -> void:
 		"echo heredity is forbidden by director decision")
 	_check(Mantles.records(creature).size() == 3,
 		"invalid writes leave the original record set untouched")
+	# Vault/party imports must never retain references to caller-owned
+	# nested mantle arrays, or a later edit can mutate saved creature data.
+	var gs_import = GameState.new()
+	gs_import.new_game()
+	var exported := creature.duplicate(true)
+	_check(Party.append_entry(gs_import, exported),
+		"creature with mantle record can be added to the party")
+	exported["mantles"].clear()
+	_check(Mantles.records(Party.get_entry(gs_import, Party.size(gs_import)-1)).size() == 3,
+		"party import takes ownership of nested mantle data")
 	var snapshot := Breeding._snapshot(creature)
 	_check(not snapshot.has("mantles") and not snapshot.has("mantle"),
 		"breeding snapshot does not carry mantle records")
