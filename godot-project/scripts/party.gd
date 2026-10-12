@@ -27,6 +27,26 @@ const STARTER_ID := "snapling"
 const STARTER_LEVEL := 5
 
 
+## Stable individual identity: never derive this from the species or party
+## index, since two same-species creatures can have different visit histories.
+## Random IDs are internal save data, not names or new fictional canon.
+static func _new_instance_ref() -> String:
+	var crypto := Crypto.new()
+	return "creature_" + crypto.generate_random_bytes(16).hex_encode()
+
+
+## Legacy save and direct-import bridge. Called on the live entry when it
+## is first accessed; once assigned, its reference survives slot movement,
+## party/vault transfers, JSON serialization, and renaming.
+static func ensure_instance_ref(entry: Dictionary) -> String:
+	var current = entry.get("instance_ref", "")
+	if current is String and not (current as String).strip_edges().is_empty():
+		return current
+	var next_ref := _new_instance_ref()
+	entry["instance_ref"] = next_ref
+	return next_ref
+
+
 ## XP needed to go from `level` to `level + 1`.
 static func xp_to_next(level: int) -> int:
 	return int(round(XP_BASE * pow(float(maxi(1, level)), 1.5)))
@@ -64,7 +84,9 @@ static func is_valid_index(gs: Node, index: int) -> bool:
 static func get_entry(gs: Node, index: int) -> Dictionary:
 	if not is_valid_index(gs, index):
 		return {}
-	return _party(gs)[index]
+	var entry: Dictionary = _party(gs)[index]
+	ensure_instance_ref(entry)
+	return entry
 
 
 ## Fresh-game party: just the starter.
@@ -95,6 +117,7 @@ static func _make_entry(creature_id: String, level: int) -> Dictionary:
 	var _sex := "M" if randf() < 0.5 else "F"
 	return {
 		"creature_id": creature_id,
+		"instance_ref": _new_instance_ref(),
 		"level": lv,
 		"xp": 0,
 		"current_hp": unit.max_hp,
@@ -132,7 +155,9 @@ static func append_entry(gs: Node, entry: Dictionary) -> bool:
 	var p: Array = _party(gs)
 	if p.size() >= MAX_SIZE or entry.is_empty():
 		return false
-	p.append(entry.duplicate(true))
+	var owned: Dictionary = entry.duplicate(true)
+	ensure_instance_ref(owned)
+	p.append(owned)
 	_maybe_full_house(gs)
 	return true
 
@@ -143,7 +168,9 @@ static func insert_entry(gs: Node, index: int, entry: Dictionary) -> bool:
 		return false
 	if index < 0 or index > p.size():
 		return false
-	p.insert(index, entry.duplicate(true))
+	var owned: Dictionary = entry.duplicate(true)
+	ensure_instance_ref(owned)
+	p.insert(index, owned)
 	return true
 
 

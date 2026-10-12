@@ -20,6 +20,8 @@ func _run() -> void:
 	var log := Memory.field_log(gs)
 	var a := Party.make_entry("snapling", 5)
 	var b := Party.make_entry("snapling", 5)
+	var ref_a := str(a["instance_ref"])
+	var ref_b := str(b["instance_ref"])
 	_check(a.has("offer_memory") and b.has("offer_memory"),
 		"each new creature has its own offer memory")
 	_check(not Memory.can_attempt_attunement(a), "never visited is not ready")
@@ -28,30 +30,30 @@ func _run() -> void:
 		"no species-level fallback when individual reference is missing")
 	_check(not a["offer_memory"].has("neutral_visits"),
 		"invalid identity does not mutate memory")
-	var one = Memory.record_outcome(a, "instance-A", "encounter-A1", Memory.OUTCOME_NEUTRAL, log)
+	var one = Memory.record_outcome(a, ref_a, "encounter-A1", Memory.OUTCOME_NEUTRAL, log)
 	_check(one["ok"] and one["changed"], "neutral fed/stayed visit recorded")
 	_check(int(Memory.snapshot(a).get("neutral_visits", -1)) == 1,
 		"first neutral visit increments one individual's counter")
 	_check(not Memory.can_attempt_attunement(a),
 		"first neutral observation does not produce a bond")
-	var same = Memory.record_outcome(a, "instance-A", "encounter-A1", Memory.OUTCOME_NEUTRAL, log)
+	var same = Memory.record_outcome(a, ref_a, "encounter-A1", Memory.OUTCOME_NEUTRAL, log)
 	_check(same["ok"] and not same["changed"], "double tap is idempotent")
 	_check(int(Memory.snapshot(a).get("neutral_visits", -1)) == 1,
 		"double tap cannot become two visits")
 	_check(int(Memory.snapshot(b).get("neutral_visits", 0)) == 0,
 		"two individuals of same species never share progress")
-	Memory.record_outcome(a, "instance-A", "encounter-A2", Memory.OUTCOME_NEUTRAL, log)
+	Memory.record_outcome(a, ref_a, "encounter-A2", Memory.OUTCOME_NEUTRAL, log)
 	_check(Memory.can_attempt_attunement(a),
 		"second distinct neutral visit permits a later attunement attempt")
 	_check(not a.has("bonded") and (a.get("mantles", []) as Array).is_empty(),
 		"two visits do not auto-bond or mint a mantle")
-	Memory.record_outcome(a, "instance-A", "encounter-A3", Memory.OUTCOME_NEUTRAL, log)
+	Memory.record_outcome(a, ref_a, "encounter-A3", Memory.OUTCOME_NEUTRAL, log)
 	_check(int(Memory.snapshot(a)["neutral_visits"]) == 2,
 		"neutral readiness is capped at the two-visit threshold")
 
 	# Refusal never writes a tended marker, even after a neutral visit.
-	Memory.record_outcome(b, "instance-B", "encounter-B1", Memory.OUTCOME_NEUTRAL, log)
-	var rejected := Memory.record_outcome(b, "instance-B", "encounter-B2",
+	Memory.record_outcome(b, ref_b, "encounter-B1", Memory.OUTCOME_NEUTRAL, log)
+	var rejected := Memory.record_outcome(b, ref_b, "encounter-B2",
 		Memory.OUTCOME_WITHDREW, log)
 	_check(rejected["ok"] and int(Memory.snapshot(b)["neutral_visits"]) == 1,
 		"withdrawal does not count as a neutral visit")
@@ -60,9 +62,9 @@ func _run() -> void:
 		"hard refusal safely blocks reoffers pending director interval ruling")
 	_check(not b.has("tended") and (b.get("mantles", []) as Array).is_empty(),
 		"refusal never marks tended or grants a mantle")
-	_check(log.size() == 1 and str((log[0] as Dictionary)["individual_ref"]) == "instance-B",
+	_check(log.size() == 1 and str((log[0] as Dictionary)["individual_ref"]) == ref_b,
 		"refusal enters the field log at individual scope")
-	var ignored := Memory.record_outcome(b, "instance-B", "encounter-B3",
+	var ignored := Memory.record_outcome(b, ref_b, "encounter-B3",
 		Memory.OUTCOME_NEUTRAL, log)
 	_check(not ignored["ok"] and str(ignored["reason"]) == "reoffer_pending_ruling",
 		"no immediate retry bypasses the unresolved reoffer interval")
@@ -76,12 +78,12 @@ func _run() -> void:
 	_check(not Memory.reopen_after_ruling(a),
 		"unblocked creature cannot be spuriously reopened")
 
-	var corrupt := {"offer_memory": {"encounters_seen": "not-an-array"}}
+	var corrupt := {"instance_ref": "instance-C", "offer_memory": {"encounters_seen": "not-an-array"}}
 	var before := JSON.stringify(corrupt)
 	_check(not Memory.record_outcome(corrupt, "instance-C", "C1",
 		Memory.OUTCOME_NEUTRAL, log)["ok"], "malformed memory rejected")
 	_check(JSON.stringify(corrupt) == before, "malformed write is transactional")
-	_check(not Memory.record_outcome(a, "instance-A", "A4", "AUTO_BOND", log)["ok"],
+	_check(not Memory.record_outcome(a, ref_a, "A4", "AUTO_BOND", log)["ok"],
 		"unapproved automatic bonding outcome rejected")
 	_check(log.size() == 1, "invalid outcomes cannot generate journal entries")
 	var snapshot := Memory.snapshot(b)
