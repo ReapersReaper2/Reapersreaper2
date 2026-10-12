@@ -173,6 +173,9 @@ func _update_hud() -> void:
 	elif _selected != null:
 		_status.text = ResidentScript.interaction_caption(DisplayServer.is_touchscreen_available()) + "   " + String(_selected.name).to_upper()
 		_status.add_theme_color_override("font_color", GOLD)
+	elif _resident_count() > 0 and _observed_count() >= _resident_count():
+		_status.text = "Residents recorded  ·  continue along the trail"
+		_status.add_theme_color_override("font_color", GOLD)
 	else:
 		_status.text = "Explore the paths to find living creatures"
 		_status.add_theme_color_override("font_color", SOFT)
