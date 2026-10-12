@@ -5,6 +5,7 @@ extends Node2D
 
 const ReactionVfx := preload("res://scripts/reserve_reaction_vfx.gd")
 const CreatureData := preload("res://scripts/creature_data.gd")
+const ResidentScript := preload("res://scripts/reserve_creature.gd")
 const OBSERVED_KEY := "reserve_observed"
 const HIGHLIGHT_SECONDS := 3.2
 const GOLD := Color(0.92, 0.81, 0.62)
@@ -166,7 +167,7 @@ func _update_hud() -> void:
 		_status.text = _highlight_text
 		_status.add_theme_color_override("font_color", GOLD)
 	elif _selected != null:
-		_status.text = "E / INTERACT   " + String(_selected.name).to_upper()
+		_status.text = ResidentScript.interaction_caption(DisplayServer.is_touchscreen_available()) + "   " + String(_selected.name).to_upper()
 		_status.add_theme_color_override("font_color", GOLD)
 	else:
 		_status.text = "Explore the paths to find living creatures"
