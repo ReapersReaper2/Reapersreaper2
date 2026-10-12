@@ -56,7 +56,9 @@ static func get_entry(gs: Node, bi: int, si: int) -> Dictionary:
 	var b := _box(gs, bi)
 	if si < 0 or si >= b.size():
 		return {}
-	return b[si]
+	var entry: Dictionary = b[si]
+	Party.ensure_instance_ref(entry)
+	return entry
 
 
 ## First free [box, slot] across all boxes, or [-1, -1] when the vault
@@ -76,7 +78,9 @@ static func deposit_entry(gs: Node, entry: Dictionary) -> Array:
 	var spot := first_free_slot(gs)
 	if spot[0] < 0:
 		return spot
-	_box(gs, spot[0]).append(entry)
+	var owned: Dictionary = entry.duplicate(true)
+	Party.ensure_instance_ref(owned)
+	_box(gs, spot[0]).append(owned)
 	return spot
 
 
@@ -90,7 +94,9 @@ static func deposit(gs: Node, pi: int) -> Array:
 	if spot[0] < 0:
 		push_warning("Storage: vault full, cannot deposit '%s'" % str(entry.get("creature_id")))
 		return spot
-	_box(gs, spot[0]).append(entry.duplicate())
+	# Deep copy the identity and personal encounter/mantle records together.
+	# A shallow nested copy would let changes in one container leak across.
+	_box(gs, spot[0]).append(entry.duplicate(true))
 	Party.remove_creature(gs, pi)
 	return spot
 
@@ -104,7 +110,8 @@ static func withdraw(gs: Node, bi: int, si: int) -> bool:
 	if Party.size(gs) >= Party.MAX_SIZE:
 		push_warning("Storage: party full, cannot withdraw from box %d slot %d" % [bi, si])
 		return false
-	var entry: Dictionary = (b[si] as Dictionary).duplicate()
+	var entry: Dictionary = (b[si] as Dictionary).duplicate(true)
+	Party.ensure_instance_ref(entry)
 	b.remove_at(si)
 	if not Party.add_creature(gs, str(entry.get("creature_id")), int(entry.get("level"))):
 		# Shouldn't happen (we checked size), but never lose a creature.
