@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/garden_dusk_ambience.gd" id="41"]
 [ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/garden_cottage.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/reserve_creature.gd" id="10"]
@@ -104,6 +105,13 @@ horizontal_alignment = 1
 text = "ENTER REFUGE"
 theme_override_font_sizes/font_size = 18
 theme_override_colors/font_color = Color(0.9, 0.72, 0.45, 1)
+
+[node name="GardenDuskAmbience" type="Node2D" parent="."]
+script = ExtResource("41")
+bounds = Rect2(-1280, -360, 2560, 720)
+seed_value = 117
+mote_count = 54
+lantern_positions = PackedVector2Array(-1025, 170, -495, 96, 290, 108, 1100, 140)
 
 [node name="ReserveClock" type="Node2D" parent="."]
 script = ExtResource("30")

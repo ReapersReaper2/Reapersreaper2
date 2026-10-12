@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/garden_dusk_ambience.gd" id="41"]
 [ext_resource type="Script" path="res://scripts/reserve_clock.gd" id="30"]
 [ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 
@@ -54,6 +55,13 @@ script = ExtResource("22")
 position = Vector2(420, 221)
 destination = "IVY'S SANCTUM"
 direction = "→"
+
+[node name="GardenDuskAmbience" type="Node2D" parent="."]
+script = ExtResource("41")
+bounds = Rect2(-640, -360, 1280, 720)
+seed_value = 227
+mote_count = 30
+lantern_positions = PackedVector2Array(-390, 180, 16, 95, 425, 150)
 
 [node name="ReserveClock" type="Node2D" parent="."]
 script = ExtResource("30")
