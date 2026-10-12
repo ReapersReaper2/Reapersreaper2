@@ -95,7 +95,7 @@ func _run() -> void:
 
 	# The choice outcome is an independent transaction. If the animal
 	# turns away, the fruit remains spent; no creature mantle is created.
-	var creature := {"mantles": []}
+	var creature := {"instance_ref": "individual-A", "mantles": [], "offer_memory": {}}
 	var journal: Array = []
 	var withdrew := Memory.record_outcome(creature, "individual-A", "individual-A.offer-1",
 		Memory.OUTCOME_WITHDREW, journal)
