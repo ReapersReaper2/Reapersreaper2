@@ -32,3 +32,23 @@ These are test scripts, not results. This branch has NOT yet been verified in a 
 ## Still in progress
 
 The bridge artwork behind the road is still a painted skyline; the new bridge floor is code-drawn. Wider world exploration and hand-painted modular terrain remain separate ongoing work. Existing NPCs outside the bundled opening scene may still require the Git LFS art checkout.
+
+## Muse director brief — new progress (2026-10-11)
+
+The priorities below come from Tucker's `PROJECT-EXPORT-20261011.md` in Drive:
+
+- **Critical art recovery:** all seven needed Form 1 + prologue NPC fallback files have been confirmed present. Their Git object SHAs match the exact base64 encoding of the approved Drive PNG bytes, including Mira and the wounded soldier. Note: GitHub's contents API does not return inline content for files larger than 1 MB; an empty fetch response for those files does NOT mean the committed blobs are empty.
+- **Animation pacing:** 6fps directional walking, 1.25fps idle. Sprite grounding is computed from per-sheet opaque-pixel extents; no hardcoded -22px correction.
+- **Opening UI:** existing title screen now displays controls, and `room_p1.gd` shows a contextual objective that changes from crossing the bridge to the combat tutorial and onward route.
+- **Reserve living read:** `reserve_creature.gd` adds subtle breath, sway, bobbing, a proximity sensor and `E / INTERACT` prompt. Interaction emits `interacted` and gives a visual response. It does **not** yet grant captures, write fiction, or bypass the Lullmother decision-at-dusk rules.
+- **Test coverage:** a new smoke test asserts that all seven critical graphics decode, the title screen is the entry scene, and walk/idle FPS are configured as directed.
+
+Run:
+
+```bash
+godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
+```
+
+For Reserve checks, open `res://scenes/room_gd1.tscn` directly and approach each creature. Confirm a prompt appears before pressing interact, that the sprite notices you, and that no immediate capture occurs. Check Android multi-touch separately.
+
+**Coordination:** All changes remain on an isolated ChatGPT branch, not `develop`. Tucker manages mainline integration; Ivy handles actual Godot/phone playtesting. The Muse team continues to own final story/dialogue and painted tileset art.
