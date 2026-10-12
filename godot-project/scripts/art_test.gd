@@ -66,13 +66,24 @@ func _run() -> void:
 		var art := npc.get_node("Art") as Sprite2D
 		_check(npc_name + " art node present", art != null)
 		if art != null:
-			# NPCScript.ART_TARGET_H is the approved display target.
 			var h := art.texture.get_height() * art.scale.y
-			_check(npc_name + " art matches target height",
-				absf(h - float(NPCScript.ART_TARGET_H)) < 1.0)
-			# Feet near y=0 (sprite centered at -60).
-			_check(npc_name + " art positioned", art.position.y < 0.0)
+			var expected: float = NPCScript.art_height_for(npc_name)
+			_check(npc_name + " art matches individually sized target",
+				absf(h - expected) < 1.0)
+			# The feet share the scene collision-ground baseline, while the
+			# label adjusts to each NPC's actual displayed artwork height.
+			_check(npc_name + " feet land at node origin",
+				absf(art.position.y + h * 0.5) < 1.0)
+			var name_label := npc.get_node("Name") as Label
+			_check(npc_name + " label clears its head",
+				name_label.offset_bottom < -h - 20.0)
 		npc.queue_free()
+
+	# The user-reported prologue scale mismatch should never return.
+	_check("Mira is not larger than the mortal protagonist",
+		NPCScript.art_height_for("MIRA") <= 110.0)
+	_check("Mira is visibly smaller than the old 145px master scale",
+		NPCScript.art_height_for("MIRA") < NPCScript.art_height_for("SOLDIER"))
 
 	# 3. NPCs without art stay greybox (shopkeeper, trainers).
 	for npc_name in ["FERRY STALL", "SHORE SCAVENGER", "TIDE HUNTER", "SOMEONE"]:
@@ -84,9 +95,13 @@ func _run() -> void:
 	# 4. art_id export override works.
 	var npc2 := _make_npc("CUSTOM")
 	npc2.art_id = "mira"
+	npc2.art_display_height = 118.0
 	# _ready already ran with no art; re-apply via direct call.
 	npc2._apply_art()
 	_check("art_id override shows art", npc2.has_art())
+	var custom_art := npc2.get_node_or_null("Art") as Sprite2D
+	_check("individual height override applies without renaming character",
+		custom_art != null and absf(custom_art.texture.get_height() * custom_art.scale.y - 118.0) < 1.0)
 	npc2.queue_free()
 
 	# 5. Room backgrounds: texture present, behind gameplay (first child).
