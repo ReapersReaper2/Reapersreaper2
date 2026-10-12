@@ -19,7 +19,7 @@ class_name MollosarSprites
 const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
-const WALK_FPS := 8.0
+const WALK_FPS := 6.0
 const SWING_FPS := 14.0
 ## Figure is ~256px tall inside the 384 cell; 0.5 scale ~= 128px,
 ## matching the old greybox capsule.
@@ -28,7 +28,7 @@ const SPRITE_SCALE := 0.40
 const DIRS := ["down", "up", "left", "right"]
 
 ## Idle animation speed (idle sheets are 2-frame loops).
-const IDLE_FPS := 3.0
+const IDLE_FPS := 1.25
 ## Vertical grounding: form sheets draw the figure ~350px tall inside the
 ## 384 cell, feet ~86px below the cell center at 0.5 scale. Offset the
 ## sprite so the feet land on the CollisionShape2D capsule bottom (+64)
@@ -43,6 +43,7 @@ var _frames: Dictionary = {}
 ## an idle sheet keep the old behavior (walk strip, frame 0).
 var _idle: Dictionary = {}
 var _idle_frames: Dictionary = {}
+var _ground_offsets: Dictionary = {}
 var _idle_on: bool = false
 var _idle_t: float = 0.0
 var _strip_dir: String = "down"
@@ -127,6 +128,7 @@ func _load_form(form: int) -> void:
 	_idle_frames.clear()
 	_swing_tex = null
 	_swing_frames = 0
+	_ground_offsets.clear()
 	for d in DIRS:
 		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
 		var tex := _load_tex(wpath)
@@ -219,9 +221,32 @@ func _draw_frame() -> void:
 	if tex == null:
 		return
 	_sprite.texture = tex
+	_apply_grounding(tex)
 	_sprite.flip_h = _mirrored
 	_sprite.region_enabled = true
 	_sprite.region_rect = Rect2((_frame % count) * CELL, 0, CELL, CELL)
+
+
+## Ground the actual opaque feet of the current sheet on the collision
+## capsule base (+64), rather than assuming every artist's sheet has
+## identical transparent padding. Cache one offset per texture.
+func _apply_grounding(tex: Texture2D) -> void:
+	if _sprite == null or tex == null:
+		return
+	var key := tex.get_instance_id()
+	if _ground_offsets.has(key):
+		_sprite.position.y = float(_ground_offsets[key])
+		return
+	var offset := SPRITE_Y_OFFSET
+	var image := tex.get_image()
+	if image != null and not image.is_empty():
+		var used := image.get_used_rect()
+		if used.has_area():
+			var bottom_px := float(used.end.y)
+			offset = 64.0 - (bottom_px - float(CELL) * 0.5) * SPRITE_SCALE
+			offset = clampf(offset, -28.0, 22.0)
+	_ground_offsets[key] = offset
+	_sprite.position.y = offset
 
 
 ## Advance animation. Call from the player's _physics_process with the
