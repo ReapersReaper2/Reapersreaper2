@@ -66,9 +66,10 @@ func _run() -> void:
 		var art := npc.get_node("Art") as Sprite2D
 		_check(npc_name + " art node present", art != null)
 		if art != null:
-			# Scaled to ~120px tall.
+			# NPCScript.ART_TARGET_H is the approved display target.
 			var h := art.texture.get_height() * art.scale.y
-			_check(npc_name + " art ~120px tall", h > 100.0 and h < 140.0)
+			_check(npc_name + " art matches target height",
+				absf(h - float(NPCScript.ART_TARGET_H)) < 1.0)
 			# Feet near y=0 (sprite centered at -60).
 			_check(npc_name + " art positioned", art.position.y < 0.0)
 		npc.queue_free()
