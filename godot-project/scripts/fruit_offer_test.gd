@@ -96,8 +96,13 @@ func _run() -> void:
 		bool(Memory.snapshot(creature)["reoffer_blocked"]),
 		"rejection has no mantle, only the approved re-offer guard")
 	var serialized := JSON.parse_string(JSON.stringify(gs.state))
-	_check(serialized is Dictionary and
-		(((serialized as Dictionary)["player"] as Dictionary)["fruit"] as Dictionary)["offered"].size() == 1,
+	var persisted_offers := 0
+	if serialized is Dictionary:
+		var saved_player: Dictionary = (serialized as Dictionary).get("player", {})
+		var saved_fruit: Dictionary = saved_player.get("fruit", {})
+		var offered: Array = saved_fruit.get("offered", [])
+		persisted_offers = offered.size()
+	_check(persisted_offers == 1,
 		"offered receipt survives normal JSON save and load")
 
 	# A different ripe fruit can be used for a different offer.
