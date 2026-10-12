@@ -118,35 +118,35 @@ script = ExtResource("31")
 [node name="Dragonthorn" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
 position = Vector2(-750, -140)
-scale = Vector2(0.22, 0.22)
+scale = Vector2(0.105, 0.105)
 bob_amp = 9.0
 bob_speed = 1.4
 
 [node name="Gloomcap" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
 position = Vector2(-350, 180)
-scale = Vector2(0.2, 0.2)
+scale = Vector2(0.08, 0.08)
 bob_amp = 7.0
 bob_speed = 1.8
 
 [node name="Spinehopper" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
 position = Vector2(420, -120)
-scale = Vector2(0.18, 0.18)
+scale = Vector2(0.078, 0.078)
 bob_amp = 11.0
 bob_speed = 2.1
 
 [node name="Bellmaw" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
 position = Vector2(700, 160)
-scale = Vector2(0.22, 0.22)
+scale = Vector2(0.38, 0.38)
 bob_amp = 8.0
 bob_speed = 1.2
 
 [node name="Wispwillow" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
 position = Vector2(950, -100)
-scale = Vector2(0.25, 0.25)
+scale = Vector2(0.38, 0.38)
 bob_amp = 12.0
 bob_speed = 1.0
 
