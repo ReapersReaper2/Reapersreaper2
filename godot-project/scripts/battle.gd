@@ -37,12 +37,18 @@ const StorageScript = preload("res://scripts/storage.gd")
 const ContractsScript = preload("res://scripts/contracts.gd")
 const SporeNeedleScript = preload("res://scripts/spore_needle.gd")
 
-const ROOM_SCENES := {
-	"p1": "res://scenes/room_p1.tscn",
-	"p3": "res://scenes/room_p3.tscn",
-	"c1": "res://scenes/room_c1.tscn",
-}
-const FALLBACK_SCENE := "res://scenes/room_p1.tscn"
+## Keep battle exits aligned with Continue's canonical room resolver.
+## The old three-room lookup sent Garden/Hollow/etc. encounters to P1.
+const RoomRouter := preload("res://scripts/title_screen.gd")
+
+## Resolve without preserving an invalid room ID in the save. If a scene
+## was removed or corrupted, fall back to P1 *and its actual spawn*, not
+## an impossible position attached to a different room.
+static func resolve_return_room(room_id: String) -> Dictionary:
+	var scene_path: String = RoomRouter.scene_for_room(room_id)
+	if scene_path == RoomRouter.FALLBACK_SCENE and room_id != "p1":
+		return {"room": "p1", "scene": scene_path, "fallback": true}
+	return {"room": room_id, "scene": scene_path, "fallback": false}
 
 enum State { INTRO, COMMAND, ABILITIES, ITEMS, ITEM_TARGET, SWITCH, BUSY, END }
 
@@ -1183,19 +1189,31 @@ func _lose() -> void:
 		PartyScript.heal_all(game_state)
 		if game_state.has_method("set_position"):
 			game_state.set_position(room, pos.x, pos.y)
+	var destination := resolve_return_room(room)
+	if bool(destination["fallback"]):
+		push_warning("[BATTLE] unknown shrine room '%s', returning to P1 instead" % room)
+		room = str(destination["room"])
+		pos = Vector2.ZERO
+		if game_state != null and game_state.has_method("set_position"):
+			game_state.set_position(room, pos.x, pos.y)
 	print("[BATTLE] blackout -> shrine in ", room)
 	await _wait(1.0)
-	_goto(str(ROOM_SCENES.get(room, FALLBACK_SCENE)))
+	_goto(str(destination["scene"]))
 
 
 func _return_to_room() -> void:
 	_state = State.END
 	_sync_party_hp()
-	var room := str(_cfg["return_room"])
+	var requested_room := str(_cfg["return_room"])
+	var destination := resolve_return_room(requested_room)
+	var room: String = str(destination["room"])
 	var pos: Vector2 = _cfg["return_pos"]
+	if bool(destination["fallback"]):
+		push_warning("[BATTLE] unknown return room '%s', returning to P1 instead" % requested_room)
+		pos = Vector2.ZERO
 	if game_state != null and game_state.has_method("set_position"):
 		game_state.set_position(room, pos.x, pos.y)
-	_goto(str(ROOM_SCENES.get(room, FALLBACK_SCENE)))
+	_goto(str(destination["scene"]))
 
 
 ## Write the battler's remaining HP back to its party entry so damage
