@@ -133,9 +133,11 @@ func _exit_tree() -> void:
 	_joystick_vector = Vector2.ZERO
 	_apply_movement()
 	if _attack_id >= 0:
-		Input.action_release("scythe_swing")
+		_attack_id = -1
+		_send_action("scythe_swing", false)
 	if _interact_id >= 0:
-		Input.action_release("interact")
+		_interact_id = -1
+		_send_action("interact", false)
 
 func _weapon_caption() -> String:
 	var gs = get_node_or_null("/root/GameState")
