@@ -3,6 +3,11 @@ extends Sprite2D
 ## Keep this script canonical. No capture or lore is granted here:
 ## future Lullmother-bonding systems listen to the interacted signal.
 
+const SpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
+const ART_DIR := "res://assets/creatures/"
+
+@export var art_id: String = ""
+
 signal noticed(creature: Node2D)
 signal interacted(creature: Node2D)
 
@@ -22,6 +27,15 @@ var _sensor: Area2D = null
 var _prompt: Label = null
 
 func _ready() -> void:
+	# Loading at runtime avoids Godot rejecting a Texture2D ext_resource
+	# when a checkout contains only a 130-byte Git LFS pointer.
+	# The approved PNG is preferred, with the exact-source .b64 backup.
+	if texture == null:
+		var name_id := art_id if not art_id.is_empty() else String(name).to_snake_case()
+		var path := ART_DIR + name_id + ".png"
+		texture = SpriteLoader.load_texture(path)
+		if texture == null:
+			push_error("[ReserveCreature] MISSING ART: " + path + " and bundled fallback")
 	_base_position = position
 	_base_scale = scale
 	_base_rotation = rotation
