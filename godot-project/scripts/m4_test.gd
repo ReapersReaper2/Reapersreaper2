@@ -67,6 +67,10 @@ func _exits_for(rid: String) -> Array:
 			out.append({"scene": "res://scenes/room_d2.tscn", "room": "d2"})
 		elif prev != "":
 			out.append({"scene": "res://scenes/room_%s.tscn" % prev, "room": prev})
+	# GD1 now has an intentional third exit into the playable refuge.
+	# Keep the normal neighboring route checks and validate this door too.
+	if rid == "gd1":
+		out.append({"scene": "res://scenes/garden_refuge.tscn", "room": "gd_refuge"})
 	return out
 
 
