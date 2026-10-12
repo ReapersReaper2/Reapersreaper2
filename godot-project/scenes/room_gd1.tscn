@@ -48,6 +48,7 @@ room_rect = Rect2(-1280, -360, 2560, 720)
 player_spawn = Vector2(0, 100)
 
 [node name="Ground" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.18, 0.24, 0.18, 1)
 polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
 
