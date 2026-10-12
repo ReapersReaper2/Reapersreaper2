@@ -16,13 +16,14 @@ class_name MollosarSprites
 ## (push_error with the exact path + LFS hint) so a silent polygon can
 ## never ship unnoticed again.
 
+const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
 const WALK_FPS := 8.0
 const SWING_FPS := 14.0
 ## Figure is ~256px tall inside the 384 cell; 0.5 scale ~= 128px,
 ## matching the old greybox capsule.
-const SPRITE_SCALE := 0.5
+const SPRITE_SCALE := 0.40
 
 const DIRS := ["down", "up", "left", "right"]
 
@@ -32,7 +33,7 @@ const IDLE_FPS := 3.0
 ## 384 cell, feet ~86px below the cell center at 0.5 scale. Offset the
 ## sprite so the feet land on the CollisionShape2D capsule bottom (+64)
 ## instead of floating 22px below it.
-const SPRITE_Y_OFFSET := -22.0
+const SPRITE_Y_OFFSET := -5.0
 
 var _form: int = 0
 var _strips: Dictionary = {}
@@ -100,12 +101,7 @@ func _current_form() -> int:
 ## ResourceLoader needs the editor import cache (absent for files
 ## dropped in via the filesystem and in headless runs).
 static func _load_tex(path: String) -> Texture2D:
-	if not FileAccess.file_exists(path):
-		return null
-	var img := Image.load_from_file(path)
-	if img == null or img.is_empty():
-		return null
-	return ImageTexture.create_from_image(img)
+	return CriticalSpriteLoader.load_texture(path)
 
 
 ## True when the file is a Git LFS pointer stub (131-byte text) rather
