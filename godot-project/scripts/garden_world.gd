@@ -9,6 +9,10 @@ extends Node2D
 @export var landmark: Vector2 = Vector2(300, 100)
 @export var shrine: Vector2 = Vector2(-1000, 200)
 
+const GardenTree := preload("res://scripts/garden_tree.gd")
+
+@export var feature_points: PackedVector2Array = PackedVector2Array()
+
 const SOIL := Color(0.115, 0.155, 0.133)
 const SOIL_2 := Color(0.14, 0.19, 0.155)
 const PATH := Color(0.29, 0.255, 0.205)
@@ -23,30 +27,52 @@ var _rocks: Array[Vector2] = []
 var _tufts: Array[Vector2] = []
 
 func _ready() -> void:
+	# Ground below all actors; individual tree canopies use absolute Z.
+	z_index = -2000
 	_generate()
 	queue_redraw()
+
+func _process(_delta: float) -> void:
+	# Avoid editing existing player / companion movement scripts.
+	for actor_name in ["Player", "Luna"]:
+		var actor := get_parent().get_node_or_null(actor_name) as Node2D
+		if actor != null:
+			actor.z_index = clampi(int(round(actor.position.y + 18.0)), -1900, 1900)
+	var hut := get_parent().get_node_or_null("GardenRefugeCottage") as Node2D
+	if hut != null:
+		hut.z_index = clampi(int(round(hut.position.y + 70.0)), -1900, 1900)
 
 func _route_y(x: float) -> float:
 	return 100.0 + sin(x * 0.004 + float(seed_value)) * 44.0
 
 func _walkway(p: Vector2) -> bool:
-	# A broad east-west spine guarantees both room exits are reachable.
-	if absf(p.y - _route_y(p.x)) < 105.0:
+	# The east-west trail connects both pre-existing exit triggers.
+	if absf(p.y - _route_y(p.x)) < 110.0:
 		return true
-	# A looping secondary garden walk plus branches to the shrine and gate.
+	# A northern loop gives the room optional exploration beyond the main road.
 	var loop_y := -185.0 + sin(p.x * 0.005) * 35.0
-	if absf(p.y - loop_y) < 58.0 and absf(p.x) < bounds.size.x * 0.39:
+	if absf(p.y - loop_y) < 58.0 and absf(p.x - bounds.get_center().x) < bounds.size.x * 0.39:
 		return true
-	if absf(p.x - landmark.x) < 90.0 and p.y > -220.0 and p.y < 210.0:
-		return true
-	if p.x > 0.0 and p.x < 450.0 and absf(p.y + 100.0) < 70.0:
-		return true
-	if absf(p.x - shrine.x) < 95.0 and p.y > -220.0:
-		return true
-	for place in [landmark, shrine, Vector2.ZERO]:
-		if p.distance_to(place) < 156.0:
+	# Every key story location gets an obstacle-free clearing AND a branch
+	# to the primary trail. This also keeps the cottage doorway reachable.
+	var destinations := PackedVector2Array([shrine, landmark])
+	destinations.append_array(feature_points)
+	for destination in destinations:
+		if p.distance_to(destination) < 155.0:
+			return true
+		var trail := Vector2(destination.x, _route_y(destination.x))
+		if _distance_to_segment(p, destination, trail) < 75.0:
 			return true
 	return false
+
+
+static func _distance_to_segment(p: Vector2, a: Vector2, b: Vector2) -> float:
+	var edge := b - a
+	var length_sq := edge.length_squared()
+	if length_sq < 0.001:
+		return p.distance_to(a)
+	var t := clampf((p - a).dot(edge) / length_sq, 0.0, 1.0)
+	return p.distance_to(a + edge * t)
 
 func _generate() -> void:
 	_trees.clear()
@@ -73,19 +99,10 @@ func _generate() -> void:
 				_tufts.append(p)
 
 func _add_tree_collider(p: Vector2) -> void:
-	# The canopy is visual, only the trunk/roots prevent walking.
-	var body := StaticBody2D.new()
-	body.name = "SolidTree"
-	body.position = p
-	body.collision_layer = 1
-	body.collision_mask = 0
-	var shape := CollisionShape2D.new()
-	var circle := CircleShape2D.new()
-	circle.radius = 24.0
-	shape.shape = circle
-	shape.position = Vector2(0, 18)
-	body.add_child(shape)
-	add_child(body)
+	var tree := GardenTree.new()
+	tree.name = "SolidTree"
+	tree.position = p
+	add_child(tree)
 
 func _draw() -> void:
 	draw_rect(bounds, SOIL)
@@ -109,9 +126,7 @@ func _draw() -> void:
 	for p in _rocks:
 		draw_colored_polygon(PackedVector2Array([p + Vector2(-25, 14), p + Vector2(-13, -16), p + Vector2(13, -22), p + Vector2(26, 12)]), STONE)
 		draw_line(p + Vector2(-13, -13), p + Vector2(12, -19), STONE.lightened(0.25), 3.0)
-	# Grove silhouettes: broad, overlapping canopies and visible root bases.
-	for p in _trees:
-		draw_ellipse_tree(p)
+	# Tree canopies are their own canvas items, depth-sorted with the player.
 	# A navigational focal point at the garden entrance.
 	draw_arc(landmark, 72.0, 0, TAU, 32, STONE, 9.0)
 	draw_line(landmark + Vector2(-32, -50), landmark + Vector2(-32, 26), STONE, 10.0)
@@ -119,17 +134,6 @@ func _draw() -> void:
 	draw_arc(landmark + Vector2(0, -45), 32, PI, TAU, 16, STONE.lightened(0.2), 8)
 	_draw_gate(Vector2(bounds.position.x + 70.0, 100.0))
 	_draw_gate(Vector2(bounds.end.x - 70.0, 100.0))
-
-func draw_ellipse_tree(p: Vector2) -> void:
-	draw_circle(p + Vector2(8, 24), 32, Color(0.03, 0.05, 0.045, 0.45))
-	draw_line(p + Vector2(0, 23), p + Vector2(0, -31), TRUNK, 17)
-	draw_line(p + Vector2(-17, 23), p + Vector2(0, 12), TRUNK, 8)
-	draw_line(p + Vector2(17, 21), p + Vector2(0, 12), TRUNK, 8)
-	draw_circle(p + Vector2(0, -45), 45, LEAF)
-	draw_circle(p + Vector2(-23, -57), 31, LEAF_LIGHT.darkened(0.18))
-	draw_circle(p + Vector2(20, -69), 33, LEAF)
-	draw_circle(p + Vector2(-9, -82), 25, LEAF_LIGHT)
-
 
 func _draw_gate(p: Vector2) -> void:
 	# Framed trail opening at each existing exit trigger.
