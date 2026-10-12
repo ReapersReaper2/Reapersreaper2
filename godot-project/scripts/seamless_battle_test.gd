@@ -196,6 +196,20 @@ func _run() -> void:
 	_check("no scene change on defeat", _scene_changes.is_empty())
 	bm.clear_pending()
 
+	print("== unexpected battle teardown releases player and input ==")
+	_check("fourth wild start ok",
+		bm.start_wild_battle("bellowscap", 2, "m3a", Vector2(100, 200)))
+	seamless = _seamless_in(room)
+	_check("aborted encounter had an active pending entry", not bm.pending.is_empty())
+	_check("HUD suspended before abort", not controls.visible and not hud.is_processing_input())
+	seamless.queue_free()
+	await _frames(3)
+	_check("forced teardown removed host", not is_instance_valid(seamless))
+	_check("forced teardown cleared pending battle", bm.pending.is_empty())
+	_check("forced teardown restored player input",
+		not bool(player.get("move_locked")) and not bool(player.get("input_locked")))
+	_check("forced teardown restored mobile HUD", controls.visible and hud.is_processing_input())
+
 	print("== staged battles unchanged: boss keeps scene transition ==")
 	_scene_changes.clear()
 	_check("boss start ok",
