@@ -137,6 +137,20 @@ func _exit_tree() -> void:
 	if _interact_id >= 0:
 		Input.action_release("interact")
 
+func _weapon_caption() -> String:
+	var gs = get_node_or_null("/root/GameState")
+	if gs != null and gs.has_method("get_form") and int(gs.get_form()) == 1:
+		return "SWORD"
+	return "SCYTHE"
+
+func _process(_delta: float) -> void:
+	var current := _weapon_caption()
+	if current != _last_caption:
+		_last_caption = current
+		queue_redraw()
+
+var _last_caption: String = ""
+
 func _draw() -> void:
 	var jr := _radius()
 	var jc := _joy_center()
@@ -146,7 +160,7 @@ func _draw() -> void:
 	var knob := jc + _joystick_vector * jr * 0.58
 	draw_circle(knob, jr * 0.39, Color(0.54, 0.59, 0.60, 0.61))
 	draw_arc(knob, jr * 0.39, 0.0, TAU, 36, PALE, 2.5, true)
-	_draw_button(_attack_center(), _button_radius(), "SCYTHE", _attack_id >= 0)
+	_draw_button(_attack_center(), _button_radius(), _weapon_caption(), _attack_id >= 0)
 	_draw_button(_interact_center(), _button_radius(), "TALK", _interact_id >= 0)
 
 func _draw_button(center: Vector2, radius: float, caption: String, pressed: bool) -> void:
