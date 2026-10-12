@@ -209,7 +209,9 @@ func _draw_frame() -> void:
 		_sprite.flip_h = false
 		var n := _swing_frames
 		_sprite.region_enabled = true
-		_sprite.region_rect = Rect2((_frame % n) * CELL, 0, CELL, CELL)
+		var swing_frame := _frame % n
+		_sprite.region_rect = Rect2(swing_frame * CELL, 0, CELL, CELL)
+		_apply_grounding(_swing_tex, swing_frame)
 		return
 	var tex: Texture2D = _strips.get(_strip_dir, null)
 	var count: int = int(_frames.get(_strip_dir, 1))
@@ -221,32 +223,44 @@ func _draw_frame() -> void:
 	if tex == null:
 		return
 	_sprite.texture = tex
-	_apply_grounding(tex)
 	_sprite.flip_h = _mirrored
 	_sprite.region_enabled = true
-	_sprite.region_rect = Rect2((_frame % count) * CELL, 0, CELL, CELL)
+	var strip_frame := _frame % count
+	_sprite.region_rect = Rect2(strip_frame * CELL, 0, CELL, CELL)
+	_apply_grounding(tex, strip_frame)
 
 
-## Ground the actual opaque feet of the current sheet on the collision
-## capsule base (+64), rather than assuming every artist's sheet has
-## identical transparent padding. Cache one offset per texture.
-func _apply_grounding(tex: Texture2D) -> void:
+## Each 384px cell has its own transparent padding and foot placement.
+## Whole-sheet bounds mix poses and make the character float or sink.
+## Keep the collision capsule's +64 baseline for walk, idle, and swing.
+static func grounding_offset_for_frame(image: Image, frame_index: int) -> float:
+	if image == null or image.is_empty() or frame_index < 0:
+		return SPRITE_Y_OFFSET
+	var left := frame_index * CELL
+	if left >= image.get_width():
+		return SPRITE_Y_OFFSET
+	var width := mini(CELL, image.get_width() - left)
+	var height := mini(CELL, image.get_height())
+	if width <= 0 or height <= 0:
+		return SPRITE_Y_OFFSET
+	var frame_image := image.get_region(Rect2i(left, 0, width, height))
+	var used := frame_image.get_used_rect()
+	if not used.has_area():
+		return SPRITE_Y_OFFSET
+	var bottom_px := float(used.end.y)
+	var offset := 64.0 - (bottom_px - float(CELL) * 0.5) * SPRITE_SCALE
+	return clampf(offset, -28.0, 22.0)
+
+
+## Cache by (texture, frame), not by texture alone. At 5-6fps this
+## performs a pixel scan only on the first visit to each animation cell.
+func _apply_grounding(tex: Texture2D, frame_index: int) -> void:
 	if _sprite == null or tex == null:
 		return
-	var key := tex.get_instance_id()
-	if _ground_offsets.has(key):
-		_sprite.position.y = float(_ground_offsets[key])
-		return
-	var offset := SPRITE_Y_OFFSET
-	var image := tex.get_image()
-	if image != null and not image.is_empty():
-		var used := image.get_used_rect()
-		if used.has_area():
-			var bottom_px := float(used.end.y)
-			offset = 64.0 - (bottom_px - float(CELL) * 0.5) * SPRITE_SCALE
-			offset = clampf(offset, -28.0, 22.0)
-	_ground_offsets[key] = offset
-	_sprite.position.y = offset
+	var key := "%d:%d" % [tex.get_instance_id(), frame_index]
+	if not _ground_offsets.has(key):
+		_ground_offsets[key] = grounding_offset_for_frame(tex.get_image(), frame_index)
+	_sprite.position.y = float(_ground_offsets[key])
 
 
 ## Advance animation. Call from the player's _physics_process with the

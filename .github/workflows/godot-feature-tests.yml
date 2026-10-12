@@ -27,6 +27,8 @@ jobs:
         run: godot --headless --path godot-project --import --quit
       - name: Test visible prologue art and animations
         run: godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
+      - name: Test per-frame sprite foot grounding
+        run: godot --headless --path godot-project --script res://scripts/sprite_grounding_test.gd
       - name: Test Reserve clock, creature interaction and artwork
         run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
       - name: Test garden routes and continue mappings
