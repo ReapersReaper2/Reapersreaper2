@@ -61,17 +61,41 @@ class CreatureDot:
 ## CreatureDot fallback otherwise (Snapling has no art yet — greybox).
 ## Returns a Node2D positioned at `pos`; caller sets .position like before.
 const CREATURE_ART_DIR := "res://assets/creatures/"
+const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
+## An approved 384px cell already rendered at ~210px with the old 0.55
+## scale. Preserve that read while fitting taller painting masters in
+## the same battle presentation bounds instead of covering the whole UI.
+const BATTLE_ART_MAX_DIM := 210.0
+
+static func battle_art_scale(texture: Texture2D) -> float:
+	if texture == null:
+		return 1.0
+	var longest: float = maxf(texture.get_width(), texture.get_height())
+	if longest <= 0.0:
+		return 1.0
+	return minf(1.0, BATTLE_ART_MAX_DIM / longest)
+
+
 static func make_creature_visual(creature_id: String, pos: Vector2, fallback_color: Color, fallback_radius: float) -> Node2D:
 	var path := CREATURE_ART_DIR + creature_id + ".png"
-	if FileAccess.file_exists(path):
-		var img := Image.load_from_file(path)
-		if img != null and not img.is_empty():
-			var spr := Sprite2D.new()
-			spr.texture = ImageTexture.create_from_image(img)
-			# 384px cell, figure ~256px — scale to ~200px battle size.
-			spr.scale = Vector2(0.55, 0.55)
-			spr.position = pos
-			return spr
+	var tex: Texture2D = null
+	# Source art is often checked out as an LFS pointer. The canonical
+	# loader understands the bundled approved-PNG fallbacks.
+	if CriticalSpriteLoader.has_source(path):
+		tex = CriticalSpriteLoader.load_texture(path)
+	# Android exports may retain only imported .ctex resources, not
+	# accessible raw PNG bytes. Prefer the engine importer when available.
+	if tex == null and ResourceLoader.exists(path):
+		tex = load(path) as Texture2D
+	if tex != null:
+		var spr := Sprite2D.new()
+		spr.texture = tex
+		var fit: float = battle_art_scale(tex)
+		spr.scale = Vector2(fit, fit)
+		spr.position = pos
+		return spr
+	# Creatures without approved art stay visible in the existing
+	# greybox fallback instead of rendering an oversized/broken image.
 	var dot := CreatureDot.new()
 	dot.color = fallback_color
 	dot.radius = fallback_radius
