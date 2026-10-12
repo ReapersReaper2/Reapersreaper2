@@ -25,6 +25,13 @@ static var _paper_shader: Shader = null
 ## replaces an oversized temporary painting; zero keeps scene scale.
 @export var overworld_display_height: float = 0.0
 
+## The Android HUD labels its interaction button USE; show the same
+## word on creature prompts so touchscreen players never need to guess
+## which action the PC-only "E" label means.
+static func interaction_caption(touchscreen: bool) -> String:
+	return "USE" if touchscreen else "E / INTERACT"
+
+
 signal noticed(creature: Node2D)
 signal interacted(creature: Node2D)
 
@@ -115,7 +122,7 @@ func _create_awareness() -> void:
 	# A sibling avoids inheriting the sprite's 0.2x import scale.
 	_prompt = Label.new()
 	_prompt.name = String(name) + "_InteractPrompt"
-	_prompt.text = "E / INTERACT"
+	_prompt.text = interaction_caption(DisplayServer.is_touchscreen_available())
 	_prompt.visible = false
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_prompt.size = Vector2(170, 36)
