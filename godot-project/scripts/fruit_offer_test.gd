@@ -36,6 +36,10 @@ func _run() -> void:
 	gs.new_game()
 	var fruit_id := _make_fruit(gs, "foe_a", "ENC-029", 100)
 	_check(not fruit_id.is_empty(), "canon fruit lifecycle produces offerable fruit")
+	if fruit_id.is_empty():
+		push_error("[FRUIT OFFER] Fixture could not harvest first fruit")
+		quit(1)
+		return
 	_check(Fruit.carried(gs).size() == 1, "fruit starts in carried inventory")
 	var active_before := Fruit.active_traits(gs).size()
 	var tokens_before := Fruit.tokens(gs).size()
@@ -47,6 +51,10 @@ func _run() -> void:
 	var payment := Fruit.offer_fruit(gs, fruit_id, "individual-A.offer-1", 101)
 	_check(bool(payment.get("ok", false)) and bool(payment.get("changed", false)),
 		"first real offer spends one unrotted fruit")
+	if not bool(payment.get("ok", false)):
+		push_error("[FRUIT OFFER] Payment failed early: " + str(payment))
+		quit(1)
+		return
 	_check(Fruit.carried(gs).is_empty(), "offered fruit leaves carried inventory")
 	var receipt: Dictionary = (Fruit._player_fruit(gs)["offered"] as Array)[0]
 	_check(receipt.get("fruit_id", "") == fruit_id and
@@ -75,6 +83,10 @@ func _run() -> void:
 
 	var other_id := _make_fruit(gs, "foe_b", "ENC-030", 120)
 	_check(not other_id.is_empty(), "second fruit is independently harvestable")
+	if other_id.is_empty():
+		push_error("[FRUIT OFFER] Fixture could not harvest second fruit")
+		quit(1)
+		return
 	var conflict := Fruit.offer_fruit(gs, other_id, "individual-A.offer-1", 121)
 	_check(not conflict["ok"] and str(conflict["reason"]) == "offer_ref_conflict",
 		"same offer event cannot be charged against a different fruit")
@@ -93,7 +105,7 @@ func _run() -> void:
 		(Fruit._player_fruit(gs)["offered"] as Array).size() == 1,
 		"rejection never refunds the first offered fruit")
 	_check((creature["mantles"] as Array).is_empty() and
-		bool(Memory.snapshot(creature)["reoffer_blocked"]),
+		bool(Memory.snapshot(creature).get("reoffer_blocked", false)),
 		"rejection has no mantle, only the approved re-offer guard")
 	var serialized: Variant = JSON.parse_string(JSON.stringify(gs.state))
 	var persisted_offers := 0
@@ -115,6 +127,10 @@ func _run() -> void:
 	var gs_rotted := GameState.new()
 	gs_rotted.new_game()
 	var expired := _make_fruit(gs_rotted, "foe_c", "ENC-031", 100)
+	if expired.is_empty():
+		push_error("[FRUIT OFFER] Fixture could not harvest expired fruit")
+		quit(1)
+		return
 	var bad := Fruit.offer_fruit(gs_rotted, expired, "individual-C.offer-1", 1300)
 	_check(not bool(bad.get("ok", false)) and str(bad.get("reason", "")) == "rotted",
 		"rotted fruit cannot be used for bonding")
