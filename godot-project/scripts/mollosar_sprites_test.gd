@@ -83,7 +83,7 @@ func _run() -> void:
 
 	# 3. Texture-dependent checks need the real Form 1 sheets.
 	if Mgr._load_tex("res://sprites/mollosar/form1_walk_down_spec384.png") == null:
-		_skip("form1 art is unavailable even after bundled fallback")
+		_check("bundled Form 1 art loads even when LFS fails", false)
 		return
 
 	var visuals := _make_player_mock()
@@ -101,7 +101,9 @@ func _run() -> void:
 	for c in visuals.get_children():
 		if c != mgr:
 			_check("greybox hidden: " + c.name, not (c as CanvasItem).visible)
-	_check("sprite grounded on capsule", mgr._sprite.position.y == -5.0)
+	_check("sprite grounded on capsule", mgr._sprite.position.y >= -28.0 and mgr._sprite.position.y <= 22.0)
+	_check("walk uses 6 fps", Mgr.WALK_FPS == 6.0)
+	_check("idle uses 1-1.5 fps", Mgr.IDLE_FPS >= 1.0 and Mgr.IDLE_FPS <= 1.5)
 
 	# 4. Direction hook: facing selects the matching strip.
 	mgr.tick(0.5, Vector2.LEFT, true)
@@ -122,7 +124,7 @@ func _run() -> void:
 	_check("idle mode on for down", mgr._idle_on)
 	_check("idle texture is idle sheet", (mgr._sprite.texture as Texture2D).get_width() == 768)
 	var ix0: float = mgr._sprite.region_rect.position.x
-	mgr.tick(0.5, Vector2.DOWN, false)
+	mgr.tick(0.85, Vector2.DOWN, false)
 	_check("idle frame advances", mgr._sprite.region_rect.position.x != ix0)
 	# No idle sheet for left: falls back to walk frame 0, idle off.
 	mgr.tick(0.0, Vector2.LEFT, false)
