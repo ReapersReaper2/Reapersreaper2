@@ -135,6 +135,13 @@ func _physics_process(_delta: float) -> void:
 		return
 	if _cue_active:
 		return
+	# Give nearby, visible residents priority over anonymous grass battles.
+	# Do not bank travel steps while observing, then surprise the player
+	# with an instant encounter as soon as they step away.
+	if _near_visible_resident():
+		_steps = 0.0
+		_last_player_pos = _player.position
+		return
 	_track_movement()
 	# Twitch: a viewer vote may open after each battle (between encounters).
 	_maybe_open_post_battle_vote()
@@ -146,6 +153,17 @@ func _physics_process(_delta: float) -> void:
 			_trigger()
 		_steps = 0.0
 		_jitter_threshold()
+
+
+func _near_visible_resident() -> bool:
+	if not is_inside_tree():
+		return false
+	var room := get_parent()
+	if room == null:
+		return false
+	var guide = room.get_node_or_null("ReserveGuide")
+	return guide != null and guide.has_method("is_observing_resident") and bool(
+		guide.call("is_observing_resident"))
 
 
 ## After a battle ends while the player is in the zone, offer viewers a

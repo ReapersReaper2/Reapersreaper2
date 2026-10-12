@@ -1,0 +1,49 @@
+name: Godot 4.3 Feature Tests
+
+on:
+  push:
+    branches:
+      - "chatgpt/**"
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: feature-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  godot-smoke:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 25
+    steps:
+      - name: Check out source with LFS
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 1
+      - name: Import project resources
+        run: godot --headless --path godot-project --import --quit
+      - name: Test visible prologue art and animations
+        run: godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
+      - name: Test per-frame sprite foot grounding
+        run: godot --headless --path godot-project --script res://scripts/sprite_grounding_test.gd
+      - name: Test Reserve clock, creature interaction and artwork
+        run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
+      - name: Test multi-touch controls and teardown
+        run: godot --headless --path godot-project --script res://scripts/mobile_touch_test.gd
+      - name: Test cutscene input locks
+        run: godot --headless --path godot-project --script res://scripts/player_input_lock_test.gd
+      - name: Test movement step accounting and save migration
+        run: godot --headless --path godot-project --script res://scripts/step_driver_test.gd
+      - name: Test garden routes and continue mappings
+        run: godot --headless --path godot-project --script res://scripts/garden_world_test.gd
+      - name: Test atomic save replacement
+        run: godot --headless --path godot-project --script res://scripts/save_atomic_test.gd
+      - name: Play through the critical story and gameplay path
+        run: godot --headless --path godot-project --script res://scripts/playthrough_test.gd

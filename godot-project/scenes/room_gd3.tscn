@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -7,8 +7,10 @@
 [ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/reserve_clock.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
-[ext_resource type="Texture2D" path="res://assets/environments/gd3-ivys-sanctum.png" id="9"]
 [ext_resource type="Script" path="res://scripts/vine_exchange.gd" id="10"]
 
 [sub_resource type="CircleShape2D" id="ExitCircle"]
@@ -29,22 +31,50 @@ script = ExtResource("1")
 room_id = "gd3"
 room_rect = Rect2(-640, -360, 1280, 720)
 player_spawn = Vector2(0, 100)
-[node name="Background" type="Sprite2D" parent="."]
-texture = ExtResource("9")
 
 [node name="Ground" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.18, 0.24, 0.18, 1)
 polygon = PackedVector2Array(-640, 360, 640, 360, 640, -360, -640, -360)
 
+[node name="PlayableGarden" type="Node2D" parent="."]
+script = ExtResource("20")
+bounds = Rect2(-640, -360, 1280, 720)
+shrine = Vector2(-360, 200)
+landmark = Vector2(120, -80)
+seed_value = 319
+density = 0.32
+feature_points = PackedVector2Array(320, -100, 380, -40, 260, -160)
+
+[node name="WestTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(-420, 221)
+destination = "WRATH'S CORNER"
+direction = "←"
+
+[node name="EastTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(420, 221)
+destination = "DEEP GARDEN"
+direction = "→"
+
+[node name="ReserveClock" type="Node2D" parent="."]
+script = ExtResource("30")
+cycle_seconds = 720.0
+starting_hour = 9.0
+
 [node name="Dress1" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.45, 0.30, 0.35, 1)
 polygon = PackedVector2Array(-410, -80, -230, -80, -260, -160, -380, -160)
 
 [node name="Dress2" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.25, 0.38, 0.25, 1)
 polygon = PackedVector2Array(-90, 220, 90, 220, 60, 140, -60, 140)
 
 [node name="Dress3" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.30, 0.28, 0.22, 1)
 polygon = PackedVector2Array(230, -40, 410, -40, 380, -120, 260, -120)
 

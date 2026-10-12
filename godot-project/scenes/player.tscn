@@ -1,10 +1,11 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/scythe.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/camera_shake.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/guide_touch.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/touch_controls.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/scythe_visual.gd" id="6"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_1"]
 radius = 20.0
@@ -44,12 +45,16 @@ offset_bottom = -54.0
 color = Color(0.302, 0.89, 1, 1)
 
 [node name="Scythe" type="Line2D" parent="Visuals"]
+visible = false
 points = PackedVector2Array(34, -72, 34, 44)
 width = 5.0
 default_color = Color(0.42, 0.2, 0.62, 1)
 
 [node name="ScytheRig" type="Node2D" parent="."]
 script = ExtResource("2")
+
+[node name="ScytheVisual" type="Node2D" parent="ScytheRig"]
+script = ExtResource("6")
 
 [node name="Hitbox" type="Area2D" parent="ScytheRig"]
 position = Vector2(75, 0)

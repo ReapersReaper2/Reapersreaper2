@@ -16,23 +16,24 @@ class_name MollosarSprites
 ## (push_error with the exact path + LFS hint) so a silent polygon can
 ## never ship unnoticed again.
 
+const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
-const WALK_FPS := 8.0
+const WALK_FPS := 6.0
 const SWING_FPS := 14.0
 ## Figure is ~256px tall inside the 384 cell; 0.5 scale ~= 128px,
 ## matching the old greybox capsule.
-const SPRITE_SCALE := 0.5
+const SPRITE_SCALE := 0.40
 
 const DIRS := ["down", "up", "left", "right"]
 
 ## Idle animation speed (idle sheets are 2-frame loops).
-const IDLE_FPS := 3.0
+const IDLE_FPS := 1.25
 ## Vertical grounding: form sheets draw the figure ~350px tall inside the
 ## 384 cell, feet ~86px below the cell center at 0.5 scale. Offset the
 ## sprite so the feet land on the CollisionShape2D capsule bottom (+64)
 ## instead of floating 22px below it.
-const SPRITE_Y_OFFSET := -22.0
+const SPRITE_Y_OFFSET := -5.0
 
 var _form: int = 0
 var _strips: Dictionary = {}
@@ -42,6 +43,7 @@ var _frames: Dictionary = {}
 ## an idle sheet keep the old behavior (walk strip, frame 0).
 var _idle: Dictionary = {}
 var _idle_frames: Dictionary = {}
+var _ground_offsets: Dictionary = {}
 var _idle_on: bool = false
 var _idle_t: float = 0.0
 var _strip_dir: String = "down"
@@ -100,12 +102,7 @@ func _current_form() -> int:
 ## ResourceLoader needs the editor import cache (absent for files
 ## dropped in via the filesystem and in headless runs).
 static func _load_tex(path: String) -> Texture2D:
-	if not FileAccess.file_exists(path):
-		return null
-	var img := Image.load_from_file(path)
-	if img == null or img.is_empty():
-		return null
-	return ImageTexture.create_from_image(img)
+	return CriticalSpriteLoader.load_texture(path)
 
 
 ## True when the file is a Git LFS pointer stub (131-byte text) rather
@@ -118,7 +115,8 @@ static func _is_lfs_pointer(path: String) -> bool:
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:
 		return false
-	var line := f.get_line()
+	# Check the raw file header; valid PNG bytes are not UTF-8 lines.
+	var line := f.get_buffer(64).get_string_from_ascii()
 	f.close()
 	return line.begins_with("version https://git-lfs.github.com")
 
@@ -131,6 +129,7 @@ func _load_form(form: int) -> void:
 	_idle_frames.clear()
 	_swing_tex = null
 	_swing_frames = 0
+	_ground_offsets.clear()
 	for d in DIRS:
 		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
 		var tex := _load_tex(wpath)
@@ -150,12 +149,15 @@ func _load_form(form: int) -> void:
 			_frames[d] = maxi(1, int(tex.get_width() / CELL))
 		# Optional idle sheet for this direction (Form 1 ships idle_down).
 		var ipath := "%sform%d_idle_%s_spec384.png" % [SPRITE_DIR, form, d]
-		var itex := _load_tex(ipath)
+		var itex: Texture2D = null
+		if CriticalSpriteLoader.has_source(ipath):
+			itex = _load_tex(ipath)
 		if itex != null:
 			_idle[d] = itex
 			_idle_frames[d] = maxi(1, int(itex.get_width() / CELL))
 	# Form 3's reap-swing strip exists: use it during scythe swings.
-	_swing_tex = _load_tex("%sform%d_reap_swing_spec384.png" % [SPRITE_DIR, form])
+	var swing_path := "%sform%d_reap_swing_spec384.png" % [SPRITE_DIR, form]
+	_swing_tex = _load_tex(swing_path) if CriticalSpriteLoader.has_source(swing_path) else null
 	if _swing_tex != null:
 		_swing_frames = maxi(1, int(_swing_tex.get_width() / CELL))
 	else:
@@ -165,6 +167,7 @@ func _load_form(form: int) -> void:
 		push_error("[MollosarSprites] NO walk strips loaded for form %d — greybox fallback engaged, the player renders as a polygon. Check the sheet paths and LFS state above." % form)
 	_apply_greybox_visibility()
 	_set_strip(_strip_dir)
+	queue_redraw()
 
 
 func has_sprites() -> bool:
@@ -210,7 +213,9 @@ func _draw_frame() -> void:
 		_sprite.flip_h = false
 		var n := _swing_frames
 		_sprite.region_enabled = true
-		_sprite.region_rect = Rect2((_frame % n) * CELL, 0, CELL, CELL)
+		var swing_frame := _frame % n
+		_sprite.region_rect = Rect2(swing_frame * CELL, 0, CELL, CELL)
+		_apply_grounding(_swing_tex, swing_frame)
 		return
 	var tex: Texture2D = _strips.get(_strip_dir, null)
 	var count: int = int(_frames.get(_strip_dir, 1))
@@ -224,7 +229,42 @@ func _draw_frame() -> void:
 	_sprite.texture = tex
 	_sprite.flip_h = _mirrored
 	_sprite.region_enabled = true
-	_sprite.region_rect = Rect2((_frame % count) * CELL, 0, CELL, CELL)
+	var strip_frame := _frame % count
+	_sprite.region_rect = Rect2(strip_frame * CELL, 0, CELL, CELL)
+	_apply_grounding(tex, strip_frame)
+
+
+## Each 384px cell has its own transparent padding and foot placement.
+## Whole-sheet bounds mix poses and make the character float or sink.
+## Keep the collision capsule's +64 baseline for walk, idle, and swing.
+static func grounding_offset_for_frame(image: Image, frame_index: int) -> float:
+	if image == null or image.is_empty() or frame_index < 0:
+		return SPRITE_Y_OFFSET
+	var left := frame_index * CELL
+	if left >= image.get_width():
+		return SPRITE_Y_OFFSET
+	var width := mini(CELL, image.get_width() - left)
+	var height := mini(CELL, image.get_height())
+	if width <= 0 or height <= 0:
+		return SPRITE_Y_OFFSET
+	var frame_image := image.get_region(Rect2i(left, 0, width, height))
+	var used := frame_image.get_used_rect()
+	if not used.has_area():
+		return SPRITE_Y_OFFSET
+	var bottom_px := float(used.end.y)
+	var offset := 64.0 - (bottom_px - float(CELL) * 0.5) * SPRITE_SCALE
+	return clampf(offset, -28.0, 22.0)
+
+
+## Cache by (texture, frame), not by texture alone. At 5-6fps this
+## performs a pixel scan only on the first visit to each animation cell.
+func _apply_grounding(tex: Texture2D, frame_index: int) -> void:
+	if _sprite == null or tex == null:
+		return
+	var key := "%d:%d" % [tex.get_instance_id(), frame_index]
+	if not _ground_offsets.has(key):
+		_ground_offsets[key] = grounding_offset_for_frame(tex.get_image(), frame_index)
+	_sprite.position.y = float(_ground_offsets[key])
 
 
 ## Advance animation. Call from the player's _physics_process with the
@@ -287,3 +327,13 @@ func stop_swing() -> void:
 		_frame = 0
 		_walk_t = 0.0
 		_draw_frame()
+
+
+## Soft contact shadow anchors the painted character to the collision ground.
+## It is behind the Sprite2D child and never becomes a collision shape.
+func _draw() -> void:
+	if not has_sprites():
+		return
+	draw_set_transform(Vector2(0, 64), 0.0, Vector2(1.0, 0.24))
+	draw_circle(Vector2.ZERO, 42.0, Color(0.01, 0.015, 0.02, 0.34))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

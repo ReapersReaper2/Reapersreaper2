@@ -22,6 +22,20 @@ const ROOM_SCENES := {
 }
 const FALLBACK_SCENE := "res://scenes/room_p1.tscn"
 
+## Restore the real scene for any saved room, including newer world areas.
+## Explicit exceptions are needed only when filename != "room_<id>.tscn".
+static func scene_for_room(room_id: String) -> String:
+	if ROOM_SCENES.has(room_id):
+		return str(ROOM_SCENES[room_id])
+	if room_id == "gd_refuge":
+		return "res://scenes/garden_refuge.tscn"
+	if not room_id.is_valid_identifier():
+		return FALLBACK_SCENE
+	var candidate := "res://scenes/room_%s.tscn" % room_id
+	if FileAccess.file_exists(candidate):
+		return candidate
+	return FALLBACK_SCENE
+
 var game_state = null  # GameState autoload or injected (headless tests)
 var scene_changer = null  # callable(path) override for tests
 
@@ -50,6 +64,7 @@ func _ready() -> void:
 	_build_text()
 	_build_slots()
 	_build_menu()
+	_build_dev_reserve_shortcut()
 	_refresh()
 
 
@@ -111,6 +126,18 @@ func _build_text() -> void:
 	sub.position = Vector2(-640, 252)
 	sub.size = Vector2(1280, 40)
 	add_child(sub)
+	# Clear controls primer before the first gameplay scene. This text
+	# teaches controls without altering Muse-owned narrative dialogue.
+	var primer := Label.new()
+	primer.name = "ControlsPrimer"
+	primer.text = "MOVE  WASD / STICK      TALK  E / INTERACT      SWING  SPACE / SCYTHE"
+	primer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	primer.add_theme_font_size_override("font_size", 19)
+	primer.add_theme_color_override("font_color", Color(0.78, 0.72, 0.62))
+	primer.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	primer.position = Vector2(-640, 291)
+	primer.size = Vector2(1280, 31)
+	add_child(primer)
 
 
 func _build_slots() -> void:
@@ -170,6 +197,42 @@ func _build_menu() -> void:
 	hint.position = Vector2(-640, 656)
 	hint.size = Vector2(1280, 28)
 	add_child(hint)
+
+
+## Fast QA access to the Reserve in editor/debug APKs. Never present in
+## release builds: the actual story continues to start at Bellhollow Bridge.
+static func dev_shortcuts_enabled() -> bool:
+	return OS.is_debug_build() or bool(ProjectSettings.get_setting("reaper/dev_shortcuts", false))
+
+
+func _build_dev_reserve_shortcut() -> void:
+	if not dev_shortcuts_enabled():
+		return
+	var b := Button.new()
+	b.name = "PlayReserveTest"
+	b.text = "TEST RESERVE  [DEV]"
+	b.tooltip_text = "Enter the playable Reserve for testing. Does not overwrite save slots."
+	b.focus_mode = Control.FOCUS_NONE
+	b.add_theme_font_size_override("font_size", 19)
+	b.add_theme_color_override("font_color", Color(0.95, 0.82, 0.58))
+	b.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	b.offset_left = -290.0
+	b.offset_top = 24.0
+	b.offset_right = -20.0
+	b.offset_bottom = 72.0
+	b.pressed.connect(_enter_reserve_test)
+	add_child(b)
+
+
+func _enter_reserve_test() -> void:
+	if not dev_shortcuts_enabled():
+		return
+	# In-memory fresh state avoids modifying the user's saved progress.
+	if game_state != null and game_state.has_method("new_game"):
+		game_state.new_game()
+		if game_state.has_method("set_position"):
+			game_state.set_position("gd1", 0.0, 100.0)
+	_goto("res://scenes/room_gd1.tscn")
 
 
 func _refresh() -> void:
@@ -282,7 +345,7 @@ func _continue() -> void:
 	if game_state != null and game_state.has_method("load_from_slot"):
 		if game_state.load_from_slot(_slot):
 			var pos: Dictionary = game_state.get_position()
-			path = str(ROOM_SCENES.get(str(pos.get("room", "p1")), FALLBACK_SCENE))
+			path = scene_for_room(str(pos.get("room", "p1")))
 	_goto(path)
 
 

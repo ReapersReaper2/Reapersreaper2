@@ -66,7 +66,9 @@ func _physics_process(delta: float) -> void:
 	var speed := walk_speed * Depower.walk_speed_mult(_game_state())
 	if flying:
 		speed = walk_speed * Flight.speed_mult()
-	if move_locked:
+	# Cutscenes lock movement as well as combat/interact input. Decelerate
+	# residual velocity without accepting a fresh direction while locked.
+	if move_locked or input_locked:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 	elif input_dir.length() > 0.01:
 		facing = input_dir.normalized()

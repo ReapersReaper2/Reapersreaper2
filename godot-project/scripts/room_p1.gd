@@ -11,6 +11,52 @@ const CutsceneScript := preload("res://scripts/cutscene.gd")
 const CutsceneP2 := preload("res://scripts/cutscene_p2.gd")
 
 var _waves_started: bool = false
+var _objective_label: Label = null
+
+
+func _ready() -> void:
+	super._ready()
+	_build_objective_hud()
+
+
+## Small always-visible gameplay guidance, not Muse-owned story dialogue.
+## Keep it above the opening's scenery and outside the player's path.
+func _build_objective_hud() -> void:
+	if _objective_label != null:
+		return
+	var layer := CanvasLayer.new()
+	layer.name = "ObjectiveHUD"
+	layer.layer = 12
+	add_child(layer)
+	var backing := ColorRect.new()
+	backing.color = Color(0.045, 0.065, 0.075, 0.78)
+	backing.position = Vector2(19, 16)
+	backing.size = Vector2(530, 53)
+	backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(backing)
+	_objective_label = Label.new()
+	_objective_label.position = Vector2(36, 28)
+	_objective_label.size = Vector2(500, 32)
+	_objective_label.add_theme_font_size_override("font_size", 20)
+	_objective_label.add_theme_color_override("font_color", Color(0.92, 0.83, 0.64))
+	_objective_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_objective_label)
+	_refresh_objective()
+
+
+func _process(_delta: float) -> void:
+	_refresh_objective()
+
+
+func _refresh_objective() -> void:
+	if _objective_label == null:
+		return
+	if _flag("p1_bridge_cleared"):
+		_objective_label.text = "OBJECTIVE   Continue east to the tower"
+	elif _waves_started:
+		_objective_label.text = "OBJECTIVE   Defend the bridge  •  SPACE / SCYTHE"
+	else:
+		_objective_label.text = "OBJECTIVE   Cross the bridge  •  WASD / JOYSTICK"
 
 ## 06a canon (Prologue Sc1). The [SPACE] prompt is wiring-side UX, not canon.
 const TUTORIAL_LINES: Array = [

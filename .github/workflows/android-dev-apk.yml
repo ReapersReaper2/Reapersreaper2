@@ -1,0 +1,65 @@
+name: Android Dev APK
+
+on:
+  push:
+    branches:
+      - chatgpt/mobile-touch-cleanup-20261012
+    paths:
+      - ".github/workflows/android-dev-apk.yml"
+      - "godot-project/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-dev-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  export-debug-apk:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 30
+    steps:
+      - name: Check out project artwork and source
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Restore Godot Android toolchain into runner home
+        run: |
+          set -eu
+          test -f /root/.local/share/godot/export_templates/4.3.stable/android_debug.apk
+          test -f /root/.config/godot/editor_settings-4.3.tres
+          test -f /root/debug.keystore
+          mkdir -p "$HOME/.local/share/godot/export_templates" "$HOME/.config/godot"
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+          test -f "$HOME/.local/share/godot/export_templates/4.3.stable/android_debug.apk"
+          test -f "$HOME/.config/godot/editor_settings-4.3.tres"
+
+      - name: Import Godot resources
+        run: godot --headless --path godot-project --import --quit
+
+      - name: Export installable Android debug APK
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/reapers-reaper-debug.apk"
+
+      - name: Validate APK and capture provenance
+        run: |
+          test -s dist/reapers-reaper-debug.apk
+          unzip -tqq dist/reapers-reaper-debug.apk > /dev/null
+          sha256sum dist/reapers-reaper-debug.apk > dist/SHA256SUMS.txt
+          printf '%s\n' "$GITHUB_SHA" > dist/COMMIT.txt
+          du -h dist/reapers-reaper-debug.apk
+
+      - name: Upload debug APK for Ivy and Tucker
+        uses: actions/upload-artifact@v4
+        with:
+          name: reapers-reaper-android-debug
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7

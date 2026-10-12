@@ -49,9 +49,10 @@ const NPC_ART := {
 	"HARROW": "harrow",
 	"ORIGINATOR": "originator",
 }
+const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const ART_DIR := "res://assets/npc/"
 ## Masters are 1024x1536; 120px tall matches Mollosar's ~96-128px scale.
-const ART_TARGET_H := 120.0
+const ART_TARGET_H := 145.0
 
 var _art_sprite: Sprite2D = null
 
@@ -70,6 +71,7 @@ func _ready() -> void:
 	($Name as Label).text = npc_name
 	($Body as Polygon2D).color = tint
 	_apply_art()
+	queue_redraw()
 	if is_shopkeeper:
 		($Prompt as Label).text = "[E] shop"
 	elif is_stall:
@@ -93,12 +95,7 @@ func _ready() -> void:
 ## dropped in via the filesystem and in headless runs).
 ## Same pattern as mollosar_sprites.gd.
 static func _load_tex(path: String) -> Texture2D:
-	if not FileAccess.file_exists(path):
-		return null
-	var img := Image.load_from_file(path)
-	if img == null or img.is_empty():
-		return null
-	return ImageTexture.create_from_image(img)
+	return CriticalSpriteLoader.load_texture(path)
 
 
 ## Resolve which art file this NPC uses ("" = none / greybox).
@@ -117,12 +114,18 @@ func _apply_art() -> void:
 	var aid := resolve_art_id()
 	if aid == "":
 		return
-	var idle_tex := _load_tex(ART_DIR + aid + "_idle.png")
+	var idle_path := ART_DIR + aid + "_idle.png"
+	var idle_tex: Texture2D = null
+	if CriticalSpriteLoader.has_source(idle_path):
+		idle_tex = _load_tex(idle_path)
 	if idle_tex != null:
 		_apply_idle_art(idle_tex)
 		return
-	var tex := _load_tex(ART_DIR + aid + ".png")
+	var art_path := ART_DIR + aid + ".png"
+	var tex: Texture2D = _load_tex(art_path) if CriticalSpriteLoader.has_source(art_path) else null
 	if tex == null:
+		if npc_name in ["MIRA", "SOLDIER"]:
+			push_error("[NPC] Prologue art unavailable for %s; check Git LFS and assets/critical_sprites/%s.b64" % [npc_name, aid])
 		return
 	var h := tex.get_height()
 	if h <= 0:
@@ -365,3 +368,12 @@ func _open_stall() -> void:
 		stall_ui.queue_free()
 		if _player_in_range:
 			$Prompt.visible = true
+
+
+## Painted NPCs stand on the walkable ground, not on top of the backdrop.
+func _draw() -> void:
+	if not has_art():
+		return
+	draw_set_transform(Vector2(0, 0), 0.0, Vector2(1.0, 0.24))
+	draw_circle(Vector2.ZERO, 35.0, Color(0.01, 0.015, 0.02, 0.33))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

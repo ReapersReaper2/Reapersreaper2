@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_p1.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -6,14 +6,18 @@
 [ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wave_spawner.gd" id="6"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/p1_bellhollow_bridge_1280x720.png" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="8"]
+[ext_resource type="Script" path="res://scripts/prologue_bridge_world.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/prologue_skyline.gd" id="10"]
 
 [sub_resource type="RectangleShape2D" id="WallH"]
 size = Vector2(2688, 64)
 
 [sub_resource type="RectangleShape2D" id="WallV"]
 size = Vector2(64, 848)
+
+[sub_resource type="RectangleShape2D" id="BridgeRail"]
+size = Vector2(2560, 50)
 
 [sub_resource type="CircleShape2D" id="TrigCircle"]
 radius = 120.0
@@ -25,7 +29,11 @@ room_rect = Rect2(-1280, -360, 2560, 720)
 player_spawn = Vector2(-1000, 100)
 
 [node name="Background" type="Sprite2D" parent="."]
-texture = ExtResource("7")
+z_index = -2
+script = ExtResource("10")
+
+[node name="WalkableBridge" type="Node2D" parent="."]
+script = ExtResource("9")
 
 [node name="Walls" type="StaticBody2D" parent="."]
 
@@ -45,6 +53,18 @@ shape = SubResource("WallV")
 position = Vector2(1312, 0)
 shape = SubResource("WallV")
 
+[node name="BridgeRails" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="NorthParapet" type="CollisionShape2D" parent="BridgeRails"]
+position = Vector2(0, -127)
+shape = SubResource("BridgeRail")
+
+[node name="SouthParapet" type="CollisionShape2D" parent="BridgeRails"]
+position = Vector2(0, 318)
+shape = SubResource("BridgeRail")
+
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(-1000, 100)
 
@@ -63,10 +83,10 @@ npc_name = "MIRA"
 tint = Color(0.75, 0.55, 0.45, 1)
 lines = PackedStringArray("Please — the tower! They're inside the—")
 talk_flag = "p1_mira_talked"
-repeat_lines = PackedStringArray()
+repeat_lines = PackedStringArray("Keep moving, Mollosar. The tower needs you.")
 
 [node name="WoundedSoldier" parent="." instance=ExtResource("5")]
-position = Vector2(700, -250)
+position = Vector2(700, 145)
 npc_name = "SOLDIER"
 tint = Color(0.6, 0.35, 0.35, 1)
 lines = PackedStringArray("Mollosar. There's too many. The bell tower—", "You can't hold a bridge alone.")
@@ -78,13 +98,13 @@ script = ExtResource("6")
 player_reset_position = Vector2(-1000, 100)
 
 [node name="SpawnWest1" type="Marker2D" parent="WaveSpawner" groups=["invader_spawn"]]
-position = Vector2(-1200, -220)
+position = Vector2(-1200, -24)
 
 [node name="SpawnWest2" type="Marker2D" parent="WaveSpawner" groups=["invader_spawn"]]
 position = Vector2(-1200, 0)
 
 [node name="SpawnWest3" type="Marker2D" parent="WaveSpawner" groups=["invader_spawn"]]
-position = Vector2(-1200, 220)
+position = Vector2(-1200, 228)
 
 [node name="TutorialTrigger" type="Area2D" parent="." groups=["trigger"]]
 position = Vector2(-200, 100)
@@ -95,6 +115,7 @@ metadata/one_shot = true
 shape = SubResource("TrigCircle")
 
 [node name="ZoneVisual" type="Polygon2D" parent="TutorialTrigger"]
+visible = false
 color = Color(0.3, 0.55, 1, 0.15)
 polygon = PackedVector2Array(120, 0, 103.9, 60, 60, 103.9, 0, 120, -60, 103.9, -103.9, 60, -120, 0, -103.9, -60, -60, -103.9, 0, -120, 60, -103.9, 103.9, -60)
 

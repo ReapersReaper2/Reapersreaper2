@@ -75,12 +75,27 @@ func save_game(slot: int, data: Dictionary) -> bool:
 		push_error("SaveSystem: could not create save dir %s" % SAVE_DIR)
 		return false
 	var path := _slot_path(slot)
-	var file := FileAccess.open(path, FileAccess.WRITE)
+	# Never truncate the live slot before the replacement has been fully
+	# written. A crash during a direct write used to destroy existing saves.
+	# The temporary file stays on the same filesystem so rename is atomic.
+	var temp_path := path + ".tmp"
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
 	if file == null:
-		push_error("SaveSystem: cannot write %s (err %d)" % [path, FileAccess.get_open_error()])
+		push_error("SaveSystem: cannot stage %s (err %d)" % [temp_path, FileAccess.get_open_error()])
 		return false
 	file.store_string(JSON.stringify(payload, "\t"))
+	file.flush()
+	var write_error := file.get_error()
 	file.close()
+	if write_error != OK:
+		DirAccess.remove_absolute(temp_path)
+		push_error("SaveSystem: staging write failed (%d); slot %d preserved" % [write_error, slot])
+		return false
+	var rename_error := DirAccess.rename_absolute(temp_path, path)
+	if rename_error != OK:
+		DirAccess.remove_absolute(temp_path)
+		push_error("SaveSystem: could not commit slot %d (%d); existing save preserved" % [slot, rename_error])
+		return false
 	return true
 
 

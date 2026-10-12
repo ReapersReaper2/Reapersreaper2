@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -7,16 +7,18 @@
 [ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
-[ext_resource type="Texture2D" path="res://assets/environments/gd1-garden-perimeter.png" id="9"]
+[ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
+[ext_resource type="Script" path="res://scripts/garden_cottage.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/reserve_creature.gd" id="10"]
-[ext_resource type="Texture2D" path="res://assets/creatures/dragonthorn.png" id="11"]
-[ext_resource type="Texture2D" path="res://assets/creatures/gloomcap.png" id="12"]
-[ext_resource type="Texture2D" path="res://assets/creatures/spinehopper.png" id="13"]
-[ext_resource type="Texture2D" path="res://assets/creatures/bellmaw.png" id="14"]
-[ext_resource type="Texture2D" path="res://assets/creatures/wispwillow.png" id="15"]
+[ext_resource type="Script" path="res://scripts/reserve_clock.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/reserve_guide.gd" id="31"]
 
 [sub_resource type="CircleShape2D" id="ExitCircle"]
 radius = 110.0
+
+[sub_resource type="CircleShape2D" id="RefugeDoorRange"]
+radius = 38.0
 
 [sub_resource type="CircleShape2D" id="RangeCircle"]
 radius = 96.0
@@ -26,6 +28,12 @@ size = Vector2(2560, 64)
 
 [sub_resource type="RectangleShape2D" id="WallV"]
 size = Vector2(64, 848)
+
+[sub_resource type="RectangleShape2D" id="CottageSide"]
+size = Vector2(62, 92)
+
+[sub_resource type="RectangleShape2D" id="CottageRear"]
+size = Vector2(175, 42)
 
 [sub_resource type="RectangleShape2D" id="WildRect_WildZoneRoomGd1"]
 size = Vector2(1792, 380)
@@ -37,66 +45,123 @@ room_id = "gd1"
 room_rect = Rect2(-1280, -360, 2560, 720)
 player_spawn = Vector2(0, 100)
 
-[node name="Background" type="Sprite2D" parent="."]
-texture = ExtResource("9")
 [node name="Ground" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.18, 0.24, 0.18, 1)
 polygon = PackedVector2Array(-1280, 360, 1280, 360, 1280, -360, -1280, -360)
+
+[node name="PlayableGarden" type="Node2D" parent="."]
+script = ExtResource("20")
+bounds = Rect2(-1280, -360, 2560, 720)
+shrine = Vector2(-1000, 200)
+landmark = Vector2(300, 100)
+seed_value = 117
+density = 0.48
+feature_points = PackedVector2Array(-500, 165, -750, -140, -350, 180, 420, -120, 700, 160, 950, -100)
 
 ## SPRINT 2026-10-11 (Jenn plays today): ambient plant-creature residents.
 ## Pure Sprite2D + ReserveCreature sine bob. No collision, no AI — they don't
 ## block player movement. The first three are gd1's encounter-table species.
+[node name="WestTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(-1020, 221)
+destination = "WESTERN TRAIL"
+direction = "←"
+
+[node name="EastTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(1000, 221)
+destination = "WRATH'S CORNER"
+direction = "→"
+
+[node name="GardenRefugeCottage" type="Node2D" parent="."]
+script = ExtResource("21")
+position = Vector2(-500, 45)
+
+[node name="CottageWalls" type="StaticBody2D" parent="."]
+position = Vector2(-500, 45)
+collision_layer = 1
+collision_mask = 0
+
+[node name="WestFront" type="CollisionShape2D" parent="CottageWalls"]
+position = Vector2(-65, 25)
+shape = SubResource("CottageSide")
+
+[node name="EastFront" type="CollisionShape2D" parent="CottageWalls"]
+position = Vector2(65, 25)
+shape = SubResource("CottageSide")
+
+[node name="RearWall" type="CollisionShape2D" parent="CottageWalls"]
+position = Vector2(0, -44)
+shape = SubResource("CottageRear")
+
+[node name="RefugeSign" type="Label" parent="GardenRefugeCottage"]
+offset_left = -71.0
+offset_top = 78.0
+offset_right = 71.0
+offset_bottom = 102.0
+horizontal_alignment = 1
+text = "ENTER REFUGE"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.9, 0.72, 0.45, 1)
+
+[node name="ReserveClock" type="Node2D" parent="."]
+script = ExtResource("30")
+cycle_seconds = 720.0
+starting_hour = 9.0
+
+[node name="ReserveGuide" type="Node2D" parent="."]
+script = ExtResource("31")
+
 [node name="Creatures" type="Node2D" parent="."]
 
 [node name="Dragonthorn" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
-texture = ExtResource("11")
 position = Vector2(-750, -140)
-scale = Vector2(0.22, 0.22)
+scale = Vector2(0.105, 0.105)
 bob_amp = 9.0
 bob_speed = 1.4
 
 [node name="Gloomcap" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
-texture = ExtResource("12")
 position = Vector2(-350, 180)
-scale = Vector2(0.2, 0.2)
+scale = Vector2(0.08, 0.08)
 bob_amp = 7.0
 bob_speed = 1.8
 
 [node name="Spinehopper" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
-texture = ExtResource("13")
 position = Vector2(420, -120)
-scale = Vector2(0.18, 0.18)
+scale = Vector2(0.078, 0.078)
 bob_amp = 11.0
 bob_speed = 2.1
 
 [node name="Bellmaw" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
-texture = ExtResource("14")
 position = Vector2(700, 160)
-scale = Vector2(0.22, 0.22)
+scale = Vector2(0.38, 0.38)
 bob_amp = 8.0
 bob_speed = 1.2
 
 [node name="Wispwillow" type="Sprite2D" parent="Creatures"]
 script = ExtResource("10")
-texture = ExtResource("15")
 position = Vector2(950, -100)
-scale = Vector2(0.25, 0.25)
+scale = Vector2(0.38, 0.38)
 bob_amp = 12.0
 bob_speed = 1.0
 
 [node name="Dress1" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.45, 0.30, 0.35, 1)
 polygon = PackedVector2Array(-730, -80, -550, -80, -580, -160, -700, -160)
 
 [node name="Dress2" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.25, 0.38, 0.25, 1)
 polygon = PackedVector2Array(-90, 220, 90, 220, 60, 140, -60, 140)
 
 [node name="Dress3" type="Polygon2D" parent="."]
+visible = false
 color = Color(0.30, 0.28, 0.22, 1)
 polygon = PackedVector2Array(550, -40, 730, -40, 700, -120, 580, -120)
 
@@ -129,6 +194,8 @@ position = Vector2(-1000, 200)
 shrine_id = "gd1_1"
 
 [node name="WildZoneGd1" type="Area2D" parent="."]
+z_as_relative = false
+z_index = -1950
 script = ExtResource("6")
 position = Vector2(0, 60)
 collision_layer = 0
@@ -198,3 +265,14 @@ metadata/spawn = Vector2(350, 100)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
 shape = SubResource("ExitCircle")
+
+[node name="EnterGardenRefuge" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(-500, 118)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/garden_refuge.tscn"
+metadata/target_room_id = "gd_refuge"
+metadata/spawn = Vector2(0, 60)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnterGardenRefuge"]
+shape = SubResource("RefugeDoorRange")

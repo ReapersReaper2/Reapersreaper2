@@ -1,0 +1,124 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/room.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
+[ext_resource type="Script" path="res://scripts/garden_interior.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/reserve_clock.gd" id="30"]
+[ext_resource type="Script" path="res://scripts/lore_object.gd" id="6"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1080, 50)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(50, 610)
+
+[sub_resource type="RectangleShape2D" id="DeskCollision"]
+size = Vector2(190, 90)
+
+[sub_resource type="RectangleShape2D" id="SouthSegment"]
+size = Vector2(480, 50)
+
+[sub_resource type="CircleShape2D" id="LedgerRange"]
+radius = 92.0
+
+[sub_resource type="RectangleShape2D" id="DoorRange"]
+size = Vector2(90, 65)
+
+[node name="GardenRefuge" type="Node2D"]
+script = ExtResource("1")
+room_id = "gd_refuge"
+room_rect = Rect2(-640, -360, 1280, 720)
+player_spawn = Vector2(0, 60)
+
+[node name="ReserveClock" type="Node2D" parent="."]
+script = ExtResource("30")
+cycle_seconds = 720.0
+starting_hour = 9.0
+show_clock = false
+apply_world_tint = false
+
+[node name="RoomArt" type="Node2D" parent="."]
+script = ExtResource("5")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="North" type="CollisionShape2D" parent="Walls"]
+position = Vector2(0, -305)
+shape = SubResource("WallH")
+
+[node name="West" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-530, 0)
+shape = SubResource("WallV")
+
+[node name="East" type="CollisionShape2D" parent="Walls"]
+position = Vector2(530, 0)
+shape = SubResource("WallV")
+
+[node name="SouthLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-300, 298)
+shape = SubResource("SouthSegment")
+
+[node name="SouthRight" type="CollisionShape2D" parent="Walls"]
+position = Vector2(300, 298)
+shape = SubResource("SouthSegment")
+
+[node name="Furniture" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="WritingDesk" type="CollisionShape2D" parent="Furniture"]
+position = Vector2(-247, -150)
+shape = SubResource("DeskCollision")
+
+[node name="RefugeLedger" type="Area2D" parent="."]
+script = ExtResource("6")
+position = Vector2(-245, -135)
+collision_layer = 0
+collision_mask = 1
+prompt_text = "[E] read"
+label_text = "Refuge Ledger"
+tint = Color(0.48, 0.40, 0.28, 1)
+lines = PackedStringArray("A weathered ledger records travelers who found shelter beneath these roots. The final page has been left blank.")
+repeat_lines = PackedStringArray("The ledger still rests on the desk, waiting for another name.")
+flag = "gd_refuge_ledger_read"
+one_shot = false
+
+[node name="Range" type="CollisionShape2D" parent="RefugeLedger"]
+shape = SubResource("LedgerRange")
+
+[node name="Visual" type="Polygon2D" parent="RefugeLedger"]
+polygon = PackedVector2Array(-12, -18, 12, -18, 12, 18, -12, 18)
+
+[node name="Prompt" type="Label" parent="RefugeLedger"]
+visible = false
+offset_left = -45.0
+offset_top = -50.0
+offset_right = 45.0
+offset_bottom = -26.0
+horizontal_alignment = 1
+text = "[E] read"
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.85, 0.74, 0.52, 1)
+
+[node name="Player" parent="." instance=ExtResource("2")]
+position = Vector2(0, 60)
+
+[node name="Luna" parent="." instance=ExtResource("3")]
+position = Vector2(-44, 80)
+
+[node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
+
+[node name="ExitToGarden" type="Area2D" parent="." groups=["exit"]]
+position = Vector2(0, 295)
+collision_layer = 0
+collision_mask = 1
+metadata/target_scene = "res://scenes/room_gd1.tscn"
+metadata/target_room_id = "gd1"
+metadata/spawn = Vector2(-500, 265)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitToGarden"]
+shape = SubResource("DoorRange")

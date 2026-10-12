@@ -9,6 +9,8 @@ class_name DialogueBox
 ## - choice: shows buttons, waits for a pick, fires `choice_made`.
 ## Emits `dialogue_finished` when the list is exhausted.
 
+const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
+
 signal dialogue_finished
 signal trigger_fired(trigger_text: String)
 signal choice_made(option: Dictionary)
@@ -22,6 +24,8 @@ var _typing: bool = false
 var _char_progress: float = 0.0
 var _full_text: String = ""
 var _active: bool = false
+var _portrait_image: TextureRect = null
+var _portrait_holder: ColorRect = null
 
 @onready var _panel: PanelContainer = $Panel
 @onready var _name_label: Label = $Panel/Margin/VBox/NameLabel
@@ -34,6 +38,15 @@ var _active: bool = false
 func _ready() -> void:
 	visible = false
 	_text_label.visible_characters = -1
+	_portrait_holder = $Panel/Margin/VBox/HBox/Portrait as ColorRect
+	_portrait_holder.clip_contents = true
+	_portrait_image = TextureRect.new()
+	_portrait_image.name = "RealPortrait"
+	_portrait_image.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_portrait_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_portrait_holder.add_child(_portrait_image)
 
 
 func _process(delta: float) -> void:
@@ -106,10 +119,42 @@ func _show_current() -> void:
 			_show_current()
 
 
+func _update_portrait(speaker: String) -> void:
+	if _portrait_holder == null or _portrait_image == null:
+		return
+	_portrait_holder.visible = not speaker.is_empty()
+	_portrait_image.visible = false
+	_portrait_label.visible = true
+	var path := ""
+	var crop := Rect2()
+	match speaker.to_upper():
+		"MIRA":
+			path = "res://assets/npc/mira.png"
+			crop = Rect2(245, 0, 520, 520)
+		"SOLDIER":
+			path = "res://assets/npc/wounded_soldier.png"
+			crop = Rect2(210, 0, 580, 580)
+		"MOLLOSAR":
+			path = "res://sprites/mollosar/form1_walk_down_spec384.png"
+			crop = Rect2(112, 0, 165, 170)
+	if path == "":
+		return
+	var texture := CriticalSpriteLoader.load_texture(path)
+	if texture == null:
+		return
+	var portrait := AtlasTexture.new()
+	portrait.atlas = texture
+	portrait.region = crop
+	_portrait_image.texture = portrait
+	_portrait_image.visible = true
+	_portrait_label.visible = false
+
+
 func _show_text(speaker: String, text: String, dim: bool) -> void:
 	_name_label.text = speaker
 	_name_label.visible = not speaker.is_empty()
 	_portrait_label.text = speaker.left(1) if not speaker.is_empty() else "?"
+	_update_portrait(speaker)
 	_full_text = text
 	_char_progress = 0.0
 	_typing = true
@@ -126,6 +171,7 @@ func _show_choice(e: Dictionary) -> void:
 	_name_label.visible = true
 	_name_label.modulate = Color(1.0, 0.85, 0.45)
 	_portrait_label.text = "?"
+	_update_portrait("Choose")
 	_text_label.modulate = Color.WHITE
 	_full_text = ""
 	_typing = false
