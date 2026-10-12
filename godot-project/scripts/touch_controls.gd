@@ -9,6 +9,7 @@ const MobileOverlay := preload("res://scripts/mobile_touch_overlay.gd")
 @export var joystick_radius: float = 82.0
 @export var action_button_radius: float = 53.0
 @export var edge_margin: float = 40.0
+@export var force_touch_controls: bool = false
 
 var overlay: Control = null
 
@@ -48,7 +49,6 @@ func resume_after_battle() -> void:
 ## though the device is touch-driven. Treat native mobile as authoritative,
 ## then use the touchscreen signal for touch laptops/web, with an explicit
 ## opt-in for editor QA. Never hide the only controls on an Android phone.
-@export var force_touch_controls: bool = false
 
 static func should_show_controls(is_native_mobile: bool, touchscreen_available: bool,
 		force_enabled: bool = false) -> bool:
