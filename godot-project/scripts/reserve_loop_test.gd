@@ -23,6 +23,10 @@ func _run() -> void:
 		["spinehopper", 1120, 2240], ["bellmaw", 384, 384],
 		["wispwillow", 384, 384]]:
 		var path: String = "res://assets/creatures/" + spec[0] + ".png"
+		# Bypass the original PNG deliberately: CI's lfs:true checkout
+		# would otherwise conceal broken bundled fallback filenames.
+		var backup := Loader._load_bundled(path)
+		_check(backup != null, path + " exact fallback must decode without LFS")
 		var texture := Loader.load_texture(path)
 		_check(texture != null, path + " must decode with or without LFS")
 		if texture != null:
