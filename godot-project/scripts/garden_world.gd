@@ -34,10 +34,18 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	# Avoid editing existing player / companion movement scripts.
-	for actor_name in ["Player", "Luna"]:
+	for actor_name in ["Player", "Luna", "Ivy", "ShrineGd1", "ShrineGd2",
+			"ShrineGd3", "GardenPerimeter", "WrathsJournal",
+			"IvySanctum", "AncientVine", "TakeCutting"]:
 		var actor := get_parent().get_node_or_null(actor_name) as Node2D
 		if actor != null:
 			actor.z_index = clampi(int(round(actor.position.y + 18.0)), -1900, 1900)
+	var creatures := get_parent().get_node_or_null("Creatures")
+	if creatures != null:
+		for creature in creatures.get_children():
+			if creature is Node2D:
+				creature.z_as_relative = false
+				creature.z_index = clampi(int(round(creature.global_position.y)), -1900, 1900)
 	var hut := get_parent().get_node_or_null("GardenRefugeCottage") as Node2D
 	if hut != null:
 		hut.z_index = clampi(int(round(hut.position.y + 70.0)), -1900, 1900)
