@@ -49,9 +49,10 @@ const NPC_ART := {
 	"HARROW": "harrow",
 	"ORIGINATOR": "originator",
 }
+const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const ART_DIR := "res://assets/npc/"
 ## Masters are 1024x1536; 120px tall matches Mollosar's ~96-128px scale.
-const ART_TARGET_H := 120.0
+const ART_TARGET_H := 145.0
 
 var _art_sprite: Sprite2D = null
 
@@ -93,12 +94,7 @@ func _ready() -> void:
 ## dropped in via the filesystem and in headless runs).
 ## Same pattern as mollosar_sprites.gd.
 static func _load_tex(path: String) -> Texture2D:
-	if not FileAccess.file_exists(path):
-		return null
-	var img := Image.load_from_file(path)
-	if img == null or img.is_empty():
-		return null
-	return ImageTexture.create_from_image(img)
+	return CriticalSpriteLoader.load_texture(path)
 
 
 ## Resolve which art file this NPC uses ("" = none / greybox).
