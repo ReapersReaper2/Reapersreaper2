@@ -33,6 +33,28 @@ func _run() -> void:
 	hud._end_touch(3)
 	_check(hud._attack_id == -1 and hud._interact_id == -1,
 		"both action fingers released")
+	# Mobile players need a way to open the pause/save/settings menu.
+	var pause: Vector2 = hud._pause_center()
+	_check(pause.x > 1150.0 and pause.y < 125.0,
+		"pause control sits in the top-right safe area")
+	_check(pause.distance_to(attack) > 120.0 and pause.distance_to(interact) > 120.0,
+		"pause zone stays apart from combat buttons")
+	# Pausing with three other fingers held must release every action
+	# (otherwise returning from the pause menu resumes a stuck attack).
+	hud._begin_touch(6, joystick + Vector2(70, 0))
+	hud._begin_touch(7, attack)
+	hud._begin_touch(8, interact)
+	hud._begin_touch(9, pause)
+	_check(hud._pause_id == 9, "fourth finger captures pause")
+	_check(hud._joystick_id == -1 and hud._attack_id == -1 and hud._interact_id == -1,
+		"pause drops all active gameplay finger captures")
+	_check(not Input.is_action_pressed("move_right") and
+		not Input.is_action_pressed("scythe_swing") and
+		not Input.is_action_pressed("interact") and
+		not Input.is_action_pressed("ui_cancel"),
+		"pause leaves no synthetic actions stuck")
+	hud._end_touch(9)
+	_check(hud._pause_id == -1, "pause finger releases")
 	hud.queue_free()
 	# Leaving the room while fingers are still down must release all actions.
 	# Otherwise the next scene can inherit a stuck attack or interaction.
