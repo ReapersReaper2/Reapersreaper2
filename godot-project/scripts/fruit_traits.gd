@@ -548,6 +548,69 @@ static func consume(gs, fruit_id: String, steps_total: int = -1,
 	}
 
 
+## D-48 Lullmother fruit offer: a fruit is spent at *offer time*, not
+## upon success. This deliberately does NOT call consume() or grant eating
+## traits, visual tokens, dilution, or opposed-lean tallies.
+##
+## The stable offer_ref keeps a double-tap / animation retry from spending a
+## second fruit. This is only the resource-transaction seam; later gameplay
+## decides whether and how the creature independently responds.
+static func offer_fruit(gs, fruit_id: String, offer_ref: String,
+		steps_total: int = -1) -> Dictionary:
+	if fruit_id.strip_edges().is_empty() or offer_ref.strip_edges().is_empty():
+		return {"ok": false, "reason": "missing_offer_identity"}
+	if steps_total < 0:
+		steps_total = get_steps(gs)
+	var pf := _player_fruit(gs)
+	var past = pf.get("offered", [])
+	if not (past is Array):
+		return {"ok": false, "reason": "malformed_offer_history"}
+	for row_v in (past as Array):
+		if not (row_v is Dictionary):
+			return {"ok": false, "reason": "malformed_offer_history"}
+		var row: Dictionary = row_v
+		if str(row.get("offer_ref", "")) == offer_ref:
+			if str(row.get("fruit_id", "")) != fruit_id:
+				return {"ok": false, "reason": "offer_ref_conflict"}
+			return {"ok": true, "changed": false, "reason": "already_offered",
+				"fruit_id": fruit_id, "offer_ref": offer_ref}
+	var carried_arr: Array = pf["carried"]
+	var at := -1
+	var carried_entry: Dictionary = {}
+	for i in range(carried_arr.size()):
+		var item = carried_arr[i]
+		if not (item is Dictionary):
+			return {"ok": false, "reason": "malformed_carried_fruit"}
+		if str((item as Dictionary).get("fruit_id", "")) == fruit_id:
+			if at >= 0:
+				return {"ok": false, "reason": "duplicate_carried_fruit"}
+			at = i
+			carried_entry = item
+	if at < 0:
+		return {"ok": false, "reason": "missing"}
+	var anchor := int(carried_entry.get("emerged_at_step", 0))
+	if steps_total < anchor:
+		return {"ok": false, "reason": "invalid_offer_clock"}
+	if is_rotted(anchor, steps_total):
+		return {"ok": false, "reason": "rotted"}
+	var receipt := {
+		"fruit_id": fruit_id,
+		"offer_ref": offer_ref,
+		"offered_at_step": steps_total,
+		"source_foe": str(carried_entry.get("source_foe", "")),
+		"lean": str(carried_entry.get("lean", "")),
+		"trait_id": str(carried_entry.get("trait_id", "")),
+	}
+	# At commit the fruit moves out of carried into the offered journal.
+	# This is a single game-state update, persisted by SaveSystem as usual.
+	(past as Array).append(receipt)
+	pf["offered"] = past
+	carried_arr.remove_at(at)
+	_set_harvest_outcome(gs, fruit_id, "offered", steps_total)
+	return {"ok": true, "changed": true, "reason": "",
+		"fruit_id": fruit_id, "offer_ref": offer_ref}
+
+
 ## Gravebloom marker (canon: every defeat grows a persistent gravebloom).
 ## Visual room-state only — the ONLY writer of ledger.graveblooms[]
 ## (INV-7 / R18: lifecycle paths never write gravebloom-family keys).
