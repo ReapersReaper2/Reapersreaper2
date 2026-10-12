@@ -161,6 +161,7 @@ func _load_form(form: int) -> void:
 		push_error("[MollosarSprites] NO walk strips loaded for form %d — greybox fallback engaged, the player renders as a polygon. Check the sheet paths and LFS state above." % form)
 	_apply_greybox_visibility()
 	_set_strip(_strip_dir)
+	queue_redraw()
 
 
 func has_sprites() -> bool:
@@ -283,3 +284,13 @@ func stop_swing() -> void:
 		_frame = 0
 		_walk_t = 0.0
 		_draw_frame()
+
+
+## Soft contact shadow anchors the painted character to the collision ground.
+## It is behind the Sprite2D child and never becomes a collision shape.
+func _draw() -> void:
+	if not has_sprites():
+		return
+	draw_set_transform(Vector2(0, 64), 0.0, Vector2(1.0, 0.24))
+	draw_circle(Vector2.ZERO, 42.0, Color(0.01, 0.015, 0.02, 0.34))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
