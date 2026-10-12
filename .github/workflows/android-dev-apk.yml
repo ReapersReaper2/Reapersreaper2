@@ -28,6 +28,18 @@ jobs:
         with:
           lfs: true
 
+      - name: Restore Godot Android toolchain into runner home
+        run: |
+          set -eu
+          test -f /root/.local/share/godot/export_templates/4.3.stable/android_debug.apk
+          test -f /root/.config/godot/editor_settings-4.3.tres
+          test -f /root/debug.keystore
+          mkdir -p "$HOME/.local/share/godot/export_templates" "$HOME/.config/godot"
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+          test -f "$HOME/.local/share/godot/export_templates/4.3.stable/android_debug.apk"
+          test -f "$HOME/.config/godot/editor_settings-4.3.tres"
+
       - name: Import Godot resources
         run: godot --headless --path godot-project --import --quit
 
