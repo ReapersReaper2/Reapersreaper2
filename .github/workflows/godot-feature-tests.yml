@@ -57,6 +57,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/shrine_test.gd
       - name: Test mantle rules and shared soul-thread ledger
         run: godot --headless --path godot-project --script res://scripts/mantle_ledger_test.gd
+      - name: Test Soul Credits negative-cost exploit prevention
+        run: godot --headless --path godot-project --script res://scripts/credits_guard_test.gd
       - name: Test permanent creature identities through storage and saves
         run: godot --headless --path godot-project --script res://scripts/creature_identity_test.gd
       - name: Test per-individual offer memory and refusal safeguards
