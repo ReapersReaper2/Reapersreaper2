@@ -140,4 +140,10 @@ func is_active() -> bool:
 ## Restore mobile/overworld input even when a scene change or forced
 ## destruction tears down the battle before the normal resolved signal.
 func _exit_tree() -> void:
+	# A forced scene switch or node removal is not a normal resolution.
+	# Without clearing pending, every later encounter can be refused as
+	# "battle already pending" for the remainder of this play session.
+	if not _done and battle_manager != null and is_instance_valid(battle_manager):
+		if battle_manager.has_method("clear_pending"):
+			battle_manager.clear_pending()
 	_unlock_player()
