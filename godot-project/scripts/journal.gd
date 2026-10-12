@@ -219,13 +219,23 @@ func _is_caught(creature_id: String) -> bool:
 		for e in game_state.state["party"]:
 			if str(e.get("creature_id", "")) == creature_id:
 				return true
-	# Check storage.
-	if game_state.state.has("storage"):
-		var st: Dictionary = game_state.state["storage"]
-		for box in st.get("boxes", []):
-			for slot in box:
-				if slot is Dictionary and str(slot.get("creature_id", "")) == creature_id:
-					return true
+	# The canonical Soul Vault stores an Array of box Arrays. An older
+	# prototype used {"boxes": [...]}; read either shape so the Journal
+	# never crashes on an older save or an empty/malformed box.
+	var storage_value = game_state.state.get("storage", [])
+	var boxes: Array = []
+	if storage_value is Array:
+		boxes = storage_value
+	elif storage_value is Dictionary:
+		var old_boxes = (storage_value as Dictionary).get("boxes", [])
+		if old_boxes is Array:
+			boxes = old_boxes
+	for box in boxes:
+		if not (box is Array):
+			continue
+		for slot in box:
+			if slot is Dictionary and str(slot.get("creature_id", "")) == creature_id:
+				return true
 	return false
 
 
