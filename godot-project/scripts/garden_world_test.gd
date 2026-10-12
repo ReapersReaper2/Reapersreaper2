@@ -4,6 +4,7 @@ extends SceneTree
 ## Deterministic route tests, no imported textures or autoloads required.
 
 const GardenWorld := preload("res://scripts/garden_world.gd")
+const TitleScreen := preload("res://scripts/title_screen.gd")
 var _failed: int = 0
 var _checks: int = 0
 
@@ -23,6 +24,10 @@ func _run() -> void:
 		"refuge return spawn must be outside garden door trigger + player capsule")
 	_check(Vector2(0, 130).distance_to(Vector2(0, 295)) > 120.0,
 		"refuge interior spawn must be outside return door trigger")
+		_check(TitleScreen.scene_for_room("gd_refuge") == "res://scenes/garden_refuge.tscn",
+		"Continue must restore the refuge")
+	_check(TitleScreen.scene_for_room("gd2") == "res://scenes/room_gd2.tscn",
+		"Continue must restore later garden rooms")
 	if _failed == 0:
 		print("[GARDEN WORLD TEST] PASS %d checks" % _checks)
 	else:
