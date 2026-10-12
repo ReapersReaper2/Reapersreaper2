@@ -33,6 +33,8 @@ extends Area2D
 ## "" = auto-resolve from npc_name via NPC_ART; unlisted names stay greybox.
 ## Shopkeepers and trainers have no art yet — they keep the greybox.
 @export var art_id: String = ""
+## Optional artwork height in world pixels; zero uses the species/NPC preset.
+@export_range(0.0, 200.0, 1.0) var art_display_height: float = 0.0
 
 ## npc_name -> art file stem in res://assets/npc/.
 const NPC_ART := {
@@ -51,10 +53,22 @@ const NPC_ART := {
 }
 const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const ART_DIR := "res://assets/npc/"
-## Masters are 1024x1536; 120px tall matches Mollosar's ~96-128px scale.
+## Master artwork dimensions can differ; align visible NPCs to Mollosar.
+## Mira previously rendered nearly 45% taller than the player on the bridge.
 const ART_TARGET_H := 145.0
+const MIRA_TARGET_H := 108.0
 
 var _art_sprite: Sprite2D = null
+
+
+static func art_height_for(character_name: String, override_height: float = 0.0) -> float:
+	if override_height > 0.0:
+		return clampf(override_height, 64.0, 200.0)
+	return MIRA_TARGET_H if character_name == "MIRA" else ART_TARGET_H
+
+
+func _art_height() -> float:
+	return art_height_for(npc_name, art_display_height)
 
 const ShopScene := preload("res://scenes/shop.tscn")
 const StallScene := preload("res://scenes/stall.tscn")
@@ -130,15 +144,16 @@ func _apply_art() -> void:
 	var h := tex.get_height()
 	if h <= 0:
 		return
-	var s := ART_TARGET_H / float(h)
+	var target_h := _art_height()
+	var s := target_h / float(h)
 	if _art_sprite == null:
 		_art_sprite = Sprite2D.new()
 		_art_sprite.name = "Art"
 		add_child(_art_sprite)
-		_hide_greybox_body()
+		_hide_greybox_body(target_h)
 	_art_sprite.texture = tex
 	_art_sprite.scale = Vector2(s, s)
-	_art_sprite.position = Vector2(0, -ART_TARGET_H * 0.5)
+	_art_sprite.position = Vector2(0, -target_h * 0.5)
 
 
 ## Idle-sheet path: 2-frame horizontal strip (sheet spec v1, 384x384
@@ -160,31 +175,32 @@ func _apply_idle_art(sheet: Texture2D) -> void:
 		at.atlas = sheet
 		at.region = Rect2(Vector2(cell.x * i, 0), cell)
 		frames.add_frame("default", at)
-	var s := ART_TARGET_H / float(sheet_h)
+	var target_h := _art_height()
+	var s := target_h / float(sheet_h)
 	var anim := AnimatedSprite2D.new()
 	anim.name = "Art"
 	anim.sprite_frames = frames
 	anim.scale = Vector2(s, s)
-	anim.position = Vector2(0, -ART_TARGET_H * 0.5)
+	anim.position = Vector2(0, -target_h * 0.5)
 	add_child(anim)
 	if _art_sprite != null:
 		_art_sprite.queue_free()
 		_art_sprite = null
-	_hide_greybox_body()
+	_hide_greybox_body(target_h)
 	if is_inside_tree():
 		anim.play()
 
 
-func _hide_greybox_body() -> void:
+func _hide_greybox_body(display_h: float) -> void:
 	# Greybox body hides once real art is showing; labels move up
 	# so they sit above the taller figure.
 	($Body as Polygon2D).visible = false
 	var name_l := $Name as Label
-	name_l.offset_top = -ART_TARGET_H - 50.0
-	name_l.offset_bottom = -ART_TARGET_H - 26.0
+	name_l.offset_top = -display_h - 50.0
+	name_l.offset_bottom = -display_h - 26.0
 	var prompt_l := $Prompt as Label
-	prompt_l.offset_top = -ART_TARGET_H - 90.0
-	prompt_l.offset_bottom = -ART_TARGET_H - 66.0
+	prompt_l.offset_top = -display_h - 90.0
+	prompt_l.offset_bottom = -display_h - 66.0
 
 
 ## True when this NPC is showing real art instead of the greybox.
