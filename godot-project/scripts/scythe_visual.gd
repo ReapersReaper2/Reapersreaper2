@@ -51,6 +51,12 @@ func _weapon() -> String:
 
 func _draw() -> void:
 	if _form() <= 1:
+		# Form 1's painted walk sheets already contain the longsword.
+		# Show the overlaid weapon only during attacks, never two swords at idle.
+		var sprite_manager = _player.get("sprites") if _player != null else null
+		if sprite_manager != null and sprite_manager.has_method("has_sprites"):
+			if sprite_manager.has_sprites() and int(_rig.get("state")) == 0:
+				return
 		_draw_mortal_sword()
 	elif _weapon() == WeaponData.WEAPON_LONGSWORD:
 		_draw_mortal_sword()
