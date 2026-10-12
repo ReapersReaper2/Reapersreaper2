@@ -4,6 +4,7 @@ extends SceneTree
 ## godot --headless --path godot-project --script res://scripts/sprite_grounding_test.gd
 
 const Mgr := preload("res://scripts/mollosar_sprites.gd")
+const Loader := preload("res://scripts/critical_sprite_loader.gd")
 var _checks := 0
 var _failed := 0
 
@@ -11,6 +12,10 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	_check(Loader.has_source("res://sprites/mollosar/form1_walk_down_spec384.png"),
+		"required prologue walk source available as PNG or bundled fallback")
+	_check(not Loader.has_source("res://sprites/mollosar/form999_idle_up_spec384.png"),
+		"nonexistent optional sheet detected without load error")
 	var sheet := Image.create(Mgr.CELL * 2, Mgr.CELL, false, Image.FORMAT_RGBA8)
 	sheet.fill(Color.TRANSPARENT)
 	sheet.fill_rect(Rect2i(20, 200, 30, 100), Color.WHITE) # foot y = 300
