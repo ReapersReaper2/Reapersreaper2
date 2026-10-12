@@ -15,7 +15,6 @@ void fragment() {
     vec4 sampled = texture(TEXTURE, UV);
     float paper = min(sampled.r, min(sampled.g, sampled.b));
     float cutout = 1.0 - smoothstep(0.91, 0.995, paper);
-    COLOR = sampled * COLOR;
     COLOR.a *= cutout;
 }
 """
