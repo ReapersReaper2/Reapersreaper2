@@ -5,6 +5,7 @@ extends SceneTree
 const Clock := preload("res://scripts/reserve_clock.gd")
 const Guide := preload("res://scripts/reserve_guide.gd")
 const Resident := preload("res://scripts/reserve_creature.gd")
+const Loader := preload("res://scripts/critical_sprite_loader.gd")
 
 var _failed := 0
 var _checks := 0
@@ -14,6 +15,19 @@ func _initialize() -> void:
 	call_deferred("_run")
 
 func _run() -> void:
+	# Bundled images must decode without Git LFS smudge.
+	for spec in [
+		["dragonthorn", 1600, 1600], ["gloomcap", 1120, 2240],
+		["spinehopper", 1120, 2240], ["bellmaw", 384, 384],
+		["wispwillow", 384, 384]]:
+		var path: String = "res://assets/creatures/" + spec[0] + ".png"
+		var texture := Loader.load_texture(path)
+		_check(texture != null, path + " must decode with or without LFS")
+		if texture != null:
+			_check(texture.get_width() == int(spec[1]) and
+				texture.get_height() == int(spec[2]),
+				path + " matches approved Drive artwork size")
+
 	_check(Clock.phase_for(0.0) == "night", "midnight is night")
 	_check(Clock.phase_for(360.0) == "dawn", "06:00 is dawn")
 	_check(Clock.phase_for(540.0) == "day", "09:00 is day")
