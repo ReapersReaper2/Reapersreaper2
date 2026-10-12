@@ -6,9 +6,9 @@
 [ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wave_spawner.gd" id="6"]
-[ext_resource type="Texture2D" path="res://assets/backgrounds/p1_bellhollow_bridge_1280x720.png" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="8"]
 [ext_resource type="Script" path="res://scripts/prologue_bridge_world.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/prologue_skyline.gd" id="10"]
 
 [sub_resource type="RectangleShape2D" id="WallH"]
 size = Vector2(2688, 64)
@@ -30,7 +30,7 @@ player_spawn = Vector2(-1000, 100)
 
 [node name="Background" type="Sprite2D" parent="."]
 z_index = -2
-texture = ExtResource("7")
+script = ExtResource("10")
 
 [node name="WalkableBridge" type="Node2D" parent="."]
 script = ExtResource("9")
