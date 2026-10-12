@@ -51,6 +51,10 @@ func _run() -> void:
 		"native transparent master replaces matte without resizing source")
 	preview.free()
 
+	_check(Resident.interaction_caption(true) == "USE",
+		"touchscreen resident prompts use same action caption as the HUD")
+	_check(Resident.interaction_caption(false) == "E / INTERACT",
+		"keyboard resident prompts retain the E action hint")
 	_check(Guide.observation_summary("gloomcap").contains("WARY"),
 		"creature observation displays existing temperament data")
 	_check(Guide.observation_summary("dragonthorn").contains("Dragoni"),
