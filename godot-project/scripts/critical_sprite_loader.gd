@@ -32,8 +32,15 @@ static func is_lfs_pointer(path: String) -> bool:
 
 static func _load_bundled(path: String) -> Texture2D:
 	var basename := path.get_file().get_basename()
+	# Prologue sheets use <stem>.b64, but later Reserve exports use
+	# <stem>.png.b64. Both contain base64-encoded approved PNG bytes.
+	# Support both conventions so LFS-stub checkouts render every sprite.
 	var bundled := CRITICAL_DIR + basename + ".b64"
 	if not FileAccess.file_exists(bundled):
+		bundled = CRITICAL_DIR + path.get_file() + ".b64"
+	if not FileAccess.file_exists(bundled):
+		push_error("[CriticalSpriteLoader] Missing PNG and both fallback names: " +
+			path + " (" + basename + ".b64 / " + path.get_file() + ".b64)")
 		return null
 	var encoded := FileAccess.get_file_as_string(bundled).strip_edges()
 	if encoded.is_empty():
