@@ -3,7 +3,7 @@ name: Android Dev APK
 on:
   push:
     branches:
-      - chatgpt/mobile-touch-cleanup-20261012
+      - develop
     paths:
       - ".github/workflows/android-dev-apk.yml"
       - "godot-project/**"
