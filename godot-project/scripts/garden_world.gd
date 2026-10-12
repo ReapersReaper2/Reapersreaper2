@@ -39,6 +39,8 @@ func _walkway(p: Vector2) -> bool:
 		return true
 	if absf(p.x - landmark.x) < 90.0 and p.y > -220.0 and p.y < 210.0:
 		return true
+	if p.x > 0.0 and p.x < 450.0 and absf(p.y + 100.0) < 70.0:
+		return true
 	if absf(p.x - shrine.x) < 95.0 and p.y > -220.0:
 		return true
 	for place in [landmark, shrine, Vector2.ZERO]:
