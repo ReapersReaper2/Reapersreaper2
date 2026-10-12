@@ -46,7 +46,7 @@ func _run() -> void:
 				species + " uses the requested battle anchor")
 			# Reserve's three opaque-paper masters should not appear as white
 			# rectangles in combat. The two native-alpha sources stay raw.
-			var paper := species in ["dragonthorn", "gloomcap", "spinehopper"]
+			var paper: bool = species in ["dragonthorn", "gloomcap", "spinehopper"]
 			_check((sprite.material is ShaderMaterial) == paper,
 				species + " applies the Reserve paper mask only when needed")
 		visual.free()
