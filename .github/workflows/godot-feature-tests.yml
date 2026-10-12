@@ -31,5 +31,7 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/sprite_grounding_test.gd
       - name: Test Reserve clock, creature interaction and artwork
         run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
+      - name: Test multi-touch controls and teardown
+        run: godot --headless --path godot-project --script res://scripts/mobile_touch_test.gd
       - name: Test garden routes and continue mappings
         run: godot --headless --path godot-project --script res://scripts/garden_world_test.gd
