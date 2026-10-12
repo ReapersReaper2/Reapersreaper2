@@ -11,6 +11,8 @@ extends SceneTree
 ## defeat does NOT shrine-trip ("it's a memory"), boss still transitions.
 
 const BM_Script := preload("res://scripts/battle_manager.gd")
+const TouchControlsScript := preload("res://scripts/touch_controls.gd")
+const MobileOverlayScript := preload("res://scripts/mobile_touch_overlay.gd")
 
 
 class TestPlayer:
@@ -73,6 +75,16 @@ func _make_room_with_player(pos: Vector2) -> Array:
 	player.position = pos
 	room.add_child(player)
 	player.add_to_group("player")
+	# Force a visible mobile HUD in headless CI to model Android input.
+	var controls = TouchControlsScript.new()
+	controls.name = "TouchControls"
+	player.add_child(controls)
+	var hud = MobileOverlayScript.new()
+	hud.name = "MobileHUD"
+	controls.add_child(hud)
+	hud.size = Vector2(1280, 720)
+	controls.overlay = hud
+	controls.visible = true
 	return [room, player]
 
 
@@ -94,8 +106,16 @@ func _run() -> void:
 	var parts := _make_room_with_player(Vector2(100, 200))
 	var room: Node = parts[0]
 	var player = parts[1]
+	var controls = player.get_node("TouchControls")
+	var hud = controls.get_node("MobileHUD")
+	_check("mobile HUD initially visible", controls.visible and hud.is_processing_input())
+	hud._begin_touch(17, hud._joy_center() + Vector2(70, 0))
+	_check("mobile joystick pressed before battle", Input.is_action_pressed("move_right"))
 
 	_check("wild start ok", bm.start_wild_battle("bellowscap", 3, "m3a", Vector2(100, 200)))
+	_check("mobile HUD hidden during wild battle", not controls.visible)
+	_check("overworld HUD no longer captures battle touches", not hud.is_processing_input())
+	_check("held joystick released before battle starts", not Input.is_action_pressed("move_right"))
 	_check("no scene change for wild battle", _scene_changes.is_empty())
 	var seamless: Node = _seamless_in(room)
 	_check("seamless node spawned in current room", seamless != null)
@@ -130,6 +150,7 @@ func _run() -> void:
 	_check("layer dismissed after victory", not is_instance_valid(seamless))
 	_check("movement unlocked after victory", not bool(player.get("move_locked")))
 	_check("input unlocked after victory", not bool(player.get("input_locked")))
+	_check("mobile HUD restored after victory", controls.visible and hud.is_processing_input())
 	_check("player still in same room after victory", player.get_parent() == room)
 	_check("player position unchanged after victory", player.position == Vector2(100, 200))
 	_check("pending cleared after victory", bm.pending.is_empty())
@@ -149,6 +170,7 @@ func _run() -> void:
 	_check("flee resolved", _resolved == ["flee"])
 	_check("layer dismissed after flee", not is_instance_valid(seamless))
 	_check("movement unlocked after flee", not bool(player.get("move_locked")))
+	_check("mobile HUD restored after flee", controls.visible and hud.is_processing_input())
 	_check("player still in same room after flee", player.get_parent() == room)
 	_check("player position unchanged after flee", player.position == Vector2(100, 200))
 	_check("pending cleared after flee", bm.pending.is_empty())
@@ -166,6 +188,7 @@ func _run() -> void:
 	_check("defeat resolved", _resolved == ["lose"])
 	_check("layer dismissed after defeat", not is_instance_valid(seamless))
 	_check("movement unlocked after defeat", not bool(player.get("move_locked")))
+	_check("mobile HUD restored after defeat", controls.visible and hud.is_processing_input())
 	_check("player still in same room after defeat", player.get_parent() == room)
 	_check("player position unchanged after defeat (no shrine trip)",
 		player.position == Vector2(100, 200))
