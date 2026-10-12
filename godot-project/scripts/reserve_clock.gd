@@ -12,6 +12,7 @@ signal dusk_started(day_number: int)
 @export_range(60.0, 3600.0, 1.0) var cycle_seconds: float = 720.0
 @export_range(0.0, 24.0, 0.5) var starting_hour: float = 9.0
 @export var show_clock: bool = true
+@export var apply_world_tint: bool = true
 
 const SAVE_KEY := "reserve_time_minutes"
 const DAY_MINUTES := 1440.0
@@ -35,9 +36,10 @@ func _ready() -> void:
 		var saved: Variant = _game_state.get("state")
 		if saved is Dictionary:
 			_total_minutes = maxf(0.0, float(saved.get(SAVE_KEY, _total_minutes)))
-	_world_tint = CanvasModulate.new()
-	_world_tint.name = "ReserveWorldTint"
-	add_child(_world_tint)
+	if apply_world_tint:
+		_world_tint = CanvasModulate.new()
+		_world_tint.name = "ReserveWorldTint"
+		add_child(_world_tint)
 	if show_clock:
 		_build_hud()
 	_update_presentation(true)
@@ -53,12 +55,13 @@ func advance_seconds(seconds: float) -> void:
 		return
 	var old_minutes := _total_minutes
 	_total_minutes += seconds * DAY_MINUTES / cycle_seconds
-	var prior_dusk := int(floor(old_minutes / DAY_MINUTES)) * int(DAY_MINUTES) + 17 * 60
-	var next_dusk := prior_dusk
-	if old_minutes >= float(next_dusk):
-		next_dusk += int(DAY_MINUTES)
-	if _total_minutes >= float(next_dusk) and old_minutes < float(next_dusk):
-		dusk_started.emit(int(floor(float(next_dusk) / DAY_MINUTES)) + 1)
+	# Handle every dusk crossed by time skips, not just a single threshold.
+	# Positive progression emits once per game day; setting a test time via
+	# set_total_minutes never emits retroactive dusk.
+	var old_dusk_index := int(floor((old_minutes - 1020.0) / DAY_MINUTES))
+	var new_dusk_index := int(floor((_total_minutes - 1020.0) / DAY_MINUTES))
+	for day_index in range(old_dusk_index + 1, new_dusk_index + 1):
+		dusk_started.emit(day_index + 1)
 	_update_presentation(false)
 	_store_progress()
 
@@ -129,6 +132,16 @@ func _store_progress() -> void:
 	if minute != _last_save_minute:
 		state[SAVE_KEY] = _total_minutes
 		_last_save_minute = minute
+
+func _exit_tree() -> void:
+	# Preserve the exact fraction when leaving the room/refuge, not only
+	# the last rounded minute (important when dusk is seconds away).
+	if _game_state == null:
+		return
+	var state: Variant = _game_state.get("state")
+	if state is Dictionary:
+		state[SAVE_KEY] = _total_minutes
+
 
 func _build_hud() -> void:
 	var hud := CanvasLayer.new()
