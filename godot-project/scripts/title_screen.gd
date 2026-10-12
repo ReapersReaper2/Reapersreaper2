@@ -216,8 +216,10 @@ func _build_dev_reserve_shortcut() -> void:
 	b.add_theme_font_size_override("font_size", 19)
 	b.add_theme_color_override("font_color", Color(0.95, 0.82, 0.58))
 	b.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	b.position = Vector2(-290, 24)
-	b.size = Vector2(270, 48)
+	b.offset_left = -290.0
+	b.offset_top = 24.0
+	b.offset_right = -20.0
+	b.offset_bottom = 72.0
 	b.pressed.connect(_enter_reserve_test)
 	add_child(b)
 
