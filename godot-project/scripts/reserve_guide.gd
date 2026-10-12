@@ -4,6 +4,7 @@ extends Node2D
 ## Observations go into the creature journal; this never captures creatures.
 
 const ReactionVfx := preload("res://scripts/reserve_reaction_vfx.gd")
+const CreatureData := preload("res://scripts/creature_data.gd")
 const OBSERVED_KEY := "reserve_observed"
 const HIGHLIGHT_SECONDS := 3.2
 const GOLD := Color(0.92, 0.81, 0.62)
@@ -96,9 +97,27 @@ func _on_interacted(creature: Node2D) -> void:
 			if not observed.has(ident):
 				observed.append(ident)
 			state[OBSERVED_KEY] = observed
-	_highlight_text = "%s OBSERVED  ·  %d/%d RESIDENTS" % [
-		String(creature.name).to_upper(), _observed_count(), _resident_count()]
+	_highlight_text = "%s  ·  %d/%d" % [
+		observation_summary(ident), _observed_count(), _resident_count()]
 	_highlight_time = HIGHLIGHT_SECONDS
+
+## Species information comes from data/creatures.json, never generated
+## flavor text or unapproved bonding rules. Avoid showing boss classification
+## as a spoiler and never expose catch rates as a substitute for bonding.
+static func observation_summary(species_id: String) -> String:
+	var info: Dictionary = CreatureData.get_creature(species_id)
+	if info.is_empty():
+		return species_id.capitalize()
+	var n := str(info.get("name", species_id.capitalize())).to_upper()
+	var temperament := str(info.get("temperament", "")).to_upper()
+	var region := str(info.get("region", ""))
+	var detail := ""
+	if not temperament.is_empty() and temperament != "BOSS":
+		detail = temperament
+	if not region.is_empty():
+		detail += ("  ·  " if not detail.is_empty() else "") + region
+	return n + ("  ·  " + detail if not detail.is_empty() else "")
+
 
 func _spawn_reaction(creature: Node2D) -> void:
 	if not is_inside_tree() or not is_instance_valid(creature):
