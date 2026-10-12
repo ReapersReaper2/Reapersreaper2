@@ -44,9 +44,22 @@ func _run() -> void:
 				species + " source art keeps its aspect ratio")
 			_check(sprite.position == Vector2(960, 340),
 				species + " uses the requested battle anchor")
+			# Reserve's three opaque-paper masters should not appear as white
+			# rectangles in combat. The two native-alpha sources stay raw.
+			var paper := species in ["dragonthorn", "gloomcap", "spinehopper"]
+			_check((sprite.material is ShaderMaterial) == paper,
+				species + " applies the Reserve paper mask only when needed")
 		visual.free()
 	var fallback := Battle.make_creature_visual(
 		"unapproved-art-test-id", Vector2(100, 200), Color.RED, 45.0)
+	_check(Battle.paper_mat_for("bellmaw") == null,
+		"native-alpha Bellmaw receives no white-paper shader")
+	var first := Battle.paper_mat_for("dragonthorn") as ShaderMaterial
+	var second := Battle.paper_mat_for("gloomcap") as ShaderMaterial
+	_check(first != null and second != null and first != second,
+		"each painting gets an independent material instance")
+	_check(first.shader == second.shader,
+		"painting sprites reuse the exact same approved shader")
 	_check(not (fallback is Sprite2D),
 		"creature with no approved image retains the visible greybox")
 	_check(fallback.position == Vector2(100, 200),
