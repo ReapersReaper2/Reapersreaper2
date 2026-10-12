@@ -62,6 +62,9 @@ static func default_save() -> Dictionary:
 		# or earning rate has been approved. Existing v3 saves default to 0.
 		"soul_thread": 0,
 		"party": [],
+		# Field encounters record refusals separately from the creature-owned
+		# offer_memory. Missing in old saves is treated as an empty log.
+		"field_encounters": [],
 		"stats": StatsScript.default_stats(),
 		# Step clock (spec §2/§3): placeholder sentinels — GameState.new_game()
 		# upgrades these to a real run_id/started_at via StepDriver.reset_run().

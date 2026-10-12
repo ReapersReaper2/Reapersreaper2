@@ -104,6 +104,9 @@ static func _make_entry(creature_id: String, level: int) -> Dictionary:
 		"statuses": [],
 		# Variant A: creature-sheet mantle ledger, never a breeding slot.
 		"mantles": [],
+		# Individual Lullmother visit/refusal memory. Not a species trait,
+		# genetic field, or a mantle; breeding never copies this record.
+		"offer_memory": {},
 	}
 
 
