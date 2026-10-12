@@ -21,6 +21,9 @@ void fragment() {
 static var _paper_shader: Shader = null
 
 @export var art_id: String = ""
+## Keeps approved on-screen proportions when a 384px overworld master
+## replaces an oversized temporary painting; zero keeps scene scale.
+@export var overworld_display_height: float = 0.0
 
 signal noticed(creature: Node2D)
 signal interacted(creature: Node2D)
@@ -39,19 +42,24 @@ var _in_range: bool = false
 var _selected: bool = false
 var _sensor: Area2D = null
 var _prompt: Label = null
+var _using_overworld_art: bool = false
 
 func _ready() -> void:
-	# Loading at runtime avoids Godot rejecting a Texture2D ext_resource
-	# when a checkout contains only a 130-byte Git LFS pointer.
-	# The approved PNG is preferred, with the exact-source .b64 backup.
-	if texture == null:
-		var name_id := art_id if not art_id.is_empty() else String(name).to_snake_case()
-		var path := ART_DIR + name_id + ".png"
-		texture = SpriteLoader.load_texture(path)
-		if texture == null:
-			push_error("[ReserveCreature] MISSING ART: " + path + " and bundled fallback")
+	# Approved native 384px overworld art takes precedence when delivered.
+	# The existing painted battle-art PNG remains the fallback until then.
 	var name_id := art_id if not art_id.is_empty() else String(name).to_snake_case()
-	if PAPER_BACKGROUND_ART.has(name_id):
+	if texture == null:
+		var overworld_path := ART_DIR + name_id + "_overworld.png"
+		if SpriteLoader.has_source(overworld_path):
+			var overworld := SpriteLoader.load_texture(overworld_path)
+			if overworld != null:
+				_set_overworld_texture(overworld)
+		if texture == null:
+			var fallback_path := ART_DIR + name_id + ".png"
+			texture = SpriteLoader.load_texture(fallback_path)
+			if texture == null:
+				push_error("[ReserveCreature] MISSING ART: " + overworld_path + " and " + fallback_path)
+	if PAPER_BACKGROUND_ART.has(name_id) and not _using_overworld_art:
 		_apply_paper_cutout_shader()
 	_base_position = position
 	_base_scale = scale
@@ -60,6 +68,22 @@ func _ready() -> void:
 	_phase = float(abs(hash(String(name))) % 628) * 0.01
 	if is_inside_tree() and get_parent() != null:
 		_create_awareness()
+
+
+## Production overworld sprites are transparent, not white-matted. Use a
+## per-species target height so the replacement cannot shrink to 30 pixels
+## because its temporary painting was imported at 1600–2240px.
+func _set_overworld_texture(art: Texture2D) -> void:
+	if art == null:
+		return
+	texture = art
+	_using_overworld_art = true
+	material = null
+	if overworld_display_height > 0.0 and art.get_height() > 0:
+		var factor := overworld_display_height / float(art.get_height())
+		scale = Vector2(-factor if scale.x < 0.0 else factor,
+			-factor if scale.y < 0.0 else factor)
+
 
 func _apply_paper_cutout_shader() -> void:
 	if _paper_shader == null:
