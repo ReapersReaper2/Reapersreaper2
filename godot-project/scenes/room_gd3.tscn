@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/wild_zone.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/lore_object.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/garden_world.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
 [ext_resource type="Script" path="res://scripts/vine_exchange.gd" id="10"]
 
@@ -43,6 +44,18 @@ landmark = Vector2(120, -80)
 seed_value = 319
 density = 0.32
 feature_points = PackedVector2Array(320, -100, 380, -40, 260, -160)
+
+[node name="WestTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(-420, 221)
+destination = "WRATH'S CORNER"
+direction = "←"
+
+[node name="EastTrailSign" type="Node2D" parent="."]
+script = ExtResource("22")
+position = Vector2(420, 221)
+destination = "DEEP GARDEN"
+direction = "→"
 
 [node name="Dress1" type="Polygon2D" parent="."]
 visible = false
