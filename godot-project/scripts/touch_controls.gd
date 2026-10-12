@@ -12,6 +12,38 @@ const MobileOverlay := preload("res://scripts/mobile_touch_overlay.gd")
 
 var overlay: Control = null
 
+## Seamless battles display their own combat UI. Hiding this CanvasLayer
+## alone is not enough: MobileHUD handles touches through Node._input, which
+## can still consume events from behind the battle screen.
+var _battle_suspended: bool = false
+var _battle_was_visible: bool = false
+var _battle_was_processing_input: bool = false
+
+
+func suspend_for_battle() -> void:
+	if _battle_suspended:
+		return
+	_battle_suspended = true
+	_battle_was_visible = visible
+	if overlay != null and is_instance_valid(overlay):
+		_battle_was_processing_input = overlay.is_processing_input()
+		if overlay.has_method("_cancel_gameplay_touches"):
+			overlay._cancel_gameplay_touches()
+		# Paused/menu fingers belong to the old overworld input state too.
+		overlay.set("_pause_id", -1)
+		overlay.set_process_input(false)
+	visible = false
+
+
+func resume_after_battle() -> void:
+	if not _battle_suspended:
+		return
+	_battle_suspended = false
+	if overlay != null and is_instance_valid(overlay):
+		overlay.set_process_input(_battle_was_processing_input)
+	visible = _battle_was_visible
+
+
 func _ready() -> void:
 	if not DisplayServer.is_touchscreen_available():
 		visible = false
