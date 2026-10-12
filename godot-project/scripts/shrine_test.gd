@@ -92,7 +92,11 @@ func _initialize() -> void:
 	_check("prompt visible in range", (shrine.get_node("Prompt") as Label).visible)
 
 	# 3. Rest with no dialogue box: immediate save + flag + keeper + heal.
+	# Previous room was stale; resting must snap save position to P1.
+	gs.set_position("c1", 777.0, 888.0)
+	player.position = Vector2(155.0, -21.0)
 	player.vigor = 1
+	gs.set_vigor(1)
 	shrine.rest()
 	_check("save file written", ss.has_save(SLOT))
 	_check("shrine flag set", gs.get_flag("shrine_p1_1"))
@@ -101,6 +105,15 @@ func _initialize() -> void:
 	var loaded: Dictionary = ss.load_game(SLOT)
 	_check("save payload carries shrine flag",
 		bool((loaded.get("flags", {}) as Dictionary).get("shrine_p1_1", false)))
+	var saved_position: Dictionary = (loaded.get("player", {}) as Dictionary).get("position", {})
+	_check("rest save uses shrine room rather than previous exit",
+		str(saved_position.get("room", "")) == "p1")
+	_check("rest save carries actual player position",
+		is_equal_approx(float(saved_position.get("x", 0.0)), 155.0)
+		and is_equal_approx(float(saved_position.get("y", 0.0)), -21.0))
+	_check("rest save includes healed vigor, not pre-rest vigor",
+		int((loaded.get("player", {}) as Dictionary).get("vigor", -1)) ==
+		int((loaded.get("player", {}) as Dictionary).get("vigor_max", -2)))
 
 	# 4. Repeatable: a second rest works.
 	player.vigor = 2
@@ -137,10 +150,23 @@ func _initialize() -> void:
 	shrine4.heals = false
 	shrine4._on_body_entered(player)
 	player.vigor = 1
+	gs.set_vigor(1)
 	shrine4.rest()
 	_check("no-heal shrine still saves", ss.has_save(SLOT))
 	_check("no-heal shrine leaves vigor", player.vigor == 1)
+	var unhealed: Dictionary = ss.load_game(SLOT)
+	_check("no-heal rest preserves injured vigor in saved payload",
+		int((unhealed.get("player", {}) as Dictionary).get("vigor", -1)) == 1)
 	_check("no-heal shrine sets its flag", gs.get_flag("shrine_p1_4"))
+
+	# Nested room IDs must survive the shrine suffix split.
+	var refuge = _make_shrine(gs, "gd_refuge_1")
+	refuge._on_body_entered(player)
+	refuge.heals = false
+	refuge.rest()
+	var restored: Dictionary = ss.load_game(SLOT)
+	_check("underscored room id survives rest save",
+		str(((restored.get("player", {}) as Dictionary).get("position", {}) as Dictionary).get("room", "")) == "gd_refuge")
 
 	# 8. Body exit hides the prompt again.
 	shrine._on_body_exited(player)
