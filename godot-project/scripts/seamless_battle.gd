@@ -29,6 +29,7 @@ var _battle = null
 var _layer: CanvasLayer = null
 var _player: Node = null
 var _creature_visual: Node2D = null
+var _touch_controls: Node = null
 var _done := false
 
 
@@ -54,6 +55,11 @@ func _lock_player() -> void:
 			_player.move_locked = true
 		if "input_locked" in _player:
 			_player.input_locked = true
+		# The screen-space overworld HUD otherwise keeps intercepting
+		# touch events behind the battle command buttons on mobile.
+		_touch_controls = _player.get_node_or_null("TouchControls")
+		if _touch_controls != null and _touch_controls.has_method("suspend_for_battle"):
+			_touch_controls.suspend_for_battle()
 
 
 func _unlock_player() -> void:
@@ -62,6 +68,10 @@ func _unlock_player() -> void:
 			_player.move_locked = false
 		if "input_locked" in _player:
 			_player.input_locked = false
+	if _touch_controls != null and is_instance_valid(_touch_controls):
+		if _touch_controls.has_method("resume_after_battle"):
+			_touch_controls.resume_after_battle()
+	_touch_controls = null
 	_player = null
 
 
@@ -125,3 +135,9 @@ func _teardown() -> void:
 ## Read-only state for tests: is a seamless battle currently displayed?
 func is_active() -> bool:
 	return not _done and _layer != null and is_instance_valid(_layer)
+
+
+## Restore mobile/overworld input even when a scene change or forced
+## destruction tears down the battle before the normal resolved signal.
+func _exit_tree() -> void:
+	_unlock_player()
