@@ -125,6 +125,18 @@ func _build_text() -> void:
 	sub.position = Vector2(-640, 252)
 	sub.size = Vector2(1280, 40)
 	add_child(sub)
+	# Clear controls primer before the first gameplay scene. This text
+	# teaches controls without altering Muse-owned narrative dialogue.
+	var primer := Label.new()
+	primer.name = "ControlsPrimer"
+	primer.text = "MOVE  WASD / STICK      TALK  E / INTERACT      SWING  SPACE / SCYTHE"
+	primer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	primer.add_theme_font_size_override("font_size", 19)
+	primer.add_theme_color_override("font_color", Color(0.78, 0.72, 0.62))
+	primer.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	primer.position = Vector2(-640, 291)
+	primer.size = Vector2(1280, 31)
+	add_child(primer)
 
 
 func _build_slots() -> void:
