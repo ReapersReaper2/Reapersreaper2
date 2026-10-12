@@ -34,6 +34,22 @@ func _run() -> void:
 	_check(hud._attack_id == -1 and hud._interact_id == -1,
 		"both action fingers released")
 	hud.queue_free()
+	# Leaving the room while fingers are still down must release all actions.
+	# Otherwise the next scene can inherit a stuck attack or interaction.
+	var leaving = OverlayScript.new()
+	root.add_child(leaving)
+	leaving.size = Vector2(1280, 720)
+	leaving._begin_touch(4, leaving._attack_center())
+	leaving._begin_touch(5, leaving._interact_center())
+	_check(leaving._attack_id == 4 and leaving._interact_id == 5,
+		"simultaneous action fingers captured before scene change")
+	leaving._exit_tree()
+	_check(leaving._attack_id == -1 and leaving._interact_id == -1,
+		"scene exit clears both captured action fingers")
+	_check(not Input.is_action_pressed("scythe_swing") and
+		not Input.is_action_pressed("interact"),
+		"scene exit releases held action states")
+	leaving.queue_free()
 	if _failed == 0:
 		print("[MOBILE HUD] PASS %d checks" % _checks)
 	else:
