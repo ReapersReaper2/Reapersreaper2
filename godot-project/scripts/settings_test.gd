@@ -28,7 +28,8 @@ func _process(_delta: float) -> bool:
 	_ran = true
 	_run()
 	print("[settings_test] failures: ", _failures)
-	quit()
+	# A failing assertion must fail CI, not only print a message.
+	quit(1 if _failures > 0 else 0)
 	return true
 
 
@@ -96,11 +97,21 @@ func _run() -> void:
 	_check("reset vibration", bool(s3["vibration"]) == true)
 	_check("reset applies bus", absf(_bus_db("Master") - linear_to_db(0.8)) < 0.01)
 
-	# 8. UI overlay: builds, opens, closes, no errors.
+	# 8. UI overlay: platform-appropriate options, opens/closes.
+	var window_toggle_supported := not (OS.has_feature("web") or
+		OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile"))
+	_check("window mode supported only on desktop",
+		SettingsScript.supports_window_mode() == window_toggle_supported)
 	var panel = SettingsScript.new()
 	root.add_child(panel)
 	panel._ready()
 	_check("panel built rows", panel._rows.size() >= 6)  # 3 sliders + vib + reset + back (+fullscreen)
+	var has_fullscreen_toggle := false
+	for row in panel._rows:
+		if str((row as Dictionary).get("id", "")) == "fullscreen":
+			has_fullscreen_toggle = true
+	_check("fullscreen UI follows platform support",
+		has_fullscreen_toggle == window_toggle_supported)
 	_check("panel starts closed", not panel.is_open())
 	panel.open()
 	_check("panel opens", panel.is_open() and panel.visible)
