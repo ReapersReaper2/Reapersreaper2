@@ -5,6 +5,21 @@ extends Sprite2D
 
 const SpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const ART_DIR := "res://assets/creatures/"
+## Three source paintings carry white paper around the subject. Preserve the
+## original illustrations and mask the paper only in the gameplay renderer.
+## Muse can replace these with transparent 3/4-view sprites later.
+const PAPER_BACKGROUND_ART := ["dragonthorn", "gloomcap", "spinehopper"]
+const PAPER_CUTOUT_SHADER := """
+shader_type canvas_item;
+void fragment() {
+    vec4 sampled = texture(TEXTURE, UV);
+    float paper = min(sampled.r, min(sampled.g, sampled.b));
+    float cutout = 1.0 - smoothstep(0.91, 0.995, paper);
+    COLOR = sampled * COLOR;
+    COLOR.a *= cutout;
+}
+"""
+static var _paper_shader: Shader = null
 
 @export var art_id: String = ""
 
@@ -36,6 +51,9 @@ func _ready() -> void:
 		texture = SpriteLoader.load_texture(path)
 		if texture == null:
 			push_error("[ReserveCreature] MISSING ART: " + path + " and bundled fallback")
+	var name_id := art_id if not art_id.is_empty() else String(name).to_snake_case()
+	if PAPER_BACKGROUND_ART.has(name_id):
+		_apply_paper_cutout_shader()
 	_base_position = position
 	_base_scale = scale
 	_base_rotation = rotation
@@ -43,6 +61,15 @@ func _ready() -> void:
 	_phase = float(abs(hash(String(name))) % 628) * 0.01
 	if is_inside_tree() and get_parent() != null:
 		_create_awareness()
+
+func _apply_paper_cutout_shader() -> void:
+	if _paper_shader == null:
+		_paper_shader = Shader.new()
+		_paper_shader.code = PAPER_CUTOUT_SHADER
+	var matte := ShaderMaterial.new()
+	matte.shader = _paper_shader
+	material = matte
+
 
 func _create_awareness() -> void:
 	if _sensor != null:
