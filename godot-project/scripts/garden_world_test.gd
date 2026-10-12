@@ -14,17 +14,18 @@ func _initialize() -> void:
 func _run() -> void:
 	_check_room("gd1", Rect2(-1280, -360, 2560, 720), 117,
 		Vector2(300, 100), Vector2(-1000, 200),
-		PackedVector2Array([-500, 165, -750, -140, -350, 180, 420, -120, 700, 160, 950, -100]))
+		PackedVector2Array([Vector2(-500, 165), Vector2(-750, -140),
+			Vector2(-350, 180), Vector2(420, -120), Vector2(700, 160), Vector2(950, -100)]))
 	_check_room("gd2", Rect2(-640, -360, 1280, 720), 227,
 		Vector2(0, 50), Vector2(-360, 200), PackedVector2Array())
 	_check_room("gd3", Rect2(-640, -360, 1280, 720), 319,
 		Vector2(120, -80), Vector2(-360, 200),
-		PackedVector2Array([320, -100, 380, -40, 260, -160]))
+		PackedVector2Array([Vector2(320, -100), Vector2(380, -40), Vector2(260, -160)]))
 	_check(Vector2(-500, 265).distance_to(Vector2(-500, 118)) > 120.0,
 		"refuge return spawn must be outside garden door trigger + player capsule")
 	_check(Vector2(0, 130).distance_to(Vector2(0, 295)) > 120.0,
 		"refuge interior spawn must be outside return door trigger")
-		_check(TitleScreen.scene_for_room("gd_refuge") == "res://scenes/garden_refuge.tscn",
+	_check(TitleScreen.scene_for_room("gd_refuge") == "res://scenes/garden_refuge.tscn",
 		"Continue must restore the refuge")
 	_check(TitleScreen.scene_for_room("gd2") == "res://scenes/room_gd2.tscn",
 		"Continue must restore later garden rooms")
