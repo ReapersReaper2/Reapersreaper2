@@ -51,13 +51,23 @@ func _init() -> void:
             continue
         var inst: Node = scene.instantiate()
         _check("%s instantiates" % room, inst != null)
-        var bg: Node = inst.get_node_or_null("Background")
-        _check("%s has Background node" % room, bg != null)
-        if bg != null and bg is Sprite2D:
-            var tex: Texture2D = (bg as Sprite2D).texture
-            _check("%s Background has texture" % room, tex != null)
-            if tex != null:
-                _check("%s texture has size" % room, tex.get_width() > 0 and tex.get_height() > 0)
+        # The first three Garden rooms deliberately replaced flat backdrops
+        # with procedural, walkable layered scenery. Test the new renderer
+        # rather than asserting that the retired Background node survives.
+        if room in ["gd1", "gd2", "gd3"]:
+            var ground := inst.get_node_or_null("Ground")
+            var garden := inst.get_node_or_null("PlayableGarden")
+            _check("%s has walkable ground" % room, ground is Polygon2D)
+            _check("%s has procedural garden" % room,
+                garden is Node2D and garden.get_script() != null)
+        else:
+            var bg: Node = inst.get_node_or_null("Background")
+            _check("%s has Background node" % room, bg != null)
+            if bg != null and bg is Sprite2D:
+                var tex: Texture2D = (bg as Sprite2D).texture
+                _check("%s Background has texture" % room, tex != null)
+                if tex != null:
+                    _check("%s texture has size" % room, tex.get_width() > 0 and tex.get_height() > 0)
         # art file exists on disk
         _check("%s panel file exists" % room, FileAccess.file_exists("res://assets/environments/" + panel))
         inst.queue_free()
