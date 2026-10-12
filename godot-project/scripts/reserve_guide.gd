@@ -3,6 +3,7 @@ extends Node2D
 ## selecting the nearest aware creature means one press = one response.
 ## Observations go into the creature journal; this never captures creatures.
 
+const ReactionVfx := preload("res://scripts/reserve_reaction_vfx.gd")
 const OBSERVED_KEY := "reserve_observed"
 const HIGHLIGHT_SECONDS := 3.2
 const GOLD := Color(0.92, 0.81, 0.62)
@@ -79,6 +80,7 @@ func _on_noticed(creature: Node2D) -> void:
 	_highlight_time = 1.7
 
 func _on_interacted(creature: Node2D) -> void:
+	_spawn_reaction(creature)
 	# "Seen" is already a separate ledger from captured / bonded creatures.
 	var ident := String(creature.name).to_snake_case()
 	if _game_state != null:
@@ -93,6 +95,18 @@ func _on_interacted(creature: Node2D) -> void:
 	_highlight_text = "%s OBSERVED  ·  %d/%d RESIDENTS" % [
 		String(creature.name).to_upper(), _observed_count(), _resident_count()]
 	_highlight_time = HIGHLIGHT_SECONDS
+
+func _spawn_reaction(creature: Node2D) -> void:
+	if not is_inside_tree() or not is_instance_valid(creature):
+		return
+	var effect := ReactionVfx.new()
+	effect.name = "ObservedSoulThread"
+	effect.global_position = creature.global_position
+	# Add as a sibling of residents; the effect has its own world-scale
+	# transform instead of inheriting the tiny Sprite2D texture scale.
+	_creatures.add_child(effect)
+	effect.global_position = creature.global_position + Vector2(0.0, 26.0)
+
 
 func _is_resident(node: Node) -> bool:
 	return node is Sprite2D and node.has_method("is_player_in_range") and node.has_method("trigger_interaction")
