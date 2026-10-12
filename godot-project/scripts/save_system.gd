@@ -58,6 +58,9 @@ static func default_save() -> Dictionary:
 		"flags": {},
 		"ledger": {"bounties": [], "forms": [], "creatures": [], "weapons": ["scythe"], "achievements": []},
 		"inventory": {},
+		# One shared thread ledger across future rites; no starting amount
+		# or earning rate has been approved. Existing v3 saves default to 0.
+		"soul_thread": 0,
 		"party": [],
 		"stats": StatsScript.default_stats(),
 		# Step clock (spec §2/§3): placeholder sentinels — GameState.new_game()
