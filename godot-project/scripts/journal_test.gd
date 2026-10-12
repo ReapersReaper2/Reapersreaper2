@@ -70,6 +70,23 @@ func _run() -> void:
 	PartyScript.add_creature(gs, "bellmaw", 12)
 	_check("bellmaw caught (in party)", j.ledger_state("bellmaw") == "caught")
 	_check("siltmaw still seen (not caught)", j.ledger_state("siltmaw") == "seen")
+	# Vault storage is an Array of box Arrays, not a Dictionary. This used
+	# to crash _is_caught() when a new catch was sent straight to storage.
+	var StorageScript = load("res://scripts/storage.gd")
+	var spot: Array = StorageScript.deposit_entry(gs, PartyScript.make_entry("thornchoir", 3))
+	_check("deposit stored a creature", int(spot[0]) >= 0)
+	_check("creature in vault is caught in Journal",
+		j.ledger_state("thornchoir") == "caught")
+	var actual_storage = gs.state["storage"]
+	# Existing older saves may still carry a {boxes:[...]} prototype
+	# layout; reading it must not crash or pretend the creature is unseen.
+	gs.state["storage"] = {"boxes": [[{"creature_id": "gravebind"}]]}
+	_check("legacy box wrapper also reads as caught",
+		j.ledger_state("gravebind") == "caught")
+	gs.state["storage"] = [null, [{"creature_id": "thornchoir"}]]
+	_check("malformed box does not hide a valid later box",
+		j.ledger_state("thornchoir") == "caught")
+	gs.state["storage"] = actual_storage
 
 	# --- Notes ---
 	var notes: Array = j.unlocked_notes()
