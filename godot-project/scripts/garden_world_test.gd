@@ -23,7 +23,7 @@ func _run() -> void:
 		PackedVector2Array([Vector2(320, -100), Vector2(380, -40), Vector2(260, -160)]))
 	_check(Vector2(-500, 265).distance_to(Vector2(-500, 118)) > 120.0,
 		"refuge return spawn must be outside garden door trigger + player capsule")
-	_check(Vector2(0, 130).distance_to(Vector2(0, 295)) > 120.0,
+	_check(Vector2(0, 60).distance_to(Vector2(0, 295)) >= 200.0,
 		"refuge interior spawn must be outside return door trigger")
 	_check(TitleScreen.scene_for_room("gd_refuge") == "res://scenes/garden_refuge.tscn",
 		"Continue must restore the refuge")
