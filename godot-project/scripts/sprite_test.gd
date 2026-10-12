@@ -130,7 +130,7 @@ func _initialize() -> void:
 	mgr._set_strip("down")
 	mgr.tick(0.0, Vector2.DOWN, false)
 	_check("idle shows frame 0", mgr._frame == 0)
-	mgr.tick(0.13, Vector2.DOWN, true)  # > 1/8s -> frame 1
+	mgr.tick(1.0 / Mgr.WALK_FPS + 0.01, Vector2.DOWN, true)  # Advance exactly one current-rate frame
 	_check("walking advances frames", mgr._frame == 1)
 	var r: Rect2 = mgr._sprite.region_rect
 	_check("region rect tracks frame", r.position.x == 384.0 and r.size.x == 384.0)
