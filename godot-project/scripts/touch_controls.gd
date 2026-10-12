@@ -18,9 +18,9 @@ func _ready() -> void:
 		return
 	overlay = MobileOverlay.new()
 	overlay.name = "MobileHUD"
-	overlay.joystick_radius = joystick_radius
-	overlay.action_radius = action_button_radius
-	overlay.edge_margin = edge_margin
+	overlay.set("joystick_radius", joystick_radius)
+	overlay.set("action_radius", action_button_radius)
+	overlay.set("edge_margin", edge_margin)
 	add_child(overlay)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
