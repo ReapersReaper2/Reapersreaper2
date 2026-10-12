@@ -17,6 +17,7 @@ var _base_rotation: float = 0.0
 var _phase: float = 0.0
 var _reaction_time: float = 0.0
 var _in_range: bool = false
+var _selected: bool = false
 var _sensor: Area2D = null
 var _prompt: Label = null
 
@@ -93,7 +94,7 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	_in_range = true
 	if _prompt != null:
-		_prompt.visible = true
+		_prompt.visible = _selected
 	_update_prompt_position()
 	noticed.emit(self)
 
@@ -101,19 +102,29 @@ func _on_body_exited(body: Node2D) -> void:
 	if not body.is_in_group("player"):
 		return
 	_in_range = false
+	_selected = false
 	if _prompt != null:
 		_prompt.visible = false
 
-func _unhandled_input(event: InputEvent) -> void:
-	if not _in_range or not event.is_action_pressed("interact"):
-		return
-	if is_inside_tree():
-		var box = get_tree().get_first_node_in_group("dialogue_box")
-		if box != null and box.visible:
-			return
-		get_viewport().set_input_as_handled()
+## Centralized selection ensures only ONE nearby creature claims Interact.
+## The ReserveGuide controller routes the same keyboard/touch action here.
+func is_player_in_range() -> bool:
+	return _in_range
+
+func set_selected(selected: bool) -> void:
+	_selected = selected and _in_range
+	if _prompt != null:
+		_prompt.visible = _selected
+
+func trigger_interaction() -> bool:
+	if not _in_range:
+		return false
 	_reaction_time = 0.72
 	interacted.emit(self)
+	return true
+
+func display_name() -> String:
+	return String(name).capitalize()
 
 func _exit_tree() -> void:
 	# Sensors and prompts live beside the Sprite2D, not under it.
