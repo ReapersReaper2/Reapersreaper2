@@ -15,6 +15,7 @@ var _items: Array = []  # [{id, button}]
 var _selected: int = 0
 var _open: bool = false
 var _save_flash: float = 0.0
+var _save_succeeded: bool = false
 var _save_button: Button = null
 var _built: bool = false
 
@@ -103,6 +104,9 @@ func close() -> void:
 	visible = false
 	get_tree().paused = false
 	closed.emit()
+	# Hiding alone left a stale pause_menu group member, permanently blocking
+	# Room._can_pause() on every subsequent press of Escape/MENU.
+	queue_free()
 
 
 func _refresh() -> void:
@@ -111,7 +115,7 @@ func _refresh() -> void:
 		var prefix := "> " if i == _selected else "   "
 		var base := _item_text(str(_items[i]["id"]))
 		if str(_items[i]["id"]) == "save" and _save_flash > 0.0:
-			base = "SAVED ✓"
+			base = "SAVED" if _save_succeeded else "SAVE FAILED"
 		b.text = prefix + base
 		b.modulate = Color(1, 1, 1) if i == _selected else Color(0.75, 0.75, 0.78)
 
@@ -161,7 +165,10 @@ func activate(item_id: String) -> void:
 ## Open the party panel over the pause menu. The menu stays open (and the
 ## tree stays paused); closing the panel returns here.
 func _open_party_panel() -> void:
-	if get_tree().get_first_node_in_group("party_panel") != null:
+	var existing = get_tree().get_first_node_in_group("party_panel")
+	if existing != null:
+		if existing.has_method("is_open") and not existing.is_open():
+			existing.open()
 		return
 	var panel = PartyPanelScript.new()
 	panel.game_state = game_state
@@ -173,7 +180,10 @@ func _open_party_panel() -> void:
 ## Open the breeding & nursery panel over the pause menu. Same pattern:
 ## the menu stays open (and the tree stays paused); closing returns here.
 func _open_breeding_panel() -> void:
-	if get_tree().get_first_node_in_group("breeding_ui") != null:
+	var existing = get_tree().get_first_node_in_group("breeding_ui")
+	if existing != null:
+		if existing.has_method("is_open") and not existing.is_open():
+			existing.open()
 		return
 	var panel = BreedingUIScript.new()
 	panel.game_state = game_state
@@ -213,10 +223,32 @@ func _open_settings() -> void:
 	panel.open()
 
 
+## A pause-save must restore the exact room and position. Previously,
+## save_to_slot() wrote the last exit's location rather than the character's
+## current coordinates; Continue could teleport backward through a room.
+func _snapshot_player_location() -> void:
+	if game_state == null or not game_state.has_method("set_position"):
+		return
+	var player = get_tree().get_first_node_in_group("player")
+	if not (player is Node2D):
+		return
+	var ancestor: Node = player.get_parent()
+	while ancestor != null:
+		if "room_id" in ancestor:
+			var rid := str(ancestor.get("room_id"))
+			if not rid.is_empty():
+				var pos: Vector2 = (player as Node2D).position
+				game_state.set_position(rid, pos.x, pos.y)
+			return
+		ancestor = ancestor.get_parent()
+
+
 func _do_save() -> void:
+	_save_succeeded = false
 	if game_state != null and game_state.has_method("save_to_slot") and game_state.has_method("get_current_slot"):
-		game_state.save_to_slot(game_state.get_current_slot())
-	_save_flash = 1.2
+		_snapshot_player_location()
+		_save_succeeded = bool(game_state.save_to_slot(game_state.get_current_slot()))
+	_save_flash = 1.8
 	_refresh()
 
 
@@ -224,6 +256,7 @@ func _quit_to_title() -> void:
 	var path := "res://scenes/title_screen.tscn"
 	get_tree().paused = false
 	_open = false
+	queue_free()
 	if scene_changer != null and scene_changer.is_valid():
 		scene_changer.call(path)
 		return
@@ -256,13 +289,13 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if not _open:
 		return
-	# The party panel and settings own input while they're open (they close
-	# back to us).
-	if get_tree().get_first_node_in_group("party_panel") != null:
-		return
-	var sp = get_tree().get_first_node_in_group("settings")
-	if sp != null and sp.has_method("is_open") and sp.is_open():
-		return
+	# Nested overlays own Escape and navigation until they close. Breeding
+	# and Journal were previously omitted, so Escape could unpause the
+	# world underneath an open, interactive panel.
+	for group_name in ["party_panel", "breeding_ui", "journal", "settings"]:
+		var panel = get_tree().get_first_node_in_group(group_name)
+		if panel != null and panel.has_method("is_open") and panel.is_open():
+			return
 	if event.is_action_pressed("ui_cancel"):
 		close()
 		get_viewport().set_input_as_handled()
