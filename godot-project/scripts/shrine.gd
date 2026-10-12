@@ -379,18 +379,35 @@ func _finish_rest() -> void:
 		Breeding.on_day_advance(gs)
 		# Still night boundary: extractions complete, trust debt ticks.
 		Still.on_day_advance(gs)
-	# Blackout respawn point: shrine_id is "<room>_<n>" by convention.
-	# Resting also lights the shrine: it joins the fast-travel network.
+	# The last underscore separates the shrine ordinal from its room
+	# identifier. Room names may themselves contain underscores (gd_refuge).
+	var separator := shrine_id.rfind("_")
+	var room_id := shrine_id.substr(0, separator) if separator > 0 else shrine_id
+	# Save the place the character actually stood, rather than retaining
+	# the previous room exit in GameState. Use the shrine as a safe fallback
+	# when scripted rests occur without an active player.
+	var save_position := global_position
+	if _player != null and is_instance_valid(_player):
+		save_position = _player.position
+	if gs != null and gs.has_method("set_position"):
+		gs.set_position(room_id, save_position.x, save_position.y)
+	# A resting save must include the HEALED vigor, not just the old value
+	# from before the lantern's effect.
+	if heals:
+		if gs != null and gs.has_method("heal_to_full"):
+			gs.heal_to_full()
+		if _player != null and is_instance_valid(_player) and _player.has_method("heal_full"):
+			_player.heal_full()
+	# Blackout respawn remains centered on the shrine itself. Resting
+	# lights it and adds the destination to the fast-travel network.
 	if gs != null and gs.has_method("set_last_shrine"):
-		var parts := shrine_id.split("_")
-		var room_id := str(parts[0])
 		gs.set_last_shrine(room_id, global_position.x, global_position.y)
 		if gs.has_method("light_shrine"):
 			gs.light_shrine(shrine_id, room_id, global_position.x, global_position.y)
+	# All rest effects are committed to GameState BEFORE serializing.
 	if gs != null and gs.has_method("save_shrine") and gs.has_method("get_current_slot"):
-		gs.save_shrine(int(gs.get_current_slot()))
-	if heals and _player != null and is_instance_valid(_player) and _player.has_method("heal_full"):
-		_player.heal_full()
+		if not gs.save_shrine(int(gs.get_current_slot())):
+			push_warning("[Shrine] save failed at " + shrine_id)
 	_resting = false
 	if _player_in_range:
 		$Prompt.visible = true
