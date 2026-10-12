@@ -102,8 +102,10 @@ func _run() -> void:
 	if recovered is Dictionary:
 		_check((recovered as Dictionary).get("field_encounters", []).size() == 1,
 			"field refusal persists across save/reload")
-		_check(((((recovered as Dictionary)["party"] as Array).back() as Dictionary).get(
-			"offer_memory", {}) as Dictionary).get("neutral_visits", 0) == 1,
+		var restored_party: Array = (recovered as Dictionary)["party"]
+		var restored_entry: Dictionary = restored_party.back()
+		var restored_memory: Dictionary = restored_entry.get("offer_memory", {})
+		_check(int(restored_memory.get("neutral_visits", 0)) == 1,
 			"individual visit count persists across save/reload")
 
 	if _failed == 0:
