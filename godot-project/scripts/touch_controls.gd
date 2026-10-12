@@ -71,8 +71,8 @@ func _make_button(text: String, action: String) -> Button:
 	button.text = text
 	button.custom_minimum_size = Vector2(130, 130)
 	button.focus_mode = Control.FOCUS_NONE
-	button.button_down.connect(func() -> void: Input.action_press(action))
-	button.button_up.connect(func() -> void: Input.action_release(action))
+	button.button_down.connect(func() -> void: _send_button_action(action, true))
+	button.button_up.connect(func() -> void: _send_button_action(action, false))
 	return button
 
 func _place_controls() -> void:
@@ -140,3 +140,15 @@ func _set_action(action: String, pressed: bool) -> void:
 	else:
 		if Input.is_action_pressed(action):
 			Input.action_release(action)
+
+
+## Action presses are also sent through the input event pipeline so
+## ReaperPlayer._unhandled_input() and other gameplay handlers receive them.
+## Input.action_press() alone changes the polling state but does not
+## generate an InputEvent for event-driven scythe and interaction code.
+func _send_button_action(action: String, pressed: bool) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = pressed
+	event.strength = 1.0 if pressed else 0.0
+	Input.parse_input_event(event)
