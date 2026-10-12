@@ -15,6 +15,8 @@ extends Control
 
 signal navigate_to(path: String)
 
+const SaveFormat := preload("res://scripts/save_system.gd")
+
 const ROOM_SCENES := {
 	"p1": "res://scenes/room_p1.tscn",
 	"p3": "res://scenes/room_p3.tscn",
@@ -273,7 +275,7 @@ func slot_summary(slot: int) -> String:
 	if ss == null or not ss.has_method("get_save_info"):
 		return "— saved —"
 	var info: Dictionary = ss.get_save_info(slot)
-	if int(info.get("version", 0)) > 0 and int(info.get("version", 0)) > 3:
+	if int(info.get("version", 0)) > 0 and int(info.get("version", 0)) > SaveFormat.SAVE_VERSION:
 		return "— requires newer game build —"
 	var chapter: String = str(info.get("chapter", "")).capitalize()
 	if chapter.is_empty():
@@ -348,8 +350,8 @@ func _continue() -> void:
 	if game_state == null or not game_state.has_method("load_from_slot"):
 		return
 	if not game_state.load_from_slot(_slot):
-		if _slot_label != null:
-			_slot_label.text = "SAVE COULD NOT BE LOADED"
+		if _slot_summary != null:
+			_slot_summary.text = "SAVE COULD NOT BE LOADED"
 		return
 	var pos: Dictionary = game_state.get_position()
 	_goto(scene_for_room(str(pos.get("room", "p1"))))
