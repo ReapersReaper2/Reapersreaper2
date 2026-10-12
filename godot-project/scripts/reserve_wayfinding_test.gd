@@ -107,6 +107,8 @@ func _run() -> void:
 	_check(str((guide.get("_waypoint_label") as Label).text).is_empty() and
 		not bool((guide.get("_waypoint_arrow") as Control).call("is_active")),
 		"completed observation objective clears the live arrow and hint")
+	_check((guide.get("_status") as Label).text.contains("continue along the trail"),
+		"completed observation objective offers neutral onward guidance")
 	room.queue_free()
 
 	if _failures == 0:
