@@ -95,7 +95,7 @@ func _run() -> void:
 	_check((creature["mantles"] as Array).is_empty() and
 		bool(Memory.snapshot(creature)["reoffer_blocked"]),
 		"rejection has no mantle, only the approved re-offer guard")
-	var serialized := JSON.parse_string(JSON.stringify(gs.state))
+	var serialized: Variant = JSON.parse_string(JSON.stringify(gs.state))
 	var persisted_offers := 0
 	if serialized is Dictionary:
 		var saved_player: Dictionary = (serialized as Dictionary).get("player", {})
