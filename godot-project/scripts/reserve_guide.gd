@@ -6,6 +6,7 @@ extends Node2D
 const ReactionVfx := preload("res://scripts/reserve_reaction_vfx.gd")
 const CreatureData := preload("res://scripts/creature_data.gd")
 const ResidentScript := preload("res://scripts/reserve_creature.gd")
+const CompassArrow := preload("res://scripts/reserve_compass_arrow.gd")
 const OBSERVED_KEY := "reserve_observed"
 const HIGHLIGHT_SECONDS := 3.2
 const GOLD := Color(0.92, 0.81, 0.62)
@@ -16,6 +17,9 @@ var _creatures: Node = null
 var _selected: Sprite2D = null
 var _status: Label = null
 var _objective: Label = null
+var _waypoint_label: Label = null
+var _waypoint_arrow: Control = null
+var _last_guided_id: String = ""
 var _highlight_time := 0.0
 var _highlight_text := ""
 var _game_state: Node = null
@@ -172,6 +176,85 @@ func _update_hud() -> void:
 	else:
 		_status.text = "Explore the paths to find living creatures"
 		_status.add_theme_color_override("font_color", SOFT)
+	_update_wayfinding()
+
+
+## Pure selection: only living, unobserved entries qualify. Stable ties.
+static func choose_unobserved(origin: Vector2, residents: Array,
+		observed: Array) -> Dictionary:
+	var chosen: Dictionary = {}
+	var best_distance := INF
+	for entry_value in residents:
+		if not (entry_value is Dictionary):
+			continue
+		var entry: Dictionary = entry_value
+		var ident := str(entry.get("id", ""))
+		if ident.is_empty() or observed.has(ident):
+			continue
+		var candidate_position: Variant = entry.get("position", null)
+		if not (candidate_position is Vector2):
+			continue
+		var d: float = origin.distance_squared_to(candidate_position)
+		if d < best_distance - 0.001 or (absf(d - best_distance) <= 0.001 and
+				(chosen.is_empty() or ident < str(chosen.get("id", "")))):
+			best_distance = d
+			chosen = entry
+	return chosen
+
+
+static func distance_hint(distance: float) -> String:
+	if distance < 170.0:
+		return "NEARBY"
+	if distance < 490.0:
+		return "AHEAD"
+	return "FARTHER"
+
+
+func _observed_ids() -> Array:
+	if _game_state == null:
+		return []
+	var state: Variant = _game_state.get("state")
+	if not (state is Dictionary):
+		return []
+	var ids: Variant = state.get(OBSERVED_KEY, [])
+	return ids if ids is Array else []
+
+
+func _update_wayfinding() -> void:
+	if _waypoint_label == null or _waypoint_arrow == null or _player == null:
+		return
+	var entries: Array = []
+	for child in _creatures.get_children():
+		if _is_resident(child):
+			entries.append({
+				"id": String(child.name).to_snake_case(),
+				"name": String(child.name).to_upper(),
+				"position": (child as Node2D).global_position
+			})
+	var observed := _observed_ids()
+	var best := choose_unobserved(_player.global_position, entries, observed)
+	if best.is_empty():
+		_last_guided_id = ""
+		_waypoint_label.text = ""
+		_waypoint_arrow.call("clear")
+		return
+	# Avoid oscillating target arrows between two walking residents.
+	var selected := best
+	for entry_value in entries:
+		var entry: Dictionary = entry_value
+		if str(entry.get("id", "")) != _last_guided_id or observed.has(_last_guided_id):
+			continue
+		var saved_distance := _player.global_position.distance_to(entry["position"])
+		var best_distance := _player.global_position.distance_to(best["position"])
+		if saved_distance <= best_distance + 65.0:
+			selected = entry
+		break
+	_last_guided_id = str(selected["id"])
+	var travel: Vector2 = selected["position"] - _player.global_position
+	_waypoint_arrow.call("point_to", travel)
+	_waypoint_label.text = "%s  ·  %s" % [
+		distance_hint(travel.length()), str(selected["name"])]
+
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
@@ -181,7 +264,7 @@ func _build_hud() -> void:
 	var panel := ColorRect.new()
 	panel.color = Color(0.045, 0.065, 0.075, 0.80)
 	panel.position = Vector2(19, 16)
-	panel.size = Vector2(540, 79)
+	panel.size = Vector2(540, 122)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(panel)
 	_objective = Label.new()
@@ -198,3 +281,18 @@ func _build_hud() -> void:
 	_status.add_theme_color_override("font_color", SOFT)
 	_status.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(_status)
+	# Display-only guidance: never moves the player or consumes touch input.
+	_waypoint_arrow = CompassArrow.new()
+	_waypoint_arrow.name = "NextResidentCompass"
+	_waypoint_arrow.position = Vector2(35, 92)
+	_waypoint_arrow.size = Vector2(31, 31)
+	_waypoint_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_waypoint_arrow)
+	_waypoint_label = Label.new()
+	_waypoint_label.name = "NextResidentHint"
+	_waypoint_label.position = Vector2(76, 94)
+	_waypoint_label.size = Vector2(465, 31)
+	_waypoint_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_waypoint_label.add_theme_font_size_override("font_size", 17)
+	_waypoint_label.add_theme_color_override("font_color", SOFT)
+	layer.add_child(_waypoint_label)
