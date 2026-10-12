@@ -35,8 +35,10 @@ func _run() -> void:
 		"both action fingers released")
 	# Mobile players need a way to open the pause/save/settings menu.
 	var pause: Vector2 = hud._pause_center()
-	_check(pause.x > 1150.0 and pause.y < 125.0,
-		"pause control sits in the top-right safe area")
+	_check(pause.x > 1150.0 and pause.y > 100.0 and pause.y < 190.0,
+		"pause control clears top-right clock overlay")
+	_check(pause.y - 31.0 > 62.0,
+		"pause circle cannot cover ReserveClockHUD's bottom edge")
 	_check(pause.distance_to(attack) > 120.0 and pause.distance_to(interact) > 120.0,
 		"pause zone stays apart from combat buttons")
 	# Pausing with three other fingers held must release every action
