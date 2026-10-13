@@ -17,6 +17,9 @@ class_name MollosarSprites
 ## never ship unnoticed again.
 
 const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
+const RestingBladeShader := preload("res://shaders/form1_resting_blade.gdshader")
+const SwingBladeShader := preload("res://shaders/form1_swing_blade.gdshader")
+const SwordArc := preload("res://scripts/scythe_visual.gd")
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
 const WALK_FPS := 6.0
@@ -58,6 +61,12 @@ var _swing_frames: int = 0
 var _sprite: Sprite2D = null
 var _neutral_sprite_y: float = SPRITE_Y_OFFSET
 var _mortal_pose_active: bool = false
+## Two layers reference the SAME approved sprite texture: an alpha cut on
+## the resting blade and a rotated copy of its original painted pixels.
+## No duplicate synthetic sword, no new LFS payload, no change to hitbox.
+var _mortal_blade_sprite: Sprite2D = null
+var _mortal_rest_material: ShaderMaterial = null
+var _mortal_swing_material: ShaderMaterial = null
 var _greybox: Array = []
 
 
@@ -73,6 +82,7 @@ func _ready() -> void:
 	_sprite.position.y = SPRITE_Y_OFFSET
 	_sprite.centered = true
 	add_child(_sprite)
+	_build_mortal_blade_rig()
 	# Everything else under the parent (the greybox polygons) is the
 	# fallback visual set; hide them once real sprites are showing.
 	for child in get_parent().get_children():
@@ -133,6 +143,8 @@ func _load_form(form: int) -> void:
 	_swing_frames = 0
 	_ground_offsets.clear()
 	_reset_mortal_sword_pose()
+	# Form changes always release Form 1's shader before loading other art.
+	_release_mortal_blade()
 	for d in DIRS:
 		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
 		var tex := _load_tex(wpath)
@@ -185,6 +197,8 @@ func _apply_greybox_visibility() -> void:
 	var show_real := has_sprites()
 	if _sprite != null:
 		_sprite.visible = show_real
+	if _mortal_blade_sprite != null and not show_real:
+		_mortal_blade_sprite.visible = false
 	for g in _greybox:
 		if is_instance_valid(g):
 			# CanvasItem covers Node2D (polygons) and Control
@@ -295,8 +309,9 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 	refresh()
 	if not has_sprites():
 		return
-	# Use the real combat timing and direction, so Form 1 plants his feet,
-	# braces before the blow, then follows through while the hitbox is live.
+	# Form 1 holds the FIRST WALK frame for the entire committed strike.
+	# Player._physics_process owns the ONE grounded body pose and blade rig:
+	# the old tick() pose fought that transformation each physics frame.
 	if _form == 1 and _sprite != null:
 		var actor: Node = get_parent().get_parent() if get_parent() != null else null
 		var rig: Node = actor.get_node_or_null("ScytheRig") if actor != null else null
@@ -307,17 +322,7 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 			if _frame != 0 or was_idle:
 				_frame = 0
 				_draw_frame()
-			var duration := maxf(0.001, float(rig.call("_swing_duration")))
-			var progress := clampf(float(rig.get("_swing_t")) / duration, 0.0, 1.0)
-			if attack_state == 3:
-				progress = 1.0
-			var index := 2 if attack_state == 2 else 1
-			var pose := mortal_attack_pose(index, progress)
-			_sprite.rotation = pose.x
-			_sprite.position.x = pose.y
 			return
-		_sprite.rotation = move_toward(_sprite.rotation, 0.0, maxf(delta, 0.0) * 1.5)
-		_sprite.position.x = move_toward(_sprite.position.x, 0.0, maxf(delta, 0.0) * 95.0)
 	var d := strip_for(facing)
 	if d != _strip_dir and not _swinging:
 		_set_strip(d)
@@ -392,6 +397,95 @@ static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
 	}
 
 
+## Hand-authored from the approved Muse walk sheets (384px cells).
+## Anchor = tip of gold crossguard/right wrist; tip = steel point.
+## This is PRESENTATION ONLY. Rig/hitbox remain governed by ScytheRig.
+static func mortal_blade_geometry(direction: String) -> Dictionary:
+	match direction:
+		"down":
+			return {"guard": Vector2(138.0, 229.0),
+				"tip": Vector2(64.0, 342.0), "sign": 1.0}
+		"left":
+			return {"guard": Vector2(144.0, 220.0),
+				"tip": Vector2(51.0, 327.0), "sign": 1.0}
+		"right":
+			return {"guard": Vector2(199.0, 228.0),
+				"tip": Vector2(302.0, 347.0), "sign": -1.0}
+		"up":
+			return {"guard": Vector2(291.0, 197.0),
+				"tip": Vector2(326.0, 285.0), "sign": -1.0}
+	return {}
+
+
+static func mortal_blade_angle(direction: String, index: int, fraction: float) -> float:
+	var geometry := mortal_blade_geometry(direction)
+	if geometry.is_empty():
+		return 0.0
+	return float(geometry["sign"]) * SwordArc.sword_stroke_angle(index, fraction)
+
+
+func uses_painted_mortal_blade() -> bool:
+	return _form == 1 and has_sprites() and _mortal_blade_sprite != null and _sprite.texture != null
+
+
+func _build_mortal_blade_rig() -> void:
+	if _mortal_blade_sprite != null:
+		return
+	_mortal_rest_material = ShaderMaterial.new()
+	_mortal_rest_material.shader = RestingBladeShader
+	_mortal_swing_material = ShaderMaterial.new()
+	_mortal_swing_material.shader = SwingBladeShader
+	_mortal_blade_sprite = Sprite2D.new()
+	_mortal_blade_sprite.name = "PaintedMortalBlade"
+	_mortal_blade_sprite.centered = true
+	_mortal_blade_sprite.region_enabled = true
+	_mortal_blade_sprite.z_index = 1
+	_mortal_blade_sprite.material = _mortal_swing_material
+	_mortal_blade_sprite.visible = false
+	add_child(_mortal_blade_sprite)
+
+
+func _animate_mortal_blade(index: int, fraction: float) -> void:
+	if _mortal_blade_sprite == null or _sprite == null or _sprite.texture == null:
+		return
+	var geometry := mortal_blade_geometry(_strip_dir)
+	if geometry.is_empty():
+		_release_mortal_blade()
+		return
+	# Keep the ink/texture of the currently displayed frame. Attack always
+	# pins the first walking frame before invoking this method.
+	_mortal_blade_sprite.texture = _sprite.texture
+	_mortal_blade_sprite.region_rect = _sprite.region_rect
+	_mortal_blade_sprite.flip_h = _sprite.flip_h
+	_mortal_blade_sprite.position = _sprite.position
+	_mortal_blade_sprite.rotation = _sprite.rotation
+	_mortal_blade_sprite.scale = _sprite.scale
+	var left_px := float(_sprite.region_rect.position.x)
+	var guard: Vector2 = geometry["guard"]
+	var tip: Vector2 = geometry["tip"]
+	for mat in [_mortal_rest_material, _mortal_swing_material]:
+		mat.set_shader_parameter("guard_px", guard)
+		mat.set_shader_parameter("tip_px", tip)
+		mat.set_shader_parameter("frame_left_px", left_px)
+	_mortal_rest_material.set_shader_parameter("cut_amount", 1.0)
+	_mortal_swing_material.set_shader_parameter("opacity", 1.0)
+	_mortal_swing_material.set_shader_parameter(
+		"swing_angle_radians", mortal_blade_angle(_strip_dir, index, fraction))
+	_sprite.material = _mortal_rest_material
+	_mortal_blade_sprite.visible = true
+
+
+func _release_mortal_blade() -> void:
+	if _sprite != null:
+		_sprite.material = null
+	if _mortal_blade_sprite != null:
+		_mortal_blade_sprite.visible = false
+	if _mortal_rest_material != null:
+		_mortal_rest_material.set_shader_parameter("cut_amount", 0.0)
+	if _mortal_swing_material != null:
+		_mortal_swing_material.set_shader_parameter("opacity", 0.0)
+
+
 func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -> void:
 	if _sprite == null:
 		return
@@ -413,9 +507,11 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 	_sprite.position = Vector2(0.0, _neutral_sprite_y) + correction + Vector2(
 		shoulder * 0.13, -absf(shoulder) * 0.18)
 	_mortal_pose_active = true
+	_animate_mortal_blade(swing_index, fraction)
 
 
 func _reset_mortal_sword_pose() -> void:
+	_release_mortal_blade()
 	if not _mortal_pose_active or _sprite == null:
 		return
 	_sprite.position = Vector2(0.0, _neutral_sprite_y)
