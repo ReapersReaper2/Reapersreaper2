@@ -39,7 +39,9 @@ const SporeNeedle = preload("res://scripts/spore_needle.gd")
 @export var combo_from: float = 0.55
 @export var hitstop_duration: float = 0.07
 @export var shake_trauma: float = 0.32
-@export var show_debug_arc: bool = true
+## Debug sector is a developer collision aid, NEVER a player-facing VFX.
+## A giant neon-purple pie wedge hid the sword and broke the mortal look.
+@export var show_debug_arc: bool = false
 @export var arc_radius: float = 150.0
 @export var arc_half_angle_deg: float = 75.0
 
