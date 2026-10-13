@@ -28,7 +28,7 @@ jobs:
           lfs: true
           fetch-depth: 1
       - name: Restore exact bundled approved art before feature import
-        run: python3 .github/scripts/recover_critical_art.py
+        run: sh .github/scripts/recover_critical_art.sh
       - name: Import project resources
         run: godot --headless --path godot-project --import --quit
       - name: Test painted Form1 sword extraction, all facings and double-sword prevention
