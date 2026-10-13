@@ -46,6 +46,9 @@ jobs:
       - name: Import Godot resources
         run: godot --headless --path godot-project --import --quit
 
+      - name: Verify all approved mortal/bridge textures are accessible
+        run: godot --headless --path godot-project --script res://scripts/essential_mobile_art_test.gd
+
       - name: Export installable Android debug APK
         run: |
           mkdir -p "$GITHUB_WORKSPACE/dist"
