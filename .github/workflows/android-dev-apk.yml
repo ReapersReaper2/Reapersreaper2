@@ -40,6 +40,9 @@ jobs:
           test -f "$HOME/.local/share/godot/export_templates/4.3.stable/android_debug.apk"
           test -f "$HOME/.config/godot/editor_settings-4.3.tres"
 
+      - name: Restore exact approved critical PNGs if Git LFS returned pointers
+        run: python3 .github/scripts/recover_critical_art.py
+
       - name: Import Godot resources
         run: godot --headless --path godot-project --import --quit
 
