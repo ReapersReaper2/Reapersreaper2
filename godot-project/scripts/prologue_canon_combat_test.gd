@@ -10,6 +10,7 @@ const RoomScript := preload("res://scripts/room.gd")
 const P1Script := preload("res://scripts/room_p1.gd")
 const P3Script := preload("res://scripts/room_p3.gd")
 const SwordVisual := preload("res://scripts/scythe_visual.gd")
+const PaintedBody := preload("res://scripts/mollosar_sprites.gd")
 const SwordRig := preload("res://scripts/scythe.gd")
 const PlayerScript := preload("res://scripts/player.gd")
 const DialogueScene := preload("res://scenes/dialogue_box.tscn")
@@ -89,6 +90,15 @@ func _run() -> void:
 		SwordVisual.sword_trail_opacity(0.40) > 0.0 and
 		SwordVisual.sword_trail_opacity(1.0) == 0.0,
 		"brief steel glint only during active swing, not resting")
+	_check(PaintedBody.mortal_attack_pose(1, 0.19).x < -0.04,
+		"painted mortal torso winds up before the strike")
+	_check(PaintedBody.mortal_attack_pose(1, 0.67).x > 0.04,
+		"painted mortal torso follows through with the sword")
+	_check(is_equal_approx(PaintedBody.mortal_attack_pose(2, 0.52).x,
+		-PaintedBody.mortal_attack_pose(1, 0.52).x),
+		"torso anticipation reverses with the second combo strike")
+	_check(PaintedBody.mortal_attack_pose(1, 1.0).length() < 0.001,
+		"attack body pose resets before returning to movement")
 
 	var player = PlayerScript.new()
 	root.add_child(player)
