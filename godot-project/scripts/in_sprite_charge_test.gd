@@ -33,6 +33,22 @@ func _run() -> void:
 		"windup turns the source-painted blade around its wrist")
 	_check(SpriteManager.mortal_sword_pose(4, 0.60).has("lean"),
 		"charged strike drives a coherent full-body animation")
+	var wound := SpriteManager.mortal_sword_pose(3, 1.0)
+	var launch := SpriteManager.mortal_sword_pose(4, 0.0)
+	_check(is_equal_approx(float(wound["lean"]), float(launch["lean"])) and
+		is_equal_approx(float(wound["scale"]), float(launch["scale"])) and
+		is_equal_approx(float(wound["shoulder"]), float(launch["shoulder"])),
+		"charged release has no body snap or repeated windup")
+	for direction in ["down", "up", "left", "right"]:
+		_check(is_equal_approx(SpriteManager.mortal_blade_angle(direction, 3, 1.0),
+			SpriteManager.mortal_blade_angle(direction, 4, 0.0)),
+			"charged painted blade begins where the held hand finished: " + direction)
+		_check(is_zero_approx(SpriteManager.mortal_blade_angle(direction, 4, 1.0)),
+			"charged blade returns to its painted resting grip: " + direction)
+	_check(float(SpriteManager.mortal_sword_pose(4, 0.67)["lean"]) > 0.1,
+		"heavy cut drives the shoulders forward once before recovering")
+	_check(is_zero_approx(float(SpriteManager.mortal_sword_pose(4, 1.0)["lean"])),
+		"charged attack returns body to walk pose without a jump")
 
 	var actor = PlayerScene.instantiate()
 	root.add_child(actor)
