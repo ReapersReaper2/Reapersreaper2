@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_p1.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wave_spawner.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/prologue_bridge_world.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/prologue_bridge_atmosphere.gd" id="11"]
 [ext_resource type="Script" path="res://scripts/prologue_skyline.gd" id="10"]
 
 [sub_resource type="RectangleShape2D" id="WallH"]
@@ -32,6 +33,15 @@ script = ExtResource("10")
 
 [node name="WalkableBridge" type="Node2D" parent="."]
 script = ExtResource("9")
+
+[node name="BattlefieldAtmosphere" type="Node2D" parent="."]
+z_as_relative = false
+z_index = -1
+script = ExtResource("11")
+bounds = Rect2(-1280, -360, 2560, 720)
+smoke_count = 12
+ash_count = 36
+step_distance = 76.0
 
 [node name="Walls" type="StaticBody2D" parent="."]
 
