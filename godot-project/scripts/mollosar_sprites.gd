@@ -404,16 +404,16 @@ static func mortal_blade_geometry(direction: String) -> Dictionary:
 	match direction:
 		"down":
 			return {"guard": Vector2(138.0, 229.0),
-				"tip": Vector2(64.0, 342.0), "sign": 1.0}
+				"tip": Vector2(64.0, 342.0), "sign": 1.0, "fill": -1.0}
 		"left":
 			return {"guard": Vector2(144.0, 220.0),
-				"tip": Vector2(51.0, 327.0), "sign": 1.0}
+				"tip": Vector2(51.0, 327.0), "sign": 1.0, "fill": -1.0}
 		"right":
 			return {"guard": Vector2(199.0, 228.0),
-				"tip": Vector2(302.0, 347.0), "sign": -1.0}
+				"tip": Vector2(302.0, 347.0), "sign": -1.0, "fill": 1.0}
 		"up":
 			return {"guard": Vector2(291.0, 197.0),
-				"tip": Vector2(326.0, 285.0), "sign": -1.0}
+				"tip": Vector2(326.0, 285.0), "sign": -1.0, "fill": 1.0}
 	return {}
 
 
@@ -467,6 +467,7 @@ func _animate_mortal_blade(index: int, fraction: float) -> void:
 		mat.set_shader_parameter("guard_px", guard)
 		mat.set_shader_parameter("tip_px", tip)
 		mat.set_shader_parameter("frame_left_px", left_px)
+	_mortal_rest_material.set_shader_parameter("fill_side", float(geometry["fill"]))
 	_mortal_rest_material.set_shader_parameter("cut_amount", 1.0)
 	_mortal_swing_material.set_shader_parameter("opacity", 1.0)
 	_mortal_swing_material.set_shader_parameter(
