@@ -316,7 +316,7 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		var actor: Node = get_parent().get_parent() if get_parent() != null else null
 		var rig: Node = actor.get_node_or_null("ScytheRig") if actor != null else null
 		var attack_state: int = int(rig.get("state")) if rig != null else 0
-		if attack_state != 0:
+		if attack_state != 0 or (rig != null and rig.has_method("is_charging") and rig.is_charging()):
 			var was_idle := _idle_on
 			_idle_on = false
 			if _frame != 0 or was_idle:
@@ -370,6 +370,11 @@ static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
 	var lean := 0.0
 	var squash := 1.0
 	var shoulder := 0.0
+	if swing_index == 3:
+		# Wind up in place while the player holds the existing SWORD button.
+		var wound := p * p * (3.0 - 2.0 * p)
+		return {"lean": -0.105 * wound, "scale": 1.0 - 0.036 * wound,
+			"shoulder": -6.0 * wound}
 	if p < 0.19:
 		var u := p / 0.19
 		var ease := u * u * (3.0 - 2.0 * u)
@@ -390,10 +395,11 @@ static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
 		shoulder = 8.0 * settle
 	# Combo 2 reverses the body twist as well as the blade's attack arc.
 	var sign_value := -1.0 if swing_index == 2 else 1.0
+	var weight := 1.18 if swing_index == 4 else 1.0
 	return {
-		"lean": lean * sign_value,
-		"scale": squash,
-		"shoulder": shoulder * sign_value,
+		"lean": lean * sign_value * weight,
+		"scale": 1.0 + (squash - 1.0) * weight,
+		"shoulder": shoulder * sign_value * weight,
 	}
 
 
@@ -421,7 +427,12 @@ static func mortal_blade_angle(direction: String, index: int, fraction: float) -
 	var geometry := mortal_blade_geometry(direction)
 	if geometry.is_empty():
 		return 0.0
-	return float(geometry["sign"]) * SwordArc.sword_stroke_angle(index, fraction)
+	if index == 3:
+		return float(geometry["sign"]) * lerpf(0.0, -1.22, clampf(fraction, 0.0, 1.0))
+	# Charged attack rotates the very same painted sword through a single
+	# heavier committed slash (the battle rig alone determines damage).
+	return float(geometry["sign"]) * SwordArc.sword_stroke_angle(
+		1 if index == 4 else index, fraction)
 
 
 func uses_painted_mortal_blade() -> bool:
