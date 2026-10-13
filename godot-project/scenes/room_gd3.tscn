@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/room.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
@@ -13,6 +13,8 @@
 [ext_resource type="Script" path="res://scripts/trail_sign.gd" id="22"]
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="8"]
 [ext_resource type="Script" path="res://scripts/vine_exchange.gd" id="10"]
+
+[ext_resource type="Script" path="res://scripts/garden_actor_depth.gd" id="90"]
 
 [sub_resource type="CircleShape2D" id="ExitCircle"]
 radius = 110.0
@@ -280,3 +282,6 @@ metadata/spawn = Vector2(350, 100)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ExitWest"]
 shape = SubResource("ExitCircle")
+
+[node name="GardenActorDepth" type="Node2D" parent="."]
+script = ExtResource("90")
