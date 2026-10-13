@@ -39,7 +39,7 @@ func _run() -> void:
 	rig._ready()
 	actor.facing = Vector2.RIGHT
 	rig.charge_ready.connect(_on_ready)
-	_check(rig.state == rig.State.IDLE, "actor begins idle")
+	_check(rig.state == 0, "actor begins idle")
 
 	# A tap is still the original fast combo attack (no added press lag).
 	rig.begin_charge()
@@ -49,11 +49,11 @@ func _run() -> void:
 	_check(rig.charge_progress() > 0.2 and rig.charge_progress() < 0.3,
 		"short press tracks a partial windup")
 	rig.release_charge()
-	_check(rig.state == rig.State.SWING1 and not rig.is_charging(),
+	_check(rig.state == 1 and not rig.is_charging(),
 		"tap release commits a standard combo-capable slash")
 	rig._advance()
 	rig._advance()
-	_check(rig.state == rig.State.IDLE and not actor.move_locked,
+	_check(rig.state == 0 and not actor.move_locked,
 		"tap recovers and releases movement")
 
 	# A half-second hold commits a heavier single swing on release.
@@ -63,7 +63,7 @@ func _run() -> void:
 	_check(_ready_count == 1 and is_equal_approx(rig.charge_progress(), 1.0),
 		"charge reaches ready once at 0.50 seconds")
 	rig.release_charge()
-	_check(rig.state == rig.State.CHARGED_SWING and actor.move_locked,
+	_check(rig.state == 4 and actor.move_locked,
 		"releasing charged sword commits one heavy attack")
 	_check(is_equal_approx(rig._swing_duration(), 0.66),
 		"heavy strike has distinct paced follow-through")
@@ -74,20 +74,22 @@ func _run() -> void:
 	target.global_position = actor.global_position + Vector2(70, 0)
 	rig._swing_t = rig._swing_duration() * 0.50
 	rig._try_hit(target)
-	_check(target.damage_taken >= 2,
-		"charged strike lands harder than the original one-damage tap")
+	var first_damage: int = target.damage_taken
+	var base_damage: int = maxi(1, int(round(float(rig._entry.get("damage_mult", 1.0)))))
+	_check(first_damage > base_damage,
+		"charged strike lands harder than the original tap at this weapon's tuning")
 	rig._try_hit(target)
-	_check(target.damage_taken <= 3,
+	_check(target.damage_taken == first_damage,
 		"one hit per target per committed charged swing")
 	rig._advance()
 	rig._advance()
-	_check(rig.state == rig.State.IDLE and not actor.move_locked,
+	_check(rig.state == 0 and not actor.move_locked,
 		"charged slash finishes without trapping movement")
 
 	rig.begin_charge()
 	rig._physics_process(0.2)
 	rig.cancel_charge()
-	_check(rig.state == rig.State.IDLE and not rig.is_charging() and
+	_check(rig.state == 0 and not rig.is_charging() and
 		not actor.move_locked,
 		"modal/focus interruptions cancel the windup without launching an attack")
 	CombatTime.scale = 1.0
