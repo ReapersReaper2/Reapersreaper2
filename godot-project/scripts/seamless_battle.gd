@@ -96,7 +96,10 @@ func _build_layer() -> void:
 	var dim := ColorRect.new()
 	dim.name = "Dim"
 	dim.color = Color(0.0, 0.0, 0.0, 0.45)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	# CanvasLayer is not a sized Control. An unattached FULL_RECT preset
+	# produced a zero-size dimmer on real Android fullscreen exports.
+	dim.size = get_viewport().get_visible_rect().size
+	dim.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_layer.add_child(dim)
 	_battle = BattleScript.new()
 	_battle.name = "EmbeddedBattle"
