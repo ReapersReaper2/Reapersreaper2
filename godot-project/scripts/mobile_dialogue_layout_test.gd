@@ -37,6 +37,9 @@ func _run() -> void:
 		"actual modal panel uses tested clear-center location")
 	check(panel.size.is_equal_approx(bounds.size),
 		"actual modal panel is sized explicitly, not collapsing to zero")
+	check(panel.get_rect().end.y <= viewport_size.y - 5.0 and
+		panel.get_rect().end.x < hud._interact_center().x - hud._button_radius(),
+		"real rendered panel never expands into bottom/right touch controls")
 	var text_label: RichTextLabel = dialogue.get_node("Panel/Margin/VBox/HBox/TextLabel")
 	check(text_label.get_theme_font_size("normal_font_size") >= 24,
 		"real mobile body text enlarged for landscape phone")
