@@ -7,6 +7,7 @@ uniform vec2 guard_px = vec2(138.0, 229.0);
 uniform vec2 tip_px = vec2(64.0, 342.0);
 uniform float frame_left_px = 0.0;
 uniform float cut_amount : hint_range(0.0, 1.0) = 0.0;
+uniform float fill_side = -1.0;
 
 // Slightly broader near the guard, tapering toward the painted tip.
 float blade_mask(vec2 pixel) {
@@ -14,7 +15,7 @@ float blade_mask(vec2 pixel) {
     vec2 length_dir = tip_px - origin;
     float t = clamp(dot(pixel - origin, length_dir) / max(dot(length_dir, length_dir), 1.0), 0.0, 1.0);
     vec2 nearest = origin + t * length_dir;
-    float radius = mix(12.0, 2.8, t);
+    float radius = mix(18.0, 5.3, t);
     float shape = 1.0 - smoothstep(max(radius - 2.2, 0.1), radius + 1.4, distance(pixel, nearest));
     // Never cut away the hands, or the tip of a different cell in an atlas.
     float longitudinal = smoothstep(-0.01, 0.065, t) * (1.0 - smoothstep(0.975, 1.03, t));
@@ -24,6 +25,17 @@ float blade_mask(vec2 pixel) {
 void fragment() {
     vec2 pixel = UV / TEXTURE_PIXEL_SIZE - vec2(frame_left_px, 0.0);
     vec4 paint = texture(TEXTURE, UV);
-    paint.a *= 1.0 - blade_mask(pixel) * cut_amount;
-    COLOR = paint;
+    // A transparent cutout would punch holes through painted trousers and
+    // cloaks when the original blade crossed the body. Restore nearby
+    // source colors on the character-facing side as a short-lived inpaint.
+    vec2 tangent = normalize(tip_px - guard_px);
+    vec2 side = vec2(-tangent.y, tangent.x) * fill_side;
+    vec2 background_pixel = pixel + side * 22.0;
+    vec4 backfill = vec4(0.0);
+    if (background_pixel.x >= 0.0 && background_pixel.x < 384.0 &&
+        background_pixel.y >= 0.0 && background_pixel.y < 384.0) {
+        vec2 sample_uv = (background_pixel + vec2(frame_left_px, 0.0)) * TEXTURE_PIXEL_SIZE;
+        backfill = texture(TEXTURE, sample_uv);
+    }
+    COLOR = mix(paint, backfill, blade_mask(pixel) * cut_amount);
 }
