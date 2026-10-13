@@ -61,6 +61,11 @@ func _draw() -> void:
 		# Form 1's painted walk sheets already contain the longsword.
 		# Show the overlaid weapon only during attacks, never two swords at idle.
 		var sprite_manager = _player.get("sprites") if _player != null else null
+		if sprite_manager != null and sprite_manager.has_method("uses_painted_mortal_blade"):
+			if sprite_manager.uses_painted_mortal_blade():
+				# Muse's actual blade is separated and animated by the sprite
+				# manager. Never draw a SECOND weapon on his other hand.
+				return
 		if sprite_manager != null and sprite_manager.has_method("has_sprites"):
 			if sprite_manager.has_sprites() and int(_rig.get("state")) == 0:
 				return
