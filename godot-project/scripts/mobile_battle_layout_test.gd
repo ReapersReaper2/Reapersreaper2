@@ -53,9 +53,11 @@ func _run() -> void:
 		"five commands laid out as accessible 2-column touch grid")
 	check(menu.position.is_equal_approx(commands.position),
 		"commands occupy their dedicated right-side lane")
+	print("[MOBILE BATTLE DIAGNOSTIC] commands=", commands, " menu=", menu.get_global_rect(), " children=", menu.get_child_count())
 	for button in menu.get_children():
 		if button is Button:
 			var rect := (button as Button).get_global_rect()
+			print("[MOBILE BATTLE DIAGNOSTIC] button=", button.text, " rect=", rect)
 			check(rect.end.x <= size.x and rect.end.y <= size.y,
 				"command touch target not clipped beyond physical canvas")
 	check(not bg.mouse_filter == Control.MOUSE_FILTER_STOP,
