@@ -8,6 +8,7 @@ const AmbientMotion := preload("res://scripts/reserve_creature_motion.gd")
 const ContactShadow := preload("res://scripts/reserve_creature_shadow.gd")
 const TouchHUD := preload("res://scripts/touch_controls.gd")
 const ART_DIR := "res://assets/creatures/"
+const SCYTHE_RECOIL_SECONDS := 0.48
 ## Three source paintings carry white paper around the subject. Preserve the
 ## original illustrations and mask the paper only in the gameplay renderer.
 ## Muse can replace these with transparent 3/4-view sprites later.
@@ -68,6 +69,8 @@ var _elapsed: float = 0.0
 var _motion_seed: float = 0.0
 var _attention: float = 0.0
 var _startle_time: float = 0.0
+var _scythe_recoil_time: float = 0.0
+var _scythe_recoil_side: float = 1.0
 var _ground_offset: float = 45.0
 var _shadow: Node2D = null
 var _sensor: Area2D = null
@@ -257,6 +260,12 @@ func _process(delta: float) -> void:
 		_startle_time = maxf(0.0, _startle_time - maxf(delta, 0.0))
 		var recoil := sin(PI * (1.0 - _startle_time / 0.42))
 		offset.y -= recoil * 6.0
+	# Weapon movement is visual-only for ambient residents: no damage or bond.
+	if _scythe_recoil_time > 0.0:
+		_scythe_recoil_time = maxf(0.0, _scythe_recoil_time - maxf(delta, 0.0))
+		var pulse := sin(PI * (1.0 - _scythe_recoil_time / SCYTHE_RECOIL_SECONDS))
+		offset.x += _scythe_recoil_side * pulse * 14.0
+		tilt += _scythe_recoil_side * pulse * 0.07
 	position = _base_position + offset + Vector2(0, sin(_phase) * bob_amp)
 	rotation = _base_rotation + tilt + sin(_phase * 0.62) * deg_to_rad(sway_degrees)
 	var scale_factor := 1.0 + breath + sin(_phase * 0.91) * 0.023
@@ -271,6 +280,10 @@ func _process(delta: float) -> void:
 		modulate = Color(1.15, 1.10, 1.24, 1.0)
 		if _prompt != null:
 			_prompt.text = "NOTICED"
+	elif _scythe_recoil_time > 0.0:
+		modulate = Color(1.10, 0.88, 0.84, 1.0)
+		if _prompt != null and _selected:
+			_prompt.text = "STARTLED"
 	else:
 		modulate = Color.WHITE
 		if _prompt != null:
@@ -310,6 +323,13 @@ func trigger_interaction() -> bool:
 	_reaction_time = 0.72
 	interacted.emit(self)
 	return true
+
+## Presentation-only: weapon swings startle, never injure or capture.
+## No signals are emitted; the player must still use Interact to observe.
+func react_to_scythe(source_position: Vector2) -> void:
+	_scythe_recoil_time = SCYTHE_RECOIL_SECONDS
+	_scythe_recoil_side = 1.0 if global_position.x >= source_position.x else -1.0
+
 
 func display_name() -> String:
 	return String(name).capitalize()
