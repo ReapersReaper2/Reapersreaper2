@@ -56,13 +56,18 @@ func _weapon() -> String:
 		return WeaponData.current_weapon(state)
 	return WeaponData.WEAPON_SCYTHE
 
+## A populated painted character strip owns all visible weapons.
+static func should_draw_external_weapon(has_painted_character: bool) -> bool:
+	return not has_painted_character
+
+
 func _draw() -> void:
 	# Painted Mollosar already carries his weapon. Movement/strike must
 	# happen within that character art, never as an external sword/scythe
 	# orbiting around him. Use this procedural rig ONLY for greybox fallback.
 	var sprite_manager = _player.get("sprites") if _player != null else null
 	if sprite_manager != null and sprite_manager.has_method("has_sprites"):
-		if sprite_manager.has_sprites():
+		if not should_draw_external_weapon(sprite_manager.has_sprites()):
 			return
 	if _form() <= 1:
 		# Form 1's painted walk sheets already contain the longsword.
