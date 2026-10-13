@@ -7,6 +7,13 @@ extends Node2D
 ## Geometry is deterministic and generated once at _draw(), not per frame.
 @export var bounds: Rect2 = Rect2(-1280, -360, 2560, 720)
 
+## Approved hand-painted stonepath master (Muse Drive: tile-stonepath-v2.png).
+## Recolor once at import-time so moss/blue paving suits Bellhollow's
+## burning, ash-covered mortal bridge instead of looking like the Reserve.
+const PAINTED_STONE_SOURCE := preload("res://assets/environment/bellhollow_stonepath_source.png")
+@export var use_painted_stone: bool = true
+var _painted_stone: Texture2D = null
+
 const FOUNDATION := Color(0.126, 0.125, 0.139)
 const MORTAR := Color(0.111, 0.113, 0.121)
 const BASALT := Color(0.23, 0.224, 0.221)
@@ -19,7 +26,55 @@ const SEAM := Color(0.15, 0.14, 0.149)
 
 func _ready() -> void:
 	z_index = -1
+	# draw_texture_rect(tile=true) needs repeating for long bridge geometry.
+	texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
+	if use_painted_stone:
+		_prepare_painted_stone()
 	queue_redraw()
+
+
+func _prepare_painted_stone() -> void:
+	if PAINTED_STONE_SOURCE == null:
+		push_warning("[Bellhollow] Missing approved stonepath art; using procedural fallback")
+		return
+	var image: Image = PAINTED_STONE_SOURCE.get_image()
+	if image == null or image.is_empty():
+		push_warning("[Bellhollow] Approved stonepath cannot decode; using procedural fallback")
+		return
+	# The source is lush blue-green, while Bellhollow is ash-and-ember.
+	# No destructive edits to the approved PNG on disk.
+	image.adjust_bcs(-0.14, 0.08, -0.76)
+	_painted_stone = ImageTexture.create_from_image(image)
+
+
+func has_painted_stone() -> bool:
+	return _painted_stone != null
+
+
+func _draw_painted_deck(left: float) -> void:
+	var stone_area := Rect2(left, -100.0, bounds.size.x, 393.0)
+	draw_texture_rect(_painted_stone, stone_area, true, Color(0.76, 0.69, 0.64, 1.0))
+	# Scorched grime unifies the aged paint with the near-black painted city.
+	draw_rect(stone_area, Color(0.065, 0.057, 0.062, 0.18))
+
+
+func _draw_procedural_fallback() -> void:
+	for stone_value in flagstones_for(bounds):
+		var stone: Dictionary = stone_value
+		var vertices: PackedVector2Array = stone["polygon"]
+		var warm := float(stone["patina"])
+		var base := BASALT.lerp(OXIDIZED, 0.16 + warm * 0.34)
+		var shade := float(stone["shade"])
+		base = base.lightened(shade * 0.06).darkened((1.0 - shade) * 0.07)
+		draw_colored_polygon(vertices, base)
+		var rim := WET_EDGE
+		rim.a = 0.22 + 0.16 * shade
+		draw_line(vertices[0] + Vector2(9, 3), vertices[1] - Vector2(7, 0), rim, 1.5, true)
+		draw_line(vertices[1] + Vector2(9, 0), vertices[2] - Vector2(6, 0), rim, 1.0, true)
+		if bool(stone["fractured"]):
+			var center := vertices[0].lerp(vertices[4], 0.46)
+			draw_line(center - Vector2(18, 14), center + Vector2(2, 3), SEAM, 1.8, true)
+			draw_line(center + Vector2(2, 3), center + Vector2(-6, 24), SEAM, 1.25, true)
 
 
 ## Each stone is irregular and uniquely weathered; no right-angled
@@ -69,23 +124,10 @@ func _draw() -> void:
 	# contours from revealing the city's background through the road.
 	draw_rect(Rect2(l, -112.0, bounds.size.x, 412.0), FOUNDATION)
 	draw_rect(Rect2(l, -100.0, bounds.size.x, 393.0), MORTAR)
-	for stone_value in flagstones_for(bounds):
-		var stone: Dictionary = stone_value
-		var vertices: PackedVector2Array = stone["polygon"]
-		var warm := float(stone["patina"])
-		var base := BASALT.lerp(OXIDIZED, 0.16 + warm * 0.34)
-		var shade := float(stone["shade"])
-		base = base.lightened(shade * 0.06).darkened((1.0 - shade) * 0.07)
-		draw_colored_polygon(vertices, base)
-		# Small broken edge glints rather than rectangular stroke outlines.
-		var rim := WET_EDGE
-		rim.a = 0.22 + 0.16 * shade
-		draw_line(vertices[0] + Vector2(9, 3), vertices[1] - Vector2(7, 0), rim, 1.5, true)
-		draw_line(vertices[1] + Vector2(9, 0), vertices[2] - Vector2(6, 0), rim, 1.0, true)
-		if bool(stone["fractured"]):
-			var center := vertices[0].lerp(vertices[4], 0.46)
-			draw_line(center - Vector2(18, 14), center + Vector2(2, 3), SEAM, 1.8, true)
-			draw_line(center + Vector2(2, 3), center + Vector2(-6, 24), SEAM, 1.25, true)
+	if has_painted_stone():
+		_draw_painted_deck(l)
+	else:
+		_draw_procedural_fallback()
 
 	_draw_weathering()
 	_draw_parapet(l, r, -145.0, true)
