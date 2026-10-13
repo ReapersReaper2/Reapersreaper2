@@ -3,7 +3,7 @@ extends SceneTree
 ## checks guard against turning a 512px cutout into a black rectangle.
 ## godot --headless --path godot-project --script res://scripts/garden_painted_trees_test.gd
 
-const Tree := preload("res://scripts/garden_tree.gd")
+const PaintedGardenTree := preload("res://scripts/garden_tree.gd")
 const Garden := preload("res://scripts/garden_world.gd")
 const Oak := preload("res://assets/environment/garden_tree_oak_v2.png")
 const Willow := preload("res://assets/environment/garden_tree_willow_v2.png")
@@ -33,7 +33,7 @@ func _run() -> void:
 		var img := art.get_image()
 		_check(img.get_pixel(0, 0).a < 0.05 and img.get_pixel(511, 511).a < 0.05,
 			"tree %d has transparent corners, no black rectangular matte" % i)
-		var tree = Tree.new()
+		var tree = PaintedGardenTree.new()
 		tree.art_variant = i
 		tree.position = Vector2(float(128 * i), 70.0 + float(25 * i))
 		root.add_child(tree)
@@ -43,16 +43,16 @@ func _run() -> void:
 			"tree %d uses source texture without destructive recoloring" % i)
 		if sprite != null:
 			var height: float = sprite.texture.get_height() * sprite.scale.y
-			_check(absf(height - Tree.art_height(i)) < 0.5,
+			_check(absf(height - PaintedGardenTree.art_height(i)) < 0.5,
 				"tree %d displays at sane encounter-world scale" % i)
-			_check(absf(sprite.position.y + height * 0.5 - Tree.TRUNK_FOOT_Y) < 0.01,
+			_check(absf(sprite.position.y + height * 0.5 - PaintedGardenTree.TRUNK_FOOT_Y) < 0.01,
 				"tree %d roots align to old trunk's ground baseline" % i)
 		var shape := tree.get_node_or_null("CollisionShape2D") as CollisionShape2D
 		_check(shape != null and shape.shape is CircleShape2D,
 			"tree %d retains round blocking trunk" % i)
 		if shape != null and shape.shape is CircleShape2D:
 			_check(is_equal_approx((shape.shape as CircleShape2D).radius,
-				Tree.COLLISION_RADIUS) and shape.position == Vector2(0, 18),
+				PaintedGardenTree.COLLISION_RADIUS) and shape.position == Vector2(0, 18),
 				"tree %d keeps exactly original 24px trunk collision and offset" % i)
 		_check(tree.collision_layer == 1 and tree.collision_mask == 0,
 			"tree %d does not create new creature/terrain collision rules" % i)
@@ -65,8 +65,8 @@ func _run() -> void:
 	for y in range(-4, 6):
 		for x in range(-5, 7):
 			var p := Vector2(float(x * 64 + 32), float(y * 64 + 32))
-			var one: int = Tree.variant_for(p, 117, 64)
-			_check(one == Tree.variant_for(p, 117, 64),
+			var one: int = PaintedGardenTree.variant_for(p, 117, 64)
+			_check(one == PaintedGardenTree.variant_for(p, 117, 64),
 				"tree style is deterministic and never uses RNG")
 			_check(one >= 0 and one <= 2,
 				"tree style stays within the three imported assets")
@@ -88,7 +88,7 @@ func _run() -> void:
 			continue
 		trees += 1
 		_check(child.has_painted_art(), "spawned garden tree uses a real silhouette")
-		_check(child.art_variant == Tree.variant_for(child.position,
+		_check(child.art_variant == PaintedGardenTree.variant_for(child.position,
 			fixture.seed_value, fixture.cell_size),
 			"generator assigns art without a new RNG draw")
 		_check(not fixture._walkway(child.position),
@@ -97,7 +97,7 @@ func _run() -> void:
 		"art upgrade does not add/remove any solid tree obstacles")
 	fixture.queue_free()
 
-	var fallback = Tree.new()
+	var fallback = PaintedGardenTree.new()
 	fallback.use_painted_art = false
 	root.add_child(fallback)
 	_check(not fallback.has_painted_art() and fallback.get_node_or_null("CollisionShape2D") != null,
