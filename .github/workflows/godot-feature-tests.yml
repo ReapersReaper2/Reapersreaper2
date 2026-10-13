@@ -61,6 +61,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/reserve_scythe_feedback_test.gd
       - name: Test dusk-aware garden atmosphere and light placement
         run: godot --headless --path godot-project --script res://scripts/garden_dusk_ambience_test.gd
+      - name: Test garden player, companion, creature and tree depth ordering
+        run: godot --headless --path godot-project --script res://scripts/garden_actor_depth_test.gd
       - name: Test Reserve discovery compass and touch-safe guidance
         run: godot --headless --path godot-project --script res://scripts/reserve_wayfinding_test.gd
       - name: Test proportional battle artwork and fallbacks

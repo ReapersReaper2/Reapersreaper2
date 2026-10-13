@@ -141,6 +141,13 @@ static func overworld_layout(art: Texture2D, target_height: float) -> Dictionary
 	}
 
 
+## Stable contact depth: the silhouette's idle bob is presentation,
+## not a reason to jump in front of/behind a tree every animation tick.
+## Native sprites already use their world origin as their grounded foot.
+func depth_ground_y() -> float:
+	return _base_position.y + _ground_offset
+
+
 func _set_overworld_texture(art: Texture2D) -> void:
 	if art == null:
 		return
