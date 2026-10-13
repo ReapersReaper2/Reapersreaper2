@@ -67,9 +67,32 @@ func _run() -> void:
 			key + ": native alpha completely replaces old paper cutout shader")
 		_check(resident.texture != null and resident.texture.get_size() == Vector2(384, 384),
 			key + ": native texture is resolved by existing critical sprite loader")
-		var actual_height: float = float(resident.texture.get_height()) * absf(resident.scale.y)
+		var actual_height: float = float(used.size.y) * absf(resident.scale.y)
 		_check(absf(actual_height - desired_height) < 1.1,
-			key + ": original in-world size survives sprite replacement")
+			key + ": actual opaque/visible silhouette has the desired size")
+		var layout: Dictionary = Resident.overworld_layout(resident.texture, desired_height)
+		_check(not layout.is_empty() and
+			absf(float(layout["factor"]) * float(used.size.y) - desired_height) < 0.1,
+			key + ": a transparent border cannot make the resident miniature")
+		# World coordinates represent the foot/hover anchor; the full
+		# square texture must not leave 70px of invisible space below it.
+		var alpha_foot_offset := float(used.end.y) - 192.0 + resident.offset.y
+		_check(absf(alpha_foot_offset * resident.scale.y) < 1.0,
+			key + ": real transparent silhouette bottom rests on the node origin")
+		_check(is_zero_approx(float(resident.get("_ground_offset"))),
+			key + ": contact shadow shares the authored world-space foot point")
+		_check(resident.position.is_equal_approx(Vector2.ZERO),
+			key + ": centering artwork does not move interaction/save anchor")
+		var prompt := resident.get("_prompt") as Label
+		_check(prompt != null and
+			prompt.position.y < -actual_height - 15.0,
+			key + ": USE/E prompt floats above the actual painted silhouette")
+		var shadow := resident.get("_shadow") as Node2D
+		_check(shadow != null and absf(shadow.global_position.y - resident.global_position.y) < 1.0,
+			key + ": visible creature foot and ground shadow start in the same plane")
+		_check(shadow != null and
+			float(shadow.get("radius_x")) <= 55.0,
+			key + ": ground shadow measures opaque width, not blank canvas width")
 		root_node.queue_free()
 
 		# Source battle painting stays available and rollback is a single
@@ -86,6 +109,9 @@ func _run() -> void:
 			key + ": art-review toggle restores the old painting")
 		_check(fallback.texture != null,
 			key + ": old painting fallback still loads")
+		_check(fallback.offset == Vector2.ZERO and
+			float(fallback.get("_ground_offset")) > 0.0,
+			key + ": unmodified legacy art retains its centered fallback alignment")
 		fallback_root.queue_free()
 
 	var scene = Room.instantiate()
