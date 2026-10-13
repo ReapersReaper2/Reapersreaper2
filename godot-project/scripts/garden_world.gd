@@ -10,6 +10,17 @@ extends Node2D
 @export var shrine: Vector2 = Vector2(-1000, 200)
 
 const GardenTree := preload("res://scripts/garden_tree.gd")
+const GRASS_PAINT: Texture2D = preload("res://assets/environment/garden_grass_a_v2.png")
+const TRAIL_PAINT: Texture2D = preload("res://assets/environment/garden_dirtpath_v2.png")
+const GROUND_SHADER: Shader = preload("res://scripts/garden_ground_paint.gdshader")
+@export var use_painted_ground: bool = true
+## Eight world pixels per mask texel: soft routes without pixel-level
+## processing across an entire 2560x720 Android world.
+@export_range(4, 16, 1) var painted_mask_step: int = 8
+
+var _painted_ground: ColorRect = null
+var _painted_mask: Image = null
+
 
 @export var feature_points: PackedVector2Array = PackedVector2Array()
 
@@ -29,8 +40,82 @@ var _tufts: Array[Vector2] = []
 func _ready() -> void:
 	# Ground below all actors; individual tree canopies use absolute Z.
 	z_index = -2000
+	if use_painted_ground:
+		_create_painted_ground()
 	_generate()
 	queue_redraw()
+
+
+## Rendering-only terrain layer. Does not alter _walkway(), player collisions,
+## shrine, cottage, creature spawns, exits or gameplay routes.
+func _create_painted_ground() -> void:
+	if GRASS_PAINT == null or TRAIL_PAINT == null or GROUND_SHADER == null:
+		push_warning("[GardenWorld] Painted terrain missing; using solid fallback")
+		return
+	_painted_mask = _make_path_mask()
+	if _painted_mask == null or _painted_mask.is_empty():
+		return
+	var overlay := ColorRect.new()
+	overlay.name = "PaintedGardenGround"
+	overlay.position = bounds.position
+	overlay.size = bounds.size
+	overlay.color = Color.WHITE
+	overlay.show_behind_parent = true
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat := ShaderMaterial.new()
+	mat.shader = GROUND_SHADER
+	mat.set_shader_parameter("grass_texture", GRASS_PAINT)
+	mat.set_shader_parameter("path_texture", TRAIL_PAINT)
+	mat.set_shader_parameter("trail_mask", ImageTexture.create_from_image(_painted_mask))
+	mat.set_shader_parameter("world_tiling", bounds.size / 512.0)
+	overlay.material = mat
+	add_child(overlay)
+	_painted_ground = overlay
+
+
+## The mask follows the SAME trail geometry that determines navigable
+## clearings, but fades the edge across 20px instead of square 64px blocks.
+## Sampling at 8px is inexpensive even in the large gd1 room.
+func _make_path_mask() -> Image:
+	var step: int = maxi(painted_mask_step, 4)
+	var cols: int = maxi(2, int(ceilf(bounds.size.x / float(step))))
+	var rows: int = maxi(2, int(ceilf(bounds.size.y / float(step))))
+	var image := Image.create(cols, rows, false, Image.FORMAT_RGBA8)
+	var destinations := PackedVector2Array([shrine, landmark])
+	destinations.append_array(feature_points)
+	var pixel_size := Vector2(bounds.size.x / float(cols), bounds.size.y / float(rows))
+	for y in range(rows):
+		for x in range(cols):
+			var p := bounds.position + Vector2(
+				(float(x) + 0.5) * pixel_size.x,
+				(float(y) + 0.5) * pixel_size.y)
+			var mix_amount := _path_coverage(p, destinations)
+			image.set_pixel(x, y, Color(mix_amount, mix_amount, mix_amount, 1.0))
+	return image
+
+
+func _path_coverage(p: Vector2, destinations: PackedVector2Array) -> float:
+	var signed_distance: float = absf(p.y - _route_y(p.x)) - 110.0
+	var northern_width := bounds.size.x * 0.39
+	if absf(p.x - bounds.get_center().x) < northern_width:
+		var loop_y := -185.0 + sin(p.x * 0.005) * 35.0
+		signed_distance = minf(signed_distance, absf(p.y - loop_y) - 58.0)
+	for destination in destinations:
+		signed_distance = minf(signed_distance, p.distance_to(destination) - 155.0)
+		var trail := Vector2(destination.x, _route_y(destination.x))
+		signed_distance = minf(signed_distance,
+			_distance_to_segment(p, destination, trail) - 75.0)
+	# Ensure a soft but narrow grassy shoulder, not a wide hazy line.
+	return 1.0 - smoothstep(-20.0, 20.0, signed_distance)
+
+
+func has_painted_ground() -> bool:
+	return _painted_ground != null
+
+
+func get_painted_mask() -> Image:
+	return _painted_mask
+
 
 func _process(_delta: float) -> void:
 	# Avoid editing existing player / companion movement scripts.
@@ -113,21 +198,22 @@ func _add_tree_collider(p: Vector2) -> void:
 	add_child(tree)
 
 func _draw() -> void:
-	draw_rect(bounds, SOIL)
-	var cols := int(ceilf(bounds.size.x / float(cell_size)))
-	var rows := int(ceilf(bounds.size.y / float(cell_size)))
-	for y in range(rows):
-		for x in range(cols):
-			var p := bounds.position + Vector2((x + 0.5) * cell_size, (y + 0.5) * cell_size)
-			var tile := Rect2(p - Vector2.ONE * cell_size * 0.5, Vector2.ONE * cell_size)
-			var v := sin(float(x * 37 + y * 73 + seed_value) * 1.7)
-			if _walkway(p):
-				draw_rect(tile, PATH if v < 0.45 else PATH_LIGHT)
-				if v > 0.3:
-					draw_circle(p + Vector2(13, -10), 3.0, STONE.darkened(0.25))
-			else:
-				draw_rect(tile, SOIL if v < 0.1 else SOIL_2)
-				draw_circle(p + Vector2(-17, 16), 11.0, MOSS.darkened(0.22))
+	if not has_painted_ground():
+		draw_rect(bounds, SOIL)
+		var cols := int(ceilf(bounds.size.x / float(cell_size)))
+		var rows := int(ceilf(bounds.size.y / float(cell_size)))
+		for y in range(rows):
+			for x in range(cols):
+				var p := bounds.position + Vector2((x + 0.5) * cell_size, (y + 0.5) * cell_size)
+				var tile := Rect2(p - Vector2.ONE * cell_size * 0.5, Vector2.ONE * cell_size)
+				var v := sin(float(x * 37 + y * 73 + seed_value) * 1.7)
+				if _walkway(p):
+					draw_rect(tile, PATH if v < 0.45 else PATH_LIGHT)
+					if v > 0.3:
+						draw_circle(p + Vector2(13, -10), 3.0, STONE.darkened(0.25))
+				else:
+					draw_rect(tile, SOIL if v < 0.1 else SOIL_2)
+					draw_circle(p + Vector2(-17, 16), 11.0, MOSS.darkened(0.22))
 	for p in _tufts:
 		draw_line(p + Vector2(-7, 7), p + Vector2(-2, -7), LEAF_LIGHT, 3.0)
 		draw_line(p + Vector2(2, 8), p + Vector2(8, -5), LEAF, 3.0)
