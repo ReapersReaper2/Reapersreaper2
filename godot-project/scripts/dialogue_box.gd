@@ -17,6 +17,9 @@ signal choice_made(option: Dictionary)
 
 ## Characters per second for the typewriter effect.
 @export var chars_per_second: float = 45.0
+## Native landscape Android gameplay is flanked by a joystick on the left
+## and SWORD/USE on the right. The dialogue sits in the CLEAR CENTER lane.
+@export var force_mobile_layout: bool = false
 
 var _entries: Array = []
 var _index: int = 0
@@ -47,6 +50,49 @@ func _ready() -> void:
 	_portrait_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_portrait_holder.add_child(_portrait_image)
+	# A few older headless harnesses call _ready on a scene that was
+	# never added to the tree. No viewport exists in that isolated case.
+	if is_inside_tree() and get_viewport() != null:
+		_apply_responsive_layout()
+		if not get_viewport().size_changed.is_connected(_apply_responsive_layout):
+			get_viewport().size_changed.connect(_apply_responsive_layout)
+
+
+## Rect is computed in viewport units, so it works with Android aspect
+## correction as well as a desktop editor preview set to 1280x720.
+## For the default 1280x720 HUD: joystick + rim ends at x≈216;
+## USE button + rim begins at x≈1002. The dialogue uses x236..980.
+static func mobile_dialogue_rect(viewport_size: Vector2) -> Rect2:
+	var scale_factor := minf(viewport_size.x / 1280.0, viewport_size.y / 720.0)
+	var left_clear := 236.0 * scale_factor
+	var right_clear := 300.0 * scale_factor
+	var floor_margin := 20.0 * scale_factor
+	var height := 228.0 * scale_factor # 218px minimum content + breathing room
+	return Rect2(Vector2(left_clear, viewport_size.y - height - floor_margin),
+		Vector2(maxf(1.0, viewport_size.x - left_clear - right_clear), height))
+
+
+func _uses_mobile_dialogue() -> bool:
+	return force_mobile_layout or OS.has_feature("android") or OS.has_feature("ios") \
+		or OS.has_feature("mobile") or DisplayServer.is_touchscreen_available() \
+		or bool(ProjectSettings.get_setting("reaper/force_touch_controls", false))
+
+
+func _apply_responsive_layout() -> void:
+	if not _uses_mobile_dialogue():
+		return # Keep the wider cinematic panel on keyboard/desktop.
+	var rect := mobile_dialogue_rect(get_viewport().get_visible_rect().size)
+	_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_panel.position = rect.position
+	_panel.size = rect.size
+	# Fonts have to read on an actual phone, not only in a headless test.
+	_text_label.add_theme_font_size_override("normal_font_size", 24)
+	_name_label.add_theme_font_size_override("font_size", 23)
+	_hint_label.add_theme_font_size_override("font_size", 17)
+	_portrait_holder.custom_minimum_size = Vector2(58, 58)
+	var content = get_node_or_null("Panel/Margin/VBox/HBox")
+	if content is HBoxContainer:
+		(content as HBoxContainer).add_theme_constant_override("separation", 10)
 
 
 func _process(delta: float) -> void:
