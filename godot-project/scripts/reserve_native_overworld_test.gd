@@ -70,6 +70,17 @@ func _run() -> void:
 		var actual_height: float = float(resident.texture.get_height()) * absf(resident.scale.y)
 		_check(absf(actual_height - desired_height) < 1.1,
 			key + ": original in-world size survives sprite replacement")
+		# The entire artwork fits a 384px canvas, with the actual feet at
+		# source y=352: the shadow must sit at the FEET, not at 32% height.
+		var expected_contact: float = desired_height * (160.0 / 384.0)
+		var contact: float = float(resident.get("_ground_offset"))
+		_check(absf(contact - expected_contact) < 1.0,
+			key + ": painted contact shadow follows real y352 foot baseline")
+		var shadow: Node2D = resident.get("_shadow") as Node2D
+		_check(shadow != null and
+			absf(shadow.global_position.y -
+				(resident.global_position.y + expected_contact)) < 2.0,
+			key + ": actual shadow node is grounded under painted feet")
 		root_node.queue_free()
 
 		# Source battle painting stays available and rollback is a single
@@ -87,6 +98,11 @@ func _run() -> void:
 		_check(fallback.texture != null,
 			key + ": old painting fallback still loads")
 		fallback_root.queue_free()
+
+	_check(is_zero_approx(Resident.native_foot_ground_offset(0, 1.0)),
+		"invalid texture dimension cannot put a shadow offscreen")
+	_check(is_equal_approx(Resident.native_foot_ground_offset(384, 168.0 / 384.0), 70.0),
+		"known 168px Dragonthorn master lands at y70 below sprite origin")
 
 	var scene = Room.instantiate()
 	for spec in SPECIES:
