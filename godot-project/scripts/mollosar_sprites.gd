@@ -375,6 +375,21 @@ static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
 		var wound := p * p * (3.0 - 2.0 * p)
 		return {"lean": -0.105 * wound, "scale": 1.0 - 0.036 * wound,
 			"shoulder": -6.0 * wound}
+	if swing_index == 4:
+		# Resume EXACTLY from the fully wound pose. Re-entering the normal
+		# attack's anticipation at release caused a visible backward snap.
+		# This is one heavy forward cut followed by grounded recovery.
+		if p < 0.67:
+			var u := p / 0.67
+			var drive := u * u * (3.0 - 2.0 * u)
+			return {"lean": lerpf(-0.105, 0.121, drive),
+				"scale": lerpf(0.964, 1.047, drive),
+				"shoulder": lerpf(-6.0, 9.5, drive)}
+		var u := (p - 0.67) / 0.33
+		var settle := 1.0 - u * u * (3.0 - 2.0 * u)
+		return {"lean": 0.121 * settle,
+			"scale": 1.0 + 0.047 * settle,
+			"shoulder": 9.5 * settle}
 	if p < 0.19:
 		var u := p / 0.19
 		var ease := u * u * (3.0 - 2.0 * u)
@@ -395,11 +410,10 @@ static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
 		shoulder = 8.0 * settle
 	# Combo 2 reverses the body twist as well as the blade's attack arc.
 	var sign_value := -1.0 if swing_index == 2 else 1.0
-	var weight := 1.18 if swing_index == 4 else 1.0
 	return {
-		"lean": lean * sign_value * weight,
-		"scale": 1.0 + (squash - 1.0) * weight,
-		"shoulder": shoulder * sign_value * weight,
+		"lean": lean * sign_value,
+		"scale": squash,
+		"shoulder": shoulder * sign_value,
 	}
 
 
@@ -429,10 +443,21 @@ static func mortal_blade_angle(direction: String, index: int, fraction: float) -
 		return 0.0
 	if index == 3:
 		return float(geometry["sign"]) * lerpf(0.0, -1.22, clampf(fraction, 0.0, 1.0))
-	# Charged attack rotates the very same painted sword through a single
-	# heavier committed slash (the battle rig alone determines damage).
-	return float(geometry["sign"]) * SwordArc.sword_stroke_angle(
-		1 if index == 4 else index, fraction)
+	if index == 4:
+		# The charge ends at -1.22 radians, so the blade MUST start there.
+		# No second backward pull, separate weapon mesh, or resting-blade snap.
+		var p := clampf(fraction, 0.0, 1.0)
+		var angle := -1.22
+		if p < 0.67:
+			var u := p / 0.67
+			var drive := u * u * (3.0 - 2.0 * u)
+			angle = lerpf(-1.22, 1.08, drive)
+		else:
+			var u := (p - 0.67) / 0.33
+			var settle := u * u * (3.0 - 2.0 * u)
+			angle = lerpf(1.08, 0.0, settle)
+		return float(geometry["sign"]) * angle
+	return float(geometry["sign"]) * SwordArc.sword_stroke_angle(index, fraction)
 
 
 func uses_painted_mortal_blade() -> bool:
