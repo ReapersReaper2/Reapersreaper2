@@ -9,6 +9,9 @@ const ResidentScript := preload("res://scripts/reserve_creature.gd")
 const CompassArrow := preload("res://scripts/reserve_compass_arrow.gd")
 const OBSERVED_KEY := "reserve_observed"
 const HIGHLIGHT_SECONDS := 3.2
+## Match ScytheRig's baseline active arc. Ambient residents are not hit targets.
+const SWING_REACTION_RADIUS := 150.0
+const SWING_REACTION_HALF_ANGLE_DEG := 75.0
 const GOLD := Color(0.92, 0.81, 0.62)
 const SOFT := Color(0.72, 0.80, 0.78)
 
@@ -22,6 +25,7 @@ var _waypoint_arrow: Control = null
 var _last_guided_id: String = ""
 var _highlight_time := 0.0
 var _highlight_text := ""
+var _swing_hint_shown: bool = false
 var _game_state: Node = null
 
 func _ready() -> void:
@@ -38,6 +42,13 @@ func _ready() -> void:
 			child.connect("interacted", Callable(self, "_on_interacted"))
 		if not child.is_connected("noticed", Callable(self, "_on_noticed")):
 			child.connect("noticed", Callable(self, "_on_noticed"))
+	# Listen to the actual weapon action, not a separate input binding. This
+	# also works for Android's synthetic InputEventAction and both combo hits.
+	var rig := _player.get_node_or_null("ScytheRig")
+	if rig != null and rig.has_signal("swing_started"):
+		var handler := Callable(self, "_on_scythe_swing_started")
+		if not rig.is_connected("swing_started", handler):
+			rig.connect("swing_started", handler)
 	_build_hud()
 	_update_hud()
 
@@ -105,6 +116,46 @@ func _on_interacted(creature: Node2D) -> void:
 	_highlight_text = "%s  ·  %d/%d" % [
 		observation_summary(ident), _observed_count(), _resident_count()]
 	_highlight_time = HIGHLIGHT_SECONDS
+
+
+## A swing is NOT an observation or an attack on Reserve residents. Show
+## one short controls hint and a purely visual startle for nearby creatures.
+## This never calls interacted(), take_hit(), or modifies save state.
+func _on_scythe_swing_started(_index: int) -> void:
+	if _player == null or _creatures == null or get_tree().paused:
+		return
+	var facing: Vector2 = _player.get("facing")
+	var reactions := 0
+	for child in _creatures.get_children():
+		if not _is_resident(child) or not child.has_method("react_to_scythe"):
+			continue
+		var resident := child as Node2D
+		if within_swing_reaction_arc(_player.global_position, facing,
+				resident.global_position, SWING_REACTION_RADIUS, SWING_REACTION_HALF_ANGLE_DEG):
+			resident.call("react_to_scythe", _player.global_position)
+			reactions += 1
+	if reactions > 0:
+		_highlight_text = "RESIDENTS REACT  ·  USE TO OBSERVE"
+		_highlight_time = 2.0
+	elif not _swing_hint_shown:
+		_highlight_text = "SWING  ·  USE TO OBSERVE RESIDENTS"
+		_highlight_time = 2.0
+	_swing_hint_shown = true
+
+
+## Pure geometry for deterministic headless regression coverage.
+static func within_swing_reaction_arc(origin: Vector2, facing: Vector2,
+		target: Vector2, radius: float, half_angle_deg: float) -> bool:
+	if radius <= 0.0:
+		return false
+	var delta := target - origin
+	if delta.length_squared() > radius * radius:
+		return false
+	if delta.length_squared() < 0.0001:
+		return true
+	var axis := facing.normalized() if facing.length_squared() > 0.0001 else Vector2.DOWN
+	return axis.dot(delta.normalized()) >= cos(deg_to_rad(clampf(half_angle_deg, 0.0, 180.0)))
+
 
 ## Species information comes from data/creatures.json, never generated
 ## flavor text or unapproved bonding rules. Avoid showing boss classification

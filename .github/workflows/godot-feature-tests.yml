@@ -49,6 +49,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
       - name: Test living Reserve motion, shadows and awareness
         run: godot --headless --path godot-project --script res://scripts/reserve_creature_motion_test.gd
+      - name: Test non-damaging Reserve weapon startle and observation guidance
+        run: godot --headless --path godot-project --script res://scripts/reserve_scythe_feedback_test.gd
       - name: Test dusk-aware garden atmosphere and light placement
         run: godot --headless --path godot-project --script res://scripts/garden_dusk_ambience_test.gd
       - name: Test Reserve discovery compass and touch-safe guidance
