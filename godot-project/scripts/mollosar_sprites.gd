@@ -132,7 +132,6 @@ func _load_form(form: int) -> void:
 	_swing_tex = null
 	_swing_frames = 0
 	_ground_offsets.clear()
-	_mortal_pose_active = false
 	_reset_mortal_sword_pose()
 	for d in DIRS:
 		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
