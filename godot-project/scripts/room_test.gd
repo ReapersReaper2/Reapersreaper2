@@ -1,6 +1,6 @@
 extends SceneTree
 ## Headless M1 room verification: each room loads, background texture is
-## present, player spawns, Luna follows, exits/triggers/NPCs are wired,
+## present, player spawns, Luna joins only after mortal death, exits/NPCs wired,
 ## exit metadata is correct, no script errors.
 ##
 ## Run: Godot --headless --path <project> -s res://scripts/room_test.gd
@@ -13,7 +13,7 @@ var _failed: int = 0
 
 const ROOMS: Array = [
 	{"scene": "res://scenes/room_p1.tscn", "id": "p1", "bg": true,
-	 "npcs": ["Mira", "WoundedSoldier"], "dummies": 0, "spawner": true,
+	 "npcs": ["Mira", "WoundedSoldier"], "dummies": 0, "spawner": true, "luna": false,
 	 "triggers": ["tutorial", "bridge_end"], "exits": 0},
 	{"scene": "res://scenes/room_p3.tscn", "id": "p3", "bg": true,
 	 "npcs": [], "dummies": 0,
@@ -66,8 +66,14 @@ func _verify_room(spec: Dictionary) -> void:
 	var player: Node = _room.get_node_or_null("Player")
 	_check(id + "_player", player != null and player.is_in_group("player"))
 	var luna: Node = _room.get_node_or_null("Luna")
-	_check(id + "_luna", luna != null)
-	_check(id + "_luna_target", luna != null and luna.has_method("get_target") and luna.get_target() == player)
+	var should_have_luna := bool(spec.get("luna", true))
+	_check(id + "_luna", (luna != null) == should_have_luna)
+	if should_have_luna:
+		_check(id + "_luna_target",
+			luna != null and luna.has_method("get_target") and luna.get_target() == player)
+	else:
+		_check(id + "_luna_target", luna == null)
+		_check(id + "_no_underworld_shrine", _room.get_node_or_null("ShrineP1") == null)
 	# Camera limits match the room rect.
 	var cam = player.get_node_or_null("Camera2D") as Camera2D if player != null else null
 	if cam != null:
