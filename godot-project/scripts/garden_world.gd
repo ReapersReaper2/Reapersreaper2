@@ -10,6 +10,15 @@ extends Node2D
 @export var shrine: Vector2 = Vector2(-1000, 200)
 
 const GardenTree := preload("res://scripts/garden_tree.gd")
+## Muse-approved RGBA stonework, source masters imported unchanged.
+## These replace only non-colliding landmark/gate drawings.
+const CRUMBLING_ARCH: Texture2D = preload("res://assets/environment/reserve_crumbling_arch_v1.png")
+const LIT_ARCHWAY: Texture2D = preload("res://assets/environment/reserve_stone_archway_v1.png")
+@export var use_painted_landmarks: bool = true
+const EXIT_GATE_DISPLAY_HEIGHT := 205.0
+const LANDMARK_DISPLAY_HEIGHT := 195.0
+var _painted_landmarks: Array[Sprite2D] = []
+
 const GRASS_PAINT: Texture2D = preload("res://assets/environment/garden_grass_a_v2.png")
 const TRAIL_PAINT: Texture2D = preload("res://assets/environment/garden_dirtpath_v2.png")
 const GROUND_SHADER: Shader = preload("res://scripts/garden_ground_paint.gdshader")
@@ -42,6 +51,8 @@ func _ready() -> void:
 	z_index = -2000
 	if use_painted_ground:
 		_create_painted_ground()
+	if use_painted_landmarks:
+		_create_painted_landmarks()
 	_generate()
 	queue_redraw()
 
@@ -116,6 +127,75 @@ func has_painted_ground() -> bool:
 func get_painted_mask() -> Image:
 	return _painted_mask
 
+
+
+
+## Ground landmarks use the original narrative points, never new
+## gameplay targets. Their feet are aligned with those world coordinates,
+## with transparent margins compensated using the alpha rectangle.
+static func _visible_placement(art: Texture2D, world_height: float) -> Dictionary:
+	if art == null or art.get_width() <= 0 or art.get_height() <= 0:
+		return {}
+	var im: Image = art.get_image()
+	if im == null or im.is_empty():
+		return {}
+	var visible: Rect2i = im.get_used_rect()
+	if visible.size.y <= 0 or visible.size.x <= 0:
+		return {}
+	var factor := world_height / float(visible.size.y)
+	return {
+		"size": visible.size,
+		"factor": factor,
+		"offset": Vector2(
+			float(art.get_width()) * 0.5 - (float(visible.position.x) + float(visible.size.x) * 0.5),
+			float(art.get_height()) * 0.5 - float(visible.end.y)),
+	}
+
+
+func _place_painted_arch(label_name: String, source: Texture2D,
+		ground: Vector2, height: float, mirror: bool = false) -> Sprite2D:
+	var layout := _visible_placement(source, height)
+	if layout.is_empty():
+		push_warning("[GardenWorld] Approved arch artwork missing; drawing the old gate")
+		return null
+	var arch := Sprite2D.new()
+	arch.name = label_name
+	arch.texture = source
+	arch.centered = true
+	arch.offset = layout["offset"]
+	arch.position = ground
+	arch.scale = Vector2.ONE * float(layout["factor"])
+	arch.flip_h = mirror
+	arch.z_as_relative = false
+	# A stable ground-depth key gives Mollosar normal overlap without
+	# forcing the illustrated stonework above dialogue or touch controls.
+	arch.z_index = clampi(int(round(ground.y + 7.0)), -1900, 1900)
+	arch.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	add_child(arch)
+	_painted_landmarks.append(arch)
+	return arch
+
+
+func _create_painted_landmarks() -> void:
+	_painted_landmarks.clear()
+	if _place_painted_arch("PaintedGardenRuin", CRUMBLING_ARCH,
+			landmark, LANDMARK_DISPLAY_HEIGHT) == null:
+		return
+	if _place_painted_arch("PaintedWestTrailArch", LIT_ARCHWAY,
+			Vector2(bounds.position.x + 70.0, 100.0),
+			EXIT_GATE_DISPLAY_HEIGHT) == null:
+		return
+	_place_painted_arch("PaintedEastTrailArch", LIT_ARCHWAY,
+		Vector2(bounds.end.x - 70.0, 100.0),
+		EXIT_GATE_DISPLAY_HEIGHT, true)
+
+
+func has_painted_landmarks() -> bool:
+	return _painted_landmarks.size() == 3
+
+
+func get_painted_arch_count() -> int:
+	return _painted_landmarks.size()
 
 func _process(_delta: float) -> void:
 	# Avoid editing existing player / companion movement scripts.
@@ -224,13 +304,15 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([p + Vector2(-25, 14), p + Vector2(-13, -16), p + Vector2(13, -22), p + Vector2(26, 12)]), STONE)
 		draw_line(p + Vector2(-13, -13), p + Vector2(12, -19), STONE.lightened(0.25), 3.0)
 	# Tree canopies are their own canvas items, depth-sorted with the player.
-	# A navigational focal point at the garden entrance.
-	draw_arc(landmark, 72.0, 0, TAU, 32, STONE, 9.0)
-	draw_line(landmark + Vector2(-32, -50), landmark + Vector2(-32, 26), STONE, 10.0)
-	draw_line(landmark + Vector2(32, -50), landmark + Vector2(32, 26), STONE, 10.0)
-	draw_arc(landmark + Vector2(0, -45), 32, PI, TAU, 16, STONE.lightened(0.2), 8)
-	_draw_gate(Vector2(bounds.position.x + 70.0, 100.0))
-	_draw_gate(Vector2(bounds.end.x - 70.0, 100.0))
+	# Only use the flat debug-era arches as an explicit fallback.
+	# Approved sprites are separate depth-sorted canvas items.
+	if not has_painted_landmarks():
+		draw_arc(landmark, 72.0, 0, TAU, 32, STONE, 9.0)
+		draw_line(landmark + Vector2(-32, -50), landmark + Vector2(-32, 26), STONE, 10.0)
+		draw_line(landmark + Vector2(32, -50), landmark + Vector2(32, 26), STONE, 10.0)
+		draw_arc(landmark + Vector2(0, -45), 32, PI, TAU, 16, STONE.lightened(0.2), 8)
+		_draw_gate(Vector2(bounds.position.x + 70.0, 100.0))
+		_draw_gate(Vector2(bounds.end.x - 70.0, 100.0))
 
 func _draw_gate(p: Vector2) -> void:
 	# Framed trail opening at each existing exit trigger.
