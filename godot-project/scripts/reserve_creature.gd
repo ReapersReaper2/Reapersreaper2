@@ -89,7 +89,26 @@ func _ready() -> void:
 	_phase = float(abs(hash(String(name))) % 628) * 0.01
 	_motion_seed = _phase
 	if texture != null:
-		_ground_offset = clampf(texture.get_height() * absf(_base_scale.y) * 0.32, 24.0, 100.0)
+		if _using_overworld_art:
+			# Native overworld masters share a foot/hover baseline y=352
+			# on a 384px square canvas. Center-based Sprite2D origin is
+			# y=192, so feet are 160 art pixels below scene position.
+			# The old 32%-of-height guess left shadows ~16px ABOVE the
+			# actual ground on Dragonthorn, making it look airborne.
+			_ground_offset = native_foot_ground_offset(
+				texture.get_height(), absf(_base_scale.y))
+		else:
+			_ground_offset = clampf(texture.get_height() * absf(_base_scale.y) * 0.32, 24.0, 100.0)
+
+
+## Source native masters place feet at y=352 inside a 384px frame.
+## Explicit geometry makes the painted contact shadow land at the feet,
+## regardless of the chosen per-species world display height.
+static func native_foot_ground_offset(image_height: int, sprite_scale: float) -> float:
+	if image_height <= 0 or sprite_scale <= 0.0:
+		return 0.0
+	var baseline_ratio := 352.0 / 384.0
+	return maxf(0.0, (baseline_ratio - 0.5) * float(image_height) * sprite_scale)
 	if is_inside_tree() and get_parent() != null:
 		_create_awareness()
 		_create_contact_shadow()
