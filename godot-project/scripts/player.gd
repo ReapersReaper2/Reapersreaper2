@@ -96,6 +96,18 @@ func _physics_process(delta: float) -> void:
 	_update_flight_visual()
 	if sprites != null:
 		sprites.tick(delta, facing, velocity.length() > 20.0)
+		# Sync mortal shoulder/body motion with the weapon rig's exact
+		# normalized swing progress; do not change damage, hitbox or
+		# movement-lock mechanics. Other Forms keep painted attack sheets.
+		var attack_rig = get_node_or_null("ScytheRig")
+		if attack_rig != null and sprites.has_method("set_mortal_sword_pose"):
+			var state_value := int(attack_rig.get("state"))
+			var swing_index := state_value if state_value == 1 or state_value == 2 else 0
+			var progress := 0.0
+			if swing_index > 0:
+				var duration: float = maxf(0.001, float(attack_rig.call("_swing_duration")))
+				progress = clampf(float(attack_rig.get("_swing_t")) / duration, 0.0, 1.0)
+			sprites.set_mortal_sword_pose(swing_index, progress, facing)
 	# --- StepDriver odometer (spec §4) ---
 	# C2: no-count guards — tendril_riding, move_locked, input_locked.
 	# Flight is NOT a guard (spec §8 Q2, v1 behavior: flight counts).
