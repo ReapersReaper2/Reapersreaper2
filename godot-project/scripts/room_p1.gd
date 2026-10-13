@@ -48,15 +48,35 @@ func _process(_delta: float) -> void:
 	_refresh_objective()
 
 
+## Form 1 is MORTAL: the action is a sword strike, not a scythe.
+## Platform tests must not depend on the host machine being Android.
+static func objective_text(cleared: bool, fighting: bool, touch: bool) -> String:
+	if cleared:
+		return "OBJECTIVE   EAST  →  Reach the tower"
+	if fighting:
+		return "OBJECTIVE   Defend the bridge  ·  TAP SWORD" if touch else (
+			"OBJECTIVE   Defend the bridge  ·  SPACE = SWORD")
+	return "OBJECTIVE   Cross the bridge  ·  JOYSTICK" if touch else (
+		"OBJECTIVE   Cross the bridge  ·  WASD")
+
+
+static func tutorial_lines_for(touch: bool) -> Array:
+	var lines_out := TUTORIAL_LINES.duplicate(true)
+	if touch:
+		for entry in lines_out:
+			if str(entry.get("text", "")).contains("[SPACE]"):
+				entry["text"] = str(entry["text"]).replace("[SPACE]", "[SWORD]")
+	return lines_out
+
+
+func _is_mobile_input() -> bool:
+	return OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile") or DisplayServer.is_touchscreen_available()
+
+
 func _refresh_objective() -> void:
 	if _objective_label == null:
 		return
-	if _flag("p1_bridge_cleared"):
-		_objective_label.text = "OBJECTIVE   Continue east to the tower"
-	elif _waves_started:
-		_objective_label.text = "OBJECTIVE   Defend the bridge  •  SPACE / SCYTHE"
-	else:
-		_objective_label.text = "OBJECTIVE   Cross the bridge  •  WASD / JOYSTICK"
+	_objective_label.text = objective_text(_flag("p1_bridge_cleared"), _waves_started, _is_mobile_input())
 
 ## 06a canon (Prologue Sc1). The [SPACE] prompt is wiring-side UX, not canon.
 const TUTORIAL_LINES: Array = [
@@ -72,7 +92,7 @@ func _on_room_trigger(trigger_id: String, _trigger: Area2D) -> void:
 	match trigger_id:
 		"tutorial":
 			if dialogue_box != null and dialogue_box.has_method("start_dialogue"):
-				dialogue_box.start_dialogue(TUTORIAL_LINES)
+				dialogue_box.start_dialogue(tutorial_lines_for(_is_mobile_input()))
 			_start_waves_after_dialogue()
 		"bridge_end":
 			if _flag("p2_collapse_seen"):
