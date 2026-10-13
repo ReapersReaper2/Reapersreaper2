@@ -43,6 +43,11 @@ func _ready() -> void:
 	_lock_player()
 	_spawn_creature_visual()
 	_build_layer()
+	# The battle overlay draws the foe once at its readable tactical stage
+	# position. Hiding the temporary world copy avoids a second identical
+	# foe showing through now that the actual room remains visible.
+	if _creature_visual != null:
+		_creature_visual.visible = false
 	_start_battle()
 
 
@@ -95,7 +100,9 @@ func _build_layer() -> void:
 	add_child(_layer)
 	var dim := ColorRect.new()
 	dim.name = "Dim"
-	dim.color = Color(0.0, 0.0, 0.0, 0.45)
+	# Keep the world recognizable; the command/message cards supply
+	# opaque text backing while a mild veil separates the combat scene.
+	dim.color = Color(0.02, 0.025, 0.04, 0.36)
 	# CanvasLayer is not a sized Control. An unattached FULL_RECT preset
 	# produced a zero-size dimmer on real Android fullscreen exports.
 	dim.size = get_viewport().get_visible_rect().size
