@@ -57,6 +57,13 @@ func _weapon() -> String:
 	return WeaponData.WEAPON_SCYTHE
 
 func _draw() -> void:
+	# Painted Mollosar already carries his weapon. Movement/strike must
+	# happen within that character art, never as an external sword/scythe
+	# orbiting around him. Use this procedural rig ONLY for greybox fallback.
+	var sprite_manager = _player.get("sprites") if _player != null else null
+	if sprite_manager != null and sprite_manager.has_method("has_sprites"):
+		if sprite_manager.has_sprites():
+			return
 	if _form() <= 1:
 		# Form 1's painted walk sheets already contain the longsword.
 		# Show the overlaid weapon only during attacks, never two swords at idle.
