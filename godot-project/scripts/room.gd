@@ -76,9 +76,21 @@ func _setup_camera() -> void:
 	cam.make_current()
 
 
+## Mortal prologue rooms must never display the post-death companion.
+## This is a secondary safety rail if future level edits accidentally add
+## a Luna instance to the bridge. P3 is the first legitimate meeting.
+static func luna_is_allowed(room_identifier: String) -> bool:
+	return room_identifier != "p1" and room_identifier != "p2"
+
+
 func _setup_luna() -> void:
 	luna = get_node_or_null("Luna")
 	if luna == null or player == null:
+		return
+	if not luna_is_allowed(room_id):
+		luna.visible = false
+		if luna.has_method("set_active"):
+			luna.set_active(false)
 		return
 	if luna.has_method("set_target"):
 		luna.set_target(player)
