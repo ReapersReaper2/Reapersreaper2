@@ -6,6 +6,7 @@ extends Sprite2D
 const SpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const AmbientMotion := preload("res://scripts/reserve_creature_motion.gd")
 const ContactShadow := preload("res://scripts/reserve_creature_shadow.gd")
+const TouchHUD := preload("res://scripts/touch_controls.gd")
 const ART_DIR := "res://assets/creatures/"
 ## Three source paintings carry white paper around the subject. Preserve the
 ## original illustrations and mask the paper only in the gameplay renderer.
@@ -38,6 +39,14 @@ static func interaction_caption(touchscreen: bool) -> String:
 	return "USE" if touchscreen else "E / INTERACT"
 
 
+## Share the native-mobile decision with the HUD. Some Android builds have
+## visible joystick/buttons despite a false DisplayServer touchscreen probe.
+static func should_show_touch_prompt(is_native_mobile: bool,
+		touchscreen_available: bool, force_enabled: bool = false) -> bool:
+	return TouchHUD.should_show_controls(
+		is_native_mobile, touchscreen_available, force_enabled)
+
+
 signal noticed(creature: Node2D)
 signal interacted(creature: Node2D)
 
@@ -63,11 +72,16 @@ var _ground_offset: float = 45.0
 var _shadow: Node2D = null
 var _sensor: Area2D = null
 var _prompt: Label = null
+var _touch_prompt_enabled: bool = false
 var _using_overworld_art: bool = false
 var _overworld_visible_height: float = 0.0
 var _overworld_visible_width: float = 0.0
 
 func _ready() -> void:
+	var native_mobile := OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile")
+	var forced := bool(ProjectSettings.get_setting("reaper/force_touch_controls", false))
+	_touch_prompt_enabled = should_show_touch_prompt(
+		native_mobile, DisplayServer.is_touchscreen_available(), forced)
 	# Approved native 384px overworld art takes precedence when delivered.
 	# The existing painted battle-art PNG remains the fallback until then.
 	var name_id := art_id if not art_id.is_empty() else String(name).to_snake_case()
@@ -177,7 +191,7 @@ func _create_awareness() -> void:
 	# A sibling avoids inheriting the sprite's 0.2x import scale.
 	_prompt = Label.new()
 	_prompt.name = String(name) + "_InteractPrompt"
-	_prompt.text = interaction_caption(DisplayServer.is_touchscreen_available())
+	_prompt.text = interaction_caption(_touch_prompt_enabled)
 	_prompt.visible = false
 	_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_prompt.size = Vector2(170, 36)
@@ -260,7 +274,7 @@ func _process(delta: float) -> void:
 	else:
 		modulate = Color.WHITE
 		if _prompt != null:
-			_prompt.text = interaction_caption(DisplayServer.is_touchscreen_available())
+			_prompt.text = interaction_caption(_touch_prompt_enabled)
 
 func _on_body_entered(body: Node2D) -> void:
 	if not body.is_in_group("player"):
