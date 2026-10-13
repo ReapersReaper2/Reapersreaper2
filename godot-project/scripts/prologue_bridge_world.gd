@@ -37,10 +37,14 @@ func _prepare_painted_stone() -> void:
 	if PAINTED_STONE_SOURCE == null:
 		push_warning("[Bellhollow] Missing approved stonepath art; using procedural fallback")
 		return
-	var image: Image = PAINTED_STONE_SOURCE.get_image()
-	if image == null or image.is_empty():
+	var original: Image = PAINTED_STONE_SOURCE.get_image()
+	if original == null or original.is_empty():
 		push_warning("[Bellhollow] Approved stonepath cannot decode; using procedural fallback")
 		return
+	# Godot may retain and share the imported image backing store. Grading a
+	# separate allocation guarantees the Muse original cannot be mutated.
+	var image := Image.new()
+	image.copy_from(original)
 	# The source is lush blue-green, while Bellhollow is ash-and-ember.
 	# No destructive edits to the approved PNG on disk.
 	# Godot BCS uses 1.0 as neutral, not 0.0. A low positive
