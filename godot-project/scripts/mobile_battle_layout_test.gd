@@ -22,6 +22,10 @@ func _run() -> void:
 		"command grid never covers battle dialogue")
 	check(commands.end.x <= size.x and commands.end.y <= size.y,
 		"all command buttons remain inside the viewport")
+	check(is_zero_approx(Battle.battle_background_color(true).a),
+		"wild-battle backdrop is truly transparent over the current world")
+	check(is_equal_approx(Battle.battle_background_color(false).a, 1.0),
+		"staged boss/trainer battle retains its independent arena")
 
 	var battle = Battle.new()
 	battle.fast_mode = true
@@ -60,6 +64,8 @@ func _run() -> void:
 			print("[MOBILE BATTLE DIAGNOSTIC] button=", button.text, " rect=", rect)
 			check(rect.end.x <= size.x and rect.end.y <= size.y,
 				"command touch target not clipped beyond physical canvas")
+			check((button as Button).get_theme_stylebox("normal") is StyleBoxFlat,
+				"battle buttons use readable dark-fantasy UI instead of native greybox")
 	check(not bg.mouse_filter == Control.MOUSE_FILTER_STOP,
 		"background visual does not intercept command touches")
 
