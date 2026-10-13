@@ -1,0 +1,62 @@
+{
+  "schema": "reapers.form1.attack_candidate.v1",
+  "status": "QA GUIDE ONLY — NO ATTACK ART APPROVED",
+  "cell_px": [
+    384,
+    384
+  ],
+  "layout": "horizontal 6-8 frames per direction per motion",
+  "directions": [
+    "down",
+    "up",
+    "left",
+    "right"
+  ],
+  "motions": [
+    "slash",
+    "return",
+    "windup",
+    "heavy",
+    "recover"
+  ],
+  "foot_anchor": [
+    192,
+    372
+  ],
+  "sword_guard_source": {
+    "down": [
+      138,
+      229
+    ],
+    "up": [
+      291,
+      197
+    ],
+    "left": [
+      144,
+      220
+    ],
+    "right": [
+      199,
+      228
+    ]
+  },
+  "duration_ms": {
+    "slash": 350,
+    "return": 300,
+    "windup": 500,
+    "heavy": 660,
+    "recover": 280
+  },
+  "source_refs": {
+    "sheet14": "https://drive.google.com/file/d/1Lz2uYBeYmaS6zkpCfNNdeC5w69l3KT9c/view",
+    "sheet02": "https://drive.google.com/file/d/1JEKr9XaAMCgVGV9LDPlz-1_NwetbP3-c/view",
+    "walk_down": "https://drive.google.com/file/d/1ykR89mW_-ERWlPh6lPCylLDgR7tAxmIF/view",
+    "walk_up": "https://drive.google.com/file/d/1fakvh7WyNo71n3TaquCpJ8gEZ5ijmcnG/view",
+    "walk_left": "https://drive.google.com/file/d/1LeNdTnorOFarMmt6YelqYvDAJjvrpBES/view",
+    "walk_right": "https://drive.google.com/file/d/1nuWKwqeNPiW5W5fNYM3RwNH3hDJ2Vkjz/view"
+  },
+  "producer": "Marrow BOT-006; QA BOT-002 BOT-007; integration Tucker; Android Ivy",
+  "filename": "form1_attack_{motion}_{direction}_spec384.png",
+  "approval_required": true
+}
