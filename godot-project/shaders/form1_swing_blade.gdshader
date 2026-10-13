@@ -14,7 +14,7 @@ float blade_mask(vec2 pixel) {
     vec2 length_dir = tip_px - origin;
     float t = clamp(dot(pixel - origin, length_dir) / max(dot(length_dir, length_dir), 1.0), 0.0, 1.0);
     vec2 nearest = origin + t * length_dir;
-    float radius = mix(12.0, 2.8, t);
+    float radius = mix(14.0, 4.3, t);
     float shape = 1.0 - smoothstep(max(radius - 2.2, 0.1), radius + 1.4, distance(pixel, nearest));
     float longitudinal = smoothstep(-0.01, 0.065, t) * (1.0 - smoothstep(0.975, 1.03, t));
     return shape * longitudinal;
