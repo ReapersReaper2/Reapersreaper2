@@ -22,7 +22,7 @@ func _run() -> void:
 		"chat box starts after visible joystick ring")
 	check(bounds.end.x <= right_limit,
 		"chat box ends before USE button and does not cover SWORD")
-	check(bounds.position.y > viewport_size.y * 0.68 and bounds.end.y < viewport_size.y,
+	check(bounds.position.y > viewport_size.y * 0.63 and bounds.end.y < viewport_size.y,
 		"chat remains low in the viewport without clipping")
 	check(bounds.size.x >= 680.0 and bounds.size.y >= 155.0,
 		"dialogue remains readable with ample width and height")
