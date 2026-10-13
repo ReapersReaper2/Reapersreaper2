@@ -26,6 +26,11 @@ func _run() -> void:
 		"painted player never draws an independent swinging weapon")
 	_check(WeaponVisual.should_draw_external_weapon(false),
 		"temporary greybox has an emergency visible weapon fallback")
+	for direction in ["down", "up", "left", "right"]:
+		for swing in [1, 2]:
+			_check(is_zero_approx(SpriteManager.mortal_blade_angle(direction, swing, 0.0)) and
+				is_zero_approx(SpriteManager.mortal_blade_angle(direction, swing, 1.0)),
+				"normal combo begins/ends with its actual painted sword: %s / %d" % [direction, swing])
 	var pose := SpriteManager.mortal_sword_pose(3, 1.0)
 	_check(float(pose["lean"]) < -0.10 and float(pose["shoulder"]) < -5.0,
 		"holding attack visibly winds up painted arms and existing sword")
