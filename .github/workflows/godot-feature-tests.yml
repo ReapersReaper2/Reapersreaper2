@@ -71,6 +71,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/player_input_lock_test.gd
       - name: Test movement step accounting and save migration
         run: godot --headless --path godot-project --script res://scripts/step_driver_test.gd
+      - name: Test alpha-grounded painted Reserve arches and original routes
+        run: godot --headless --path godot-project --script res://scripts/garden_painted_arches_test.gd
       - name: Test approved painted garden trees and refuge art alignment
         run: godot --headless --path godot-project --script res://scripts/garden_painted_landmarks_test.gd
       - name: Test painted Reserve terrain and soft route masks
