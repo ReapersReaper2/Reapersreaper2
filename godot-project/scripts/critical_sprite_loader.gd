@@ -10,10 +10,25 @@ static func load_texture(path: String) -> Texture2D:
 	if _cache.has(path):
 		return _cache[path]
 	var result: Texture2D = null
-	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
-		var image := Image.load_from_file(path)
-		if image != null and not image.is_empty():
-			result = ImageTexture.create_from_image(image)
+	var raw_exists := FileAccess.file_exists(path)
+	# An LFS stub is plain text masquerading as a PNG. Never pass it to
+	# ResourceLoader, which may emit importer errors or a bogus texture.
+	var pointer := raw_exists and is_lfs_pointer(path)
+	if not pointer and ResourceLoader.exists(path, "Texture2D"):
+		# Godot exports imported .ctex resources and often omits source
+		# images. ResourceLoader resolves that remap in Android/Web builds;
+		# Image.load_from_file() cannot and prints export warnings.
+		var resource: Resource = ResourceLoader.load(path, "Texture2D")
+		if resource is Texture2D:
+			result = resource as Texture2D
+	if result == null and raw_exists and not pointer:
+		# Editor/ZIP fallback if a valid source PNG hasn't been imported.
+		# Loading from bytes avoids Image.load_from_file's export warning.
+		var bytes := FileAccess.get_file_as_bytes(path)
+		if not bytes.is_empty():
+			var image := Image.new()
+			if image.load_png_from_buffer(bytes) == OK and not image.is_empty():
+				result = ImageTexture.create_from_image(image)
 	if result == null:
 		result = _load_bundled(path)
 	if result != null:
@@ -24,7 +39,12 @@ static func load_texture(path: String) -> Texture2D:
 ## optional idle/NPC animation sheets; required gameplay sprites still load
 ## through load_texture(), which reports missing art loudly.
 static func has_source(path: String) -> bool:
-	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
+	var raw_exists := FileAccess.file_exists(path)
+	if raw_exists and not is_lfs_pointer(path):
+		return true
+	# On exported Android/iOS builds the original PNG may not be in
+	# FileAccess, while the imported texture remap is still available.
+	if not raw_exists and ResourceLoader.exists(path, "Texture2D"):
 		return true
 	var stem := path.get_file().get_basename()
 	return FileAccess.file_exists(CRITICAL_DIR + stem + ".b64") or \
