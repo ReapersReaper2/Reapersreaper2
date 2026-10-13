@@ -82,7 +82,7 @@ func _run() -> void:
 	for item in [Gd1, Gd2, Gd3]:
 		var authored: Node = item.instantiate()
 		var authored_garden := authored.get_node_or_null("PlayableGarden")
-		_check(authored_garden != null and bool(authored_garden.use_painted_landmarks),
+		_check(authored_garden != null and bool(authored_garden.get("use_painted_landmarks")),
 			"garden room defaults to approved painted stonework")
 		_check(authored.get_node_or_null("Walls") != null and
 			authored.get_node_or_null("Player") != null and
