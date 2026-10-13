@@ -298,8 +298,9 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		var rig: Node = actor.get_node_or_null("ScytheRig") if actor != null else null
 		var attack_state: int = int(rig.get("state")) if rig != null else 0
 		if attack_state != 0:
+			var was_idle := _idle_on
 			_idle_on = false
-			if _frame != 0:
+			if _frame != 0 or was_idle:
 				_frame = 0
 				_draw_frame()
 			var duration := maxf(0.001, float(rig.call("_swing_duration")))
