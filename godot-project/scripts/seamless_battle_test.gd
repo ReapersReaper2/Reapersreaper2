@@ -135,7 +135,16 @@ func _run() -> void:
 		battle != null and bool(battle.get("embedded_mode")))
 	var visual: Node = seamless.get_node_or_null("WildCreatureVisual")
 	_check("wild creature visual spawned in room", visual != null)
+	var backdrop: ColorRect = battle.get_node_or_null("BattleBackground")
+	_check("embedded battle has transparent backdrop, painted room stays visible",
+		backdrop != null and is_zero_approx(backdrop.color.a))
+	var dim_overlay: ColorRect = layer.get_node_or_null("Dim")
+	_check("light scene dim fits viewport and does not hide painted geometry",
+		dim_overlay != null and dim_overlay.size == Vector2(1280, 720)
+		and dim_overlay.color.a <= 0.4 and dim_overlay.color.a >= 0.25)
 	if visual != null:
+		_check("world preview creature hidden while tactical copy is displayed",
+			not visual.visible)
 		_check("creature visual near encounter spot",
 			(visual as Node2D).position.distance_to(Vector2(190, 130)) < 1.0)
 

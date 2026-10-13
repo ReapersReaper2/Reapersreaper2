@@ -1,9 +1,10 @@
-name: Android Dev APK
+name: Android Visual QA Preview
 
 on:
   push:
     branches:
       - develop
+      - "chatgpt/visual-qa-preview-20261013"
     paths:
       - ".github/workflows/android-dev-apk.yml"
       - "godot-project/**"
@@ -40,8 +41,14 @@ jobs:
           test -f "$HOME/.local/share/godot/export_templates/4.3.stable/android_debug.apk"
           test -f "$HOME/.config/godot/editor_settings-4.3.tres"
 
+      - name: Restore exact approved critical PNGs if Git LFS returned pointers
+        run: sh .github/scripts/recover_critical_art.sh
+
       - name: Import Godot resources
         run: godot --headless --path godot-project --import --quit
+
+      - name: Verify all approved mortal/bridge textures are accessible
+        run: godot --headless --path godot-project --script res://scripts/essential_mobile_art_test.gd
 
       - name: Export installable Android debug APK
         run: |
@@ -54,12 +61,13 @@ jobs:
           unzip -tqq dist/reapers-reaper-debug.apk > /dev/null
           sha256sum dist/reapers-reaper-debug.apk > dist/SHA256SUMS.txt
           printf '%s\n' "$GITHUB_SHA" > dist/COMMIT.txt
+          printf '%s\n' "UNMERGED VISUAL-QA PREVIEW — not an approved release or develop build" > dist/PREVIEW.txt
           du -h dist/reapers-reaper-debug.apk
 
       - name: Upload debug APK for Ivy and Tucker
         uses: actions/upload-artifact@v4
         with:
-          name: reapers-reaper-android-debug
+          name: reapers-reaper-visual-qa-preview
           path: dist/
           if-no-files-found: error
           retention-days: 7
