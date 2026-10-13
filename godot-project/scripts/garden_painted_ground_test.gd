@@ -108,7 +108,8 @@ func _run() -> void:
 	quit(1 if _failures > 0 else 0)
 
 func _mask_at(world: Node2D, mask: Image, point: Vector2) -> float:
-	var local: Vector2 = (point - world.get("bounds").position) / world.get("bounds").size
+	var rect: Rect2 = world.get("bounds")
+	var local: Vector2 = (point - rect.position) / rect.size
 	var xi := clampi(int(floor(local.x * float(mask.get_width()))), 0, mask.get_width() - 1)
 	var yi := clampi(int(floor(local.y * float(mask.get_height()))), 0, mask.get_height() - 1)
 	return mask.get_pixel(xi, yi).r
