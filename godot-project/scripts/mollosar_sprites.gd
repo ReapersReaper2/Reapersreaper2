@@ -56,6 +56,8 @@ var _swing_tex: Texture2D = null
 var _swing_frames: int = 0
 
 var _sprite: Sprite2D = null
+var _neutral_sprite_y: float = SPRITE_Y_OFFSET
+var _mortal_pose_active: bool = false
 var _greybox: Array = []
 
 
@@ -130,6 +132,7 @@ func _load_form(form: int) -> void:
 	_swing_tex = null
 	_swing_frames = 0
 	_ground_offsets.clear()
+	_reset_mortal_sword_pose()
 	for d in DIRS:
 		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
 		var tex := _load_tex(wpath)
@@ -264,7 +267,8 @@ func _apply_grounding(tex: Texture2D, frame_index: int) -> void:
 	var key := "%d:%d" % [tex.get_instance_id(), frame_index]
 	if not _ground_offsets.has(key):
 		_ground_offsets[key] = grounding_offset_for_frame(tex.get_image(), frame_index)
-	_sprite.position.y = float(_ground_offsets[key])
+	_neutral_sprite_y = float(_ground_offsets[key])
+	_sprite.position.y = _neutral_sprite_y
 
 
 ## Mortal sword body language adds a brief torso recoil and rotation
@@ -349,6 +353,75 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		_frame = 0
 		_walk_t = 0.0
 		_draw_frame()
+
+
+## Form 1 does not have approved four-direction sword-attack sprite
+## sheets yet. This *body pose* bridges the gap without showing an idle,
+## frozen Mollosar beside a swinging detached sword. It is deliberately
+## small: foot-anchored anticipation, committed strike, and recovery.
+## Once Muse supplies the attack strips, the actual painted poses replace it.
+static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
+	var p := clampf(fraction, 0.0, 1.0)
+	var lean := 0.0
+	var squash := 1.0
+	var shoulder := 0.0
+	if p < 0.19:
+		var u := p / 0.19
+		var ease := u * u * (3.0 - 2.0 * u)
+		lean = -0.083 * ease
+		squash = 1.0 - 0.033 * ease
+		shoulder = -4.0 * ease
+	elif p < 0.67:
+		var u := (p - 0.19) / 0.48
+		var snap := 1.0 - pow(1.0 - u, 2.25)
+		lean = lerpf(-0.083, 0.102, snap)
+		squash = 0.967 + 0.078 * sin(PI * u)
+		shoulder = lerpf(-4.0, 8.0, snap)
+	else:
+		var u := (p - 0.67) / 0.33
+		var settle := 1.0 - u * u * (3.0 - 2.0 * u)
+		lean = 0.102 * settle
+		squash = 1.0 + 0.012 * settle
+		shoulder = 8.0 * settle
+	# Combo 2 reverses the body twist as well as the blade's attack arc.
+	var sign_value := -1.0 if swing_index == 2 else 1.0
+	return {
+		"lean": lean * sign_value,
+		"scale": squash,
+		"shoulder": shoulder * sign_value,
+	}
+
+
+func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -> void:
+	if _sprite == null:
+		return
+	if _form != 1 or not has_sprites() or swing_index == 0:
+		_reset_mortal_sword_pose()
+		return
+	var pose: Dictionary = mortal_sword_pose(swing_index, fraction)
+	var side := -1.0 if facing.x < -0.10 else 1.0
+	var lean: float = float(pose["lean"]) * side
+	var scale_ratio: float = float(pose["scale"])
+	_sprite.rotation = lean
+	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE) * scale_ratio
+	# Body imagery is a 384px centered cell, with each painted frame
+	# grounded at y=64. Compensate pivot displacement so a shoulder turn
+	# NEVER drags feet across the floor while the hitbox stays still.
+	var ground_pivot := Vector2(0.0, 64.0 - _neutral_sprite_y)
+	var correction := ground_pivot - ground_pivot.rotated(lean) * scale_ratio
+	var shoulder: float = float(pose["shoulder"])
+	_sprite.position = Vector2(0.0, _neutral_sprite_y) + correction + Vector2(
+		shoulder * 0.13, -absf(shoulder) * 0.18)
+	_mortal_pose_active = true
+
+
+func _reset_mortal_sword_pose() -> void:
+	if not _mortal_pose_active or _sprite == null:
+		return
+	_sprite.position = Vector2(0.0, _neutral_sprite_y)
+	_sprite.rotation = 0.0
+	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
+	_mortal_pose_active = false
 
 
 ## Called on scythe swing_started: play the reap-swing strip if this

@@ -29,6 +29,8 @@ jobs:
           fetch-depth: 1
       - name: Import project resources
         run: godot --headless --path godot-project --import --quit
+      - name: Test grounded mortal sword pose and organic Bellhollow flagstones
+        run: godot --headless --path godot-project --script res://scripts/prologue_pose_bridge_test.gd
       - name: Test mortal canon, sword strike and dialog/menu ownership
         run: godot --headless --path godot-project --script res://scripts/prologue_canon_combat_test.gd
       - name: Test visible prologue art and animations
