@@ -172,7 +172,10 @@ var _enemy_label: Label = null
 var _msg: Label = null
 ## Act 2 AI state: player's last ability (for Echomarrow's Echo).
 var _foe_last_ability := ""
-var _menu: VBoxContainer = null
+var _menu: GridContainer = null
+var _battle_background: ColorRect = null
+var _battle_hud: Control = null
+var _message_panel: PanelContainer = null
 var _busy := false
 var _decoy_active := false  # Silver Bell Bloom: the foe's next attack is wasted
 ## Seamless (in-overworld) mode: instead of changing scenes on resolution,
@@ -251,41 +254,85 @@ func _read_config() -> void:
 		_cfg["enemy_roster"] = []
 
 
+## Explicitly sized fullscreen canvas. The old fullscreen presets were
+## applied while the parent was Node2D (not a sized Control), so message
+## panels collapsed to nearly zero width and mobile text printed vertically.
+## The UI uses the project's landscape 1280x720 coordinate system, which
+## Godot maps to the phone through canvas_items stretch.
+static func battle_layout(viewport_size: Vector2) -> Dictionary:
+	var w := viewport_size.x
+	var h := viewport_size.y
+	var scale_factor := minf(w / 1280.0, h / 720.0)
+	var message_rect := Rect2(Vector2(40.0, 516.0) * scale_factor,
+		Vector2(786.0, 184.0) * scale_factor)
+	var command_rect := Rect2(Vector2(w - 414.0 * scale_factor, h - 204.0 * scale_factor),
+		Vector2(374.0, 184.0) * scale_factor)
+	return {"message": message_rect, "commands": command_rect}
+
+
 func _build_ui() -> void:
-	var bg := ColorRect.new()
-	bg.color = Color(0.04, 0.03, 0.06)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
+	var viewport_size := get_viewport().get_visible_rect().size
+	_battle_background = ColorRect.new()
+	_battle_background.name = "BattleBackground"
+	_battle_background.color = Color(0.055, 0.059, 0.074, 0.95) if embedded_mode else Color(0.055, 0.059, 0.074)
+	_battle_background.size = viewport_size
+	_battle_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_battle_background)
 
-	_player_dot = make_creature_visual(str(_cfg["player_creature_id"]), Vector2(320, 380), Color(0.45, 0.65, 0.95), 56.0)
+	_player_dot = make_creature_visual(str(_cfg["player_creature_id"]),
+		Vector2(320, 335), Color(0.45, 0.65, 0.95), 56.0)
 	add_child(_player_dot)
-
-	_enemy_dot = make_creature_visual(str(_cfg["enemy_creature_id"]), Vector2(960, 340), Color(0.85, 0.45, 0.5) if _is_boss else Color(0.55, 0.75, 0.45), 72.0 if _is_boss else 56.0)
+	_enemy_dot = make_creature_visual(str(_cfg["enemy_creature_id"]),
+		Vector2(960, 300), Color(0.85, 0.45, 0.5) if _is_boss else Color(0.55, 0.75, 0.45),
+		72.0 if _is_boss else 56.0)
 	add_child(_enemy_dot)
+	_player_label = _make_label(Vector2(320, 445))
+	_enemy_label = _make_label(Vector2(960, 135))
+	_player_bar = _make_bar(Vector2(200, 485))
+	_enemy_bar = _make_bar(Vector2(840, 178))
 
-	_player_label = _make_label(Vector2(320, 500))
-	_enemy_label = _make_label(Vector2(960, 470))
-	_player_bar = _make_bar(Vector2(200, 540))
-	_enemy_bar = _make_bar(Vector2(840, 510))
-
-	# Message box (bottom).
-	var panel := PanelContainer.new()
-	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	panel.offset_top = -220
-	panel.offset_left = 40
-	panel.offset_right = -40
-	panel.offset_bottom = -40
-	add_child(panel)
+	_battle_hud = Control.new()
+	_battle_hud.name = "BattleHUD"
+	_battle_hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_battle_hud.size = viewport_size
+	add_child(_battle_hud)
+	var bounds := battle_layout(viewport_size)
+	_message_panel = PanelContainer.new()
+	_message_panel.name = "BattleMessagePanel"
+	_message_panel.position = bounds["message"].position
+	_message_panel.size = bounds["message"].size
+	_message_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = Color(0.039, 0.039, 0.071, 0.95)
+	frame.border_color = Color(0.48, 0.39, 0.55, 0.82)
+	frame.set_border_width_all(2)
+	frame.set_corner_radius_all(9)
+	frame.content_margin_left = 22
+	frame.content_margin_top = 18
+	frame.content_margin_right = 22
+	frame.content_margin_bottom = 16
+	_message_panel.add_theme_stylebox_override("panel", frame)
+	_battle_hud.add_child(_message_panel)
 	_msg = Label.new()
+	_msg.name = "BattleMessage"
 	_msg.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_msg.add_theme_font_size_override("font_size", 26)
-	panel.add_child(_msg)
+	_msg.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_msg.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_msg.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_msg.add_theme_font_size_override("font_size", 27)
+	_msg.add_theme_color_override("font_color", Color(0.95, 0.92, 0.87))
+	_message_panel.add_child(_msg)
 
-	# Command menu (bottom-right, above the message box).
-	_menu = VBoxContainer.new()
-	_menu.position = Vector2(980, 470)
-	_menu.add_theme_constant_override("separation", 6)
-	add_child(_menu)
+	# Two-column finger-sized actions, no more 5-button column extending
+	# off the bottom edge over the message panel.
+	_menu = GridContainer.new()
+	_menu.name = "BattleCommands"
+	_menu.columns = 2
+	_menu.position = bounds["commands"].position
+	_menu.size = bounds["commands"].size
+	_menu.add_theme_constant_override("h_separation", 7)
+	_menu.add_theme_constant_override("v_separation", 7)
+	_battle_hud.add_child(_menu)
 
 
 func _make_label(pos: Vector2) -> Label:
@@ -610,8 +657,10 @@ func _add_button(text: String, disabled: bool, on_press: Callable) -> void:
 	var b := Button.new()
 	b.text = text
 	b.disabled = disabled
-	b.custom_minimum_size = Vector2(240, 44)
-	b.add_theme_font_size_override("font_size", 24)
+	b.custom_minimum_size = Vector2(178, 54)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	b.add_theme_font_size_override("font_size", 22)
 	if not disabled:
 		b.pressed.connect(on_press)
 	_menu.add_child(b)
