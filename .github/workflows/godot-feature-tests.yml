@@ -27,6 +27,8 @@ jobs:
         with:
           lfs: true
           fetch-depth: 1
+      - name: Restore exact bundled approved art before feature import
+        run: python3 .github/scripts/recover_critical_art.py
       - name: Import project resources
         run: godot --headless --path godot-project --import --quit
       - name: Test painted Form1 sword extraction, all facings and double-sword prevention
@@ -43,6 +45,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/in_sprite_charge_test.gd
       - name: Test visible prologue art and animations
         run: godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
+      - name: Test required Android prologue PNGs resolve without placeholders
+        run: godot --headless --path godot-project --script res://scripts/essential_mobile_art_test.gd
       - name: Test per-frame sprite foot grounding
         run: godot --headless --path godot-project --script res://scripts/sprite_grounding_test.gd
       - name: Test five real transparent Muse overworld residents
