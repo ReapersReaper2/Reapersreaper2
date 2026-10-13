@@ -50,9 +50,12 @@ func _ready() -> void:
 	_portrait_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_portrait_image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	_portrait_holder.add_child(_portrait_image)
-	_apply_responsive_layout()
-	if not get_viewport().size_changed.is_connected(_apply_responsive_layout):
-		get_viewport().size_changed.connect(_apply_responsive_layout)
+	# A few older headless harnesses call _ready on a scene that was
+	# never added to the tree. No viewport exists in that isolated case.
+	if is_inside_tree() and get_viewport() != null:
+		_apply_responsive_layout()
+		if not get_viewport().size_changed.is_connected(_apply_responsive_layout):
+			get_viewport().size_changed.connect(_apply_responsive_layout)
 
 
 ## Rect is computed in viewport units, so it works with Android aspect
