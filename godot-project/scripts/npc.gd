@@ -222,8 +222,21 @@ func _on_body_exited(body: Node2D) -> void:
 		$Prompt.visible = false
 
 
+## NPCs must not seize USE while another NPC, shrine or cutscene
+## owns the conversation. Prevents one press from starting two dialogues.
+func _another_interaction_open() -> bool:
+	if not is_inside_tree():
+		return false
+	var box = get_tree().get_first_node_in_group("dialogue_box")
+	if box != null and box.has_method("is_active") and box.is_active():
+		return true
+	if get_tree().get_first_node_in_group("shrine_menu") != null:
+		return true
+	return false
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if _dialogue_open or not _player_in_range:
+	if _dialogue_open or not _player_in_range or _another_interaction_open():
 		return
 	if event.is_action_pressed("interact"):
 		# Swallow the press so the dialogue box doesn't instantly advance.
@@ -232,6 +245,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _talk() -> void:
+	# Interact opens on a deferred frame. Recheck ownership because an NPC
+	# or story trigger might have claimed that same press meanwhile.
+	if _another_interaction_open():
+		return
 	if is_shopkeeper:
 		_open_shop()
 		return

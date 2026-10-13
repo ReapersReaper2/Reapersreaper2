@@ -163,7 +163,7 @@ func _phase_p1_waves() -> void:
 		var player = _room.get_node_or_null("Player")
 		_check("p1: player spawned", player != null and player.is_in_group("player"))
 		var luna = _room.get_node_or_null("Luna")
-		_check("p1: luna present", luna != null)
+		_check("p1: Luna has not met mortal Mollosar", luna == null)
 		_spawner = _room.get_node_or_null("WaveSpawner")
 		_check("p1: wave spawner present", _spawner != null and _spawner.has_method("start_waves"))
 		# Drive the tutorial trigger like the player walking into it.
@@ -499,7 +499,7 @@ func _phase_travel() -> void:
 		return
 	if _phase_frame == 3:
 		# Light a second shrine directly (h1's was lit by rest in phase 5).
-		_gs.light_shrine("p1_1", "p1", -1700.0, 100.0)
+		_gs.light_shrine("p3_1", "p3", -840.0, 100.0)
 		var lit: Dictionary = _gs.get_lit_shrines()
 		_check("travel: two shrines lit", lit.size() >= 2)
 		var shrine = null
@@ -514,13 +514,13 @@ func _phase_travel() -> void:
 			var ids: Array = []
 			for d in dests:
 				ids.append(str(d.get("id", "")))
-			_check("travel: p1_1 listed as destination", "p1_1" in ids)
+			_check("travel: p3_1 listed as destination", "p3_1" in ids)
 			var my_id := str(shrine.shrine_id)
 			_check("travel: current shrine excluded", not (my_id in ids))
-			var path: String = shrine._travel_to("p1_1")
-			_check("travel: returns p1 scene path", path.ends_with("room_p1.tscn"))
+			var path: String = shrine._travel_to("p3_1")
+			_check("travel: returns Black Sand scene path", path.ends_with("room_p3.tscn"))
 			var pos: Dictionary = _gs.get_position()
-			_check("travel: spawn set to p1", str(pos.get("room", "")) == "p1")
+			_check("travel: spawn set to p3", str(pos.get("room", "")) == "p3")
 			_check("travel: unknown destination fails safe", shrine._travel_to("nope_9") == "")
 		_next_phase()
 

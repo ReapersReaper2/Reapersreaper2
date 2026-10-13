@@ -267,12 +267,53 @@ func _apply_grounding(tex: Texture2D, frame_index: int) -> void:
 	_sprite.position.y = float(_ground_offsets[key])
 
 
+## Mortal sword body language adds a brief torso recoil and rotation
+## instead of leaving the detailed painted character frozen while an
+## unrelated steel stick spins over it. Only Form 1 uses this fallback;
+## later approved swing sprite sheets remain authoritative.
+static func mortal_attack_pose(index: int, fraction: float) -> Vector2:
+	var p := clampf(fraction, 0.0, 1.0)
+	var lean := 0.0
+	if p < 0.19:
+		lean = lerpf(0.0, -0.055, p / 0.19)
+	elif p < 0.67:
+		lean = lerpf(-0.055, 0.065, (p - 0.19) / 0.48)
+	else:
+		lean = lerpf(0.065, 0.0, (p - 0.67) / 0.33)
+	if index == 2:
+		lean = -lean
+	return Vector2(lean, sin(PI * p) * 3.0)
+
+
 ## Advance animation. Call from the player's _physics_process with the
 ## current facing vector and whether the player is actually moving.
 func tick(delta: float, facing: Vector2, moving: bool) -> void:
 	refresh()
 	if not has_sprites():
 		return
+	# Use the real combat timing and direction, so Form 1 plants his feet,
+	# braces before the blow, then follows through while the hitbox is live.
+	if _form == 1 and _sprite != null:
+		var actor: Node = get_parent().get_parent() if get_parent() != null else null
+		var rig: Node = actor.get_node_or_null("ScytheRig") if actor != null else null
+		var attack_state: int = int(rig.get("state")) if rig != null else 0
+		if attack_state != 0:
+			var was_idle := _idle_on
+			_idle_on = false
+			if _frame != 0 or was_idle:
+				_frame = 0
+				_draw_frame()
+			var duration := maxf(0.001, float(rig.call("_swing_duration")))
+			var progress := clampf(float(rig.get("_swing_t")) / duration, 0.0, 1.0)
+			if attack_state == 3:
+				progress = 1.0
+			var index := 2 if attack_state == 2 else 1
+			var pose := mortal_attack_pose(index, progress)
+			_sprite.rotation = pose.x
+			_sprite.position.x = pose.y
+			return
+		_sprite.rotation = move_toward(_sprite.rotation, 0.0, maxf(delta, 0.0) * 1.5)
+		_sprite.position.x = move_toward(_sprite.position.x, 0.0, maxf(delta, 0.0) * 95.0)
 	var d := strip_for(facing)
 	if d != _strip_dir and not _swinging:
 		_set_strip(d)

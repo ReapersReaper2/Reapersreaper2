@@ -132,7 +132,7 @@ func _build_text() -> void:
 	# teaches controls without altering Muse-owned narrative dialogue.
 	var primer := Label.new()
 	primer.name = "ControlsPrimer"
-	primer.text = "MOVE  WASD / STICK      TALK  E / INTERACT      SWING  SPACE / SCYTHE"
+	primer.text = ("MOVE  JOYSTICK      TALK  USE      ATTACK  SWORD" if (OS.has_feature("android") or OS.has_feature("ios") or DisplayServer.is_touchscreen_available()) else "MOVE  WASD      TALK  E      SWORD  SPACE")
 	primer.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	primer.add_theme_font_size_override("font_size", 19)
 	primer.add_theme_color_override("font_color", Color(0.78, 0.72, 0.62))

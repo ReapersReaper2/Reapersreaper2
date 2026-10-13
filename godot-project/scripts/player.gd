@@ -57,7 +57,22 @@ signal flight_changed(flying: bool)
 var sprites = null
 
 
+## Modal gameplay UI owns input while it is visible. This prevents the
+## touch joystick (which emits global InputEventActions) from moving the
+## player behind a shrine menu or story dialogue.
+## The lookup is read-only: no ownership fights with cutscene locks.
+func _gameplay_modal_open() -> bool:
+	if not is_inside_tree():
+		return false
+	for group_name in ["shrine_menu", "dialogue_box", "shop", "pause_menu"]:
+		var ui = get_tree().get_first_node_in_group(group_name)
+		if ui != null and is_instance_valid(ui) and ui.visible:
+			return true
+	return false
+
+
 func _physics_process(delta: float) -> void:
+	var modal_open := _gameplay_modal_open()
 	var gs = _game_state()
 	var before := global_position  # C1: per-frame baseline, captured every frame
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -68,7 +83,9 @@ func _physics_process(delta: float) -> void:
 		speed = walk_speed * Flight.speed_mult()
 	# Cutscenes lock movement as well as combat/interact input. Decelerate
 	# residual velocity without accepting a fresh direction while locked.
-	if move_locked or input_locked:
+	if modal_open:
+		velocity = Vector2.ZERO
+	elif move_locked or input_locked:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 	elif input_dir.length() > 0.01:
 		facing = input_dir.normalized()
@@ -89,7 +106,7 @@ func _physics_process(delta: float) -> void:
 	# giant displacement. When _game_state() returns null
 	# (headless/out-of-tree), nothing is recorded.
 	if gs != null:
-		if not (tendril_riding or move_locked or input_locked):
+		if not (tendril_riding or move_locked or input_locked or modal_open):
 			_step_odo += global_position.distance_to(before)
 		if _step_odo >= StepDriver.PX_PER_STEP:
 			var n := int(_step_odo / StepDriver.PX_PER_STEP)
@@ -107,7 +124,7 @@ func _update_flight_visual() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if input_locked:
+	if input_locked or _gameplay_modal_open():
 		return
 	if event.is_action_pressed("scythe_swing"):
 		if guide_active:
