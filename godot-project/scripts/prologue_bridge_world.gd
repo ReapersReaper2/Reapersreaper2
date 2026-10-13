@@ -43,7 +43,9 @@ func _prepare_painted_stone() -> void:
 		return
 	# The source is lush blue-green, while Bellhollow is ash-and-ember.
 	# No destructive edits to the approved PNG on disk.
-	image.adjust_bcs(-0.14, 0.08, -0.76)
+	# Godot BCS uses 1.0 as neutral, not 0.0. A low positive
+	# saturation retains the hand-painted stone depth without cyan.
+	image.adjust_bcs(0.78, 1.08, 0.24)
 	_painted_stone = ImageTexture.create_from_image(image)
 
 
