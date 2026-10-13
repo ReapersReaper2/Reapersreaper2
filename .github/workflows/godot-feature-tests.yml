@@ -39,6 +39,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/prologue_bridge_atmosphere_test.gd
       - name: Test mortal canon, sword strike and dialog/menu ownership
         run: godot --headless --path godot-project --script res://scripts/prologue_canon_combat_test.gd
+      - name: Test integrated sprite-based charged sword attack
+        run: godot --headless --path godot-project --script res://scripts/in_sprite_charge_test.gd
       - name: Test visible prologue art and animations
         run: godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
       - name: Test per-frame sprite foot grounding
