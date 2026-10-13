@@ -662,6 +662,21 @@ func _catch_success(foe_name: String) -> void:
 	_return_to_room()
 
 
+## A consistent dark-fantasy button hierarchy instead of default gray
+## desktop widgets. All states retain the same padded touch dimensions.
+static func battle_button_style(fill: Color, rim: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = rim
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(9)
+	style.content_margin_left = 12
+	style.content_margin_right = 12
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	return style
+
+
 func _add_button(text: String, disabled: bool, on_press: Callable) -> void:
 	var b := Button.new()
 	b.text = text
@@ -670,6 +685,18 @@ func _add_button(text: String, disabled: bool, on_press: Callable) -> void:
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	b.add_theme_font_size_override("font_size", 22)
+	b.add_theme_stylebox_override("normal", battle_button_style(
+		Color(0.080, 0.084, 0.110, 0.98), Color(0.47, 0.37, 0.29, 0.85)))
+	b.add_theme_stylebox_override("hover", battle_button_style(
+		Color(0.15, 0.13, 0.17, 0.98), Color(0.75, 0.60, 0.40)))
+	b.add_theme_stylebox_override("pressed", battle_button_style(
+		Color(0.24, 0.18, 0.15, 0.98), Color(0.90, 0.70, 0.42)))
+	b.add_theme_stylebox_override("disabled", battle_button_style(
+		Color(0.07, 0.074, 0.085, 0.82), Color(0.24, 0.24, 0.27, 0.65)))
+	b.add_theme_color_override("font_color", Color(0.94, 0.91, 0.83))
+	b.add_theme_color_override("font_hover_color", Color(1.0, 0.91, 0.68))
+	b.add_theme_color_override("font_pressed_color", Color(1.0, 0.94, 0.76))
+	b.add_theme_color_override("font_disabled_color", Color(0.55, 0.55, 0.58))
 	if not disabled:
 		b.pressed.connect(on_press)
 	_menu.add_child(b)
