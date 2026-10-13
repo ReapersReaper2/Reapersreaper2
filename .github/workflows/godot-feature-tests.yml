@@ -69,6 +69,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/art_test.gd
       - name: Test multi-touch controls and teardown
         run: godot --headless --path godot-project --script res://scripts/mobile_touch_test.gd
+      - name: Test central mobile chat box clear of joystick and action buttons
+        run: godot --headless --path godot-project --script res://scripts/mobile_dialogue_layout_test.gd
       - name: Test seamless battle touch focus and restoration
         run: godot --headless --path godot-project --script res://scripts/seamless_battle_test.gd
       - name: Test pause, save feedback and menu lifecycle
