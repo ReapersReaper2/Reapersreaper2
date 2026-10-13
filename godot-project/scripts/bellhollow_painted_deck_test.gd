@@ -51,6 +51,8 @@ func _run() -> void:
 			result_saturation += b.s
 			source_luminance += (a.r + a.g + a.b) / 3.0
 			result_luminance += (b.r + b.g + b.b) / 3.0
+		print("[BELLHOLLOW PALETTE] source saturation %.3f / toned %.3f; source lum %.3f / toned %.3f" %
+			[source_saturation, result_saturation, source_luminance, result_luminance])
 		_check(result_saturation < source_saturation,
 			"Bellhollow palette reduces the Reserve tile's blue-green saturation")
 		_check(result_luminance < source_luminance,
@@ -59,6 +61,8 @@ func _run() -> void:
 
 	var fallback = Bridge.new()
 	fallback.use_painted_stone = false
+	# No need to draw obsolete polygons in the headless renderer.
+	fallback.visible = false
 	root.add_child(fallback)
 	_check(not fallback.has_painted_stone(),
 		"procedural stones stay available if painted surface is toggled off")
