@@ -5,6 +5,7 @@ extends SceneTree
 const PlayerScene := preload("res://scenes/player.tscn")
 const SpriteManager := preload("res://scripts/mollosar_sprites.gd")
 const WeaponVisual := preload("res://scripts/scythe_visual.gd")
+const TouchOverlay := preload("res://scripts/mobile_touch_overlay.gd")
 const CombatTime := preload("res://scripts/combat_time.gd")
 
 class HitTarget:
@@ -92,6 +93,15 @@ func _run() -> void:
 	_check(rig.state == 0 and not rig.is_charging() and
 		not actor.move_locked,
 		"modal/focus interruptions cancel the windup without launching an attack")
+	var touch = TouchOverlay.new()
+	root.add_child(touch)
+	rig.begin_charge()
+	rig._physics_process(0.51)
+	touch._cancel_gameplay_touches()
+	_check(not rig.is_charging() and rig.state == 0 and
+		not actor.move_locked,
+		"Android app interruption cancels a full charge before finger-up")
+	touch.queue_free()
 	CombatTime.scale = 1.0
 	target.queue_free()
 	actor.queue_free()
