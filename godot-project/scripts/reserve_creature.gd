@@ -114,6 +114,11 @@ static func overworld_layout(art: Texture2D, target_height: float) -> Dictionary
 	var image := art.get_image()
 	if image == null or image.is_empty():
 		return {}
+	# An exported Texture2D can be GPU compressed even when the source
+	# was a transparent PNG. Decode its alpha before locating the real
+	# foot/hover baseline; Image.get_used_rect() requires pixels.
+	if image.is_compressed() and image.decompress() != OK:
+		return {}
 	var visible: Rect2i = image.get_used_rect()
 	if visible.size.x <= 0 or visible.size.y <= 0:
 		return {}
