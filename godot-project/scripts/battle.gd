@@ -265,8 +265,8 @@ static func battle_layout(viewport_size: Vector2) -> Dictionary:
 	var scale_factor := minf(w / 1280.0, h / 720.0)
 	var message_rect := Rect2(Vector2(40.0, 516.0) * scale_factor,
 		Vector2(786.0, 184.0) * scale_factor)
-	var command_rect := Rect2(Vector2(w - 434.0 * scale_factor, h - 228.0 * scale_factor),
-		Vector2(374.0, 200.0) * scale_factor)
+	var command_rect := Rect2(Vector2(w - 434.0 * scale_factor, h - 260.0 * scale_factor),
+		Vector2(374.0, 246.0) * scale_factor)
 	return {"message": message_rect, "commands": command_rect}
 
 
