@@ -17,6 +17,7 @@ var _attack_id: int = -1
 var _interact_id: int = -1
 var _pause_id: int = -1
 var _joystick_vector: Vector2 = Vector2.ZERO
+var _charge_visual_progress: float = 0.0
 var _held_directions: Dictionary = {
 	"move_left": false, "move_right": false,
 	"move_up": false, "move_down": false
@@ -119,6 +120,7 @@ func _end_touch(index: int) -> void:
 		get_viewport().set_input_as_handled()
 	elif index == _attack_id:
 		_attack_id = -1
+		_charge_visual_progress = 0.0
 		_send_action("scythe_swing", false)
 		queue_redraw()
 		get_viewport().set_input_as_handled()
@@ -135,6 +137,7 @@ func _cancel_gameplay_touches() -> void:
 	_apply_movement()
 	if _attack_id >= 0:
 		_attack_id = -1
+		_charge_visual_progress = 0.0
 		_send_action("scythe_swing", false)
 	if _interact_id >= 0:
 		_interact_id = -1
@@ -189,6 +192,13 @@ func _process(_delta: float) -> void:
 	if current != _last_caption:
 		_last_caption = current
 		queue_redraw()
+	if _attack_id >= 0:
+		var player = get_tree().get_first_node_in_group("player")
+		var rig = player.get_node_or_null("ScytheRig") if player != null else null
+		var amount: float = float(rig.charge_progress()) if rig != null and rig.has_method("charge_progress") else 0.0
+		if not is_equal_approx(_charge_visual_progress, amount):
+			_charge_visual_progress = amount
+			queue_redraw()
 
 var _last_caption: String = ""
 
@@ -202,6 +212,12 @@ func _draw() -> void:
 	draw_circle(knob, jr * 0.39, Color(0.54, 0.59, 0.60, 0.61))
 	draw_arc(knob, jr * 0.39, 0.0, TAU, 36, PALE, 2.5, true)
 	_draw_button(_attack_center(), _button_radius(), _weapon_caption(), _attack_id >= 0)
+	if _attack_id >= 0 and _charge_visual_progress > 0.0:
+		var center := _attack_center()
+		var radius := _button_radius() + 7.0
+		draw_arc(center, radius, -PI * 0.5,
+			-PI * 0.5 + TAU * _charge_visual_progress, 36,
+			PALE if _charge_visual_progress >= 1.0 else GOLD, 5.0, true)
 	_draw_button(_interact_center(), _button_radius(), "USE", _interact_id >= 0)
 	_draw_button(_pause_center(), 31.0, "MENU", _pause_id >= 0)
 
