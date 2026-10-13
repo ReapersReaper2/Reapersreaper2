@@ -19,8 +19,8 @@ func _run() -> void:
 	check(Title.debug_build_caption("unknown") == "", "invalid commit hidden")
 	check(Title.debug_build_caption("z".repeat(40)) == "", "nonhex commit hidden")
 
-	var old_dev := ProjectSettings.get_setting("reaper/dev_shortcuts", false)
-	var old_sha := ProjectSettings.get_setting("reaper_build/source_commit", "")
+	var old_dev: Variant = ProjectSettings.get_setting("reaper/dev_shortcuts", false)
+	var old_sha: Variant = ProjectSettings.get_setting("reaper_build/source_commit", "")
 	ProjectSettings.set_setting("reaper/dev_shortcuts", true)
 	ProjectSettings.set_setting("reaper_build/source_commit", commit)
 	var title = Title.new()
