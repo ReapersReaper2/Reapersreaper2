@@ -32,6 +32,7 @@ func _run() -> void:
 	root.add_child(dialogue)
 	await process_frame
 	var panel: PanelContainer = dialogue.get_node("Panel")
+	print("[MOBILE DIALOGUE DIAGNOSTIC] requested=", bounds, " actual=", panel.get_rect(), " min=", panel.get_combined_minimum_size())
 	check(panel.position.is_equal_approx(bounds.position),
 		"actual modal panel uses tested clear-center location")
 	check(panel.size.is_equal_approx(bounds.size),
