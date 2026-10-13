@@ -14,12 +14,19 @@ const GLOW := Color(0.60, 0.75, 0.39)
 
 var _rig: Node2D
 var _player: Node2D
+var _last_attack_index: int = 1
 
 func _ready() -> void:
 	_rig = get_parent() as Node2D
 	if _rig != null:
 		_player = _rig.get_parent() as Node2D
+		if _rig.has_signal("swing_started"):
+			_rig.connect("swing_started", Callable(self, "_on_swing_started"))
 	z_index = 4
+
+
+func _on_swing_started(index: int) -> void:
+	_last_attack_index = index
 
 func _process(_delta: float) -> void:
 	if _rig == null or _player == null:
@@ -96,7 +103,7 @@ func _draw_mortal_sword() -> void:
 	# The player art already holds a resting blade. Only animate an overlay
 	# in motion, with its grip in reach of the hands and realistic ~90px tip.
 	var attack_state := int(_rig.get("state")) if _rig != null else 0
-	var swing_index := 2 if attack_state == 2 else 1
+	var swing_index := attack_state if attack_state in [1, 2] else _last_attack_index
 	var fraction := 0.0
 	if _rig != null and attack_state >= 1 and attack_state <= 2:
 		var duration := maxf(0.001, float(_rig.call("_swing_duration")))
