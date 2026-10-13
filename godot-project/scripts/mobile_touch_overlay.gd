@@ -132,6 +132,11 @@ func _end_touch(index: int) -> void:
 
 ## Explicitly release all action captures before a pause or scene change.
 func _cancel_gameplay_touches() -> void:
+	if is_inside_tree():
+		var player = get_tree().get_first_node_in_group("player")
+		var rig = player.get_node_or_null("ScytheRig") if player != null else null
+		if rig != null and rig.has_method("cancel_charge"):
+			rig.cancel_charge()
 	_joystick_id = -1
 	_joystick_vector = Vector2.ZERO
 	_apply_movement()
