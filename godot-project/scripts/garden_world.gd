@@ -195,6 +195,9 @@ func _add_tree_collider(p: Vector2) -> void:
 	var tree := GardenTree.new()
 	tree.name = "SolidTree"
 	tree.position = p
+	# Visual species uses coordinates/seed, not additional RNG calls.
+	# This keeps all established routes, clearings and tree collisions.
+	tree.tree_variant = GardenTree.variant_for_position(p, seed_value)
 	add_child(tree)
 
 func _draw() -> void:

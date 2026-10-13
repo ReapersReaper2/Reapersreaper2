@@ -1,5 +1,38 @@
 extends Node2D
 ## Walk-in refuge facade. Place on a roadside clearing and pair with an Area2D entrance.
+## Uses the approved transparent Muse building-cottage-v2.png while preserving
+## the door's authored local (0, 64) threshold and existing collisions.
+const PAINTED_COTTAGE: Texture2D = preload(
+	"res://assets/environment/garden_refuge_cottage_v2.png")
+@export var use_painted_facade: bool = true
+const COTTAGE_SCALE := 0.64
+const COTTAGE_TOP := -143.0
+## Source image has 512x341 pixels and an alpha bbox ending at y=327.
+const COTTAGE_VISIBLE_BOTTOM := 327.0
+var _painted_facade: Sprite2D = null
+
+func _ready() -> void:
+	if use_painted_facade and PAINTED_COTTAGE != null:
+		var art := Sprite2D.new()
+		art.name = "PaintedCottageFacade"
+		art.texture = PAINTED_COTTAGE
+		art.centered = false
+		art.scale = Vector2.ONE * COTTAGE_SCALE
+		art.position = Vector2(-PAINTED_COTTAGE.get_width() * COTTAGE_SCALE * 0.5,
+			COTTAGE_TOP)
+		art.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		add_child(art)
+		_painted_facade = art
+	queue_redraw()
+
+func has_painted_facade() -> bool:
+	return _painted_facade != null
+
+func get_doorstep_y() -> float:
+	if _painted_facade == null:
+		return 64.0
+	return _painted_facade.position.y + COTTAGE_VISIBLE_BOTTOM * _painted_facade.scale.y
+
 const STONE := Color(0.31, 0.31, 0.30)
 const DARK := Color(0.12, 0.14, 0.145)
 const ROOF := Color(0.17, 0.22, 0.19)
@@ -7,6 +40,10 @@ const TRIM := Color(0.48, 0.40, 0.28)
 const LIGHT := Color(0.86, 0.60, 0.27)
 
 func _draw() -> void:
+	if has_painted_facade():
+		# Native painted facade entirely replaces provisional blocks.
+		# Collider and exit Area2D remain in room_gd1.tscn.
+		return
 	# The door is at local (0, 64), allowing the player to approach from below.
 	draw_rect(Rect2(-92, -64, 184, 134), DARK)
 	draw_rect(Rect2(-83, -57, 166, 115), STONE)
