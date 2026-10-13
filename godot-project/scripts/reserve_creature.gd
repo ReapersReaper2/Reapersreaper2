@@ -23,6 +23,10 @@ void fragment() {
 static var _paper_shader: Shader = null
 
 @export var art_id: String = ""
+## ART REVIEW: first three native masters are QA-verified CANDIDATE exports.
+## This per-resident switch permits side-by-side phone comparison against the
+## old source painting without changing art files, story or save data.
+@export var prefer_overworld_art: bool = true
 ## Keeps approved on-screen proportions when a 384px overworld master
 ## replaces an oversized temporary painting; zero keeps scene scale.
 @export var overworld_display_height: float = 0.0
@@ -67,7 +71,7 @@ func _ready() -> void:
 	var name_id := art_id if not art_id.is_empty() else String(name).to_snake_case()
 	if texture == null:
 		var overworld_path := ART_DIR + name_id + "_overworld.png"
-		if SpriteLoader.has_source(overworld_path):
+		if prefer_overworld_art and SpriteLoader.has_source(overworld_path):
 			var overworld := SpriteLoader.load_texture(overworld_path)
 			if overworld != null:
 				_set_overworld_texture(overworld)
