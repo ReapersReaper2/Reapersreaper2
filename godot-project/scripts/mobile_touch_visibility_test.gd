@@ -5,6 +5,7 @@ extends SceneTree
 
 const TouchHUD := preload("res://scripts/touch_controls.gd")
 const PlayerScene := preload("res://scenes/player.tscn")
+const Resident := preload("res://scripts/reserve_creature.gd")
 
 var _checks := 0
 var _failures := 0
@@ -23,6 +24,19 @@ func _run() -> void:
 		"desktop QA override displays controls")
 	_check(not TouchHUD.should_show_controls(false, false, false),
 		"ordinary keyboard-only desktop does not show an unused HUD")
+
+	# Regression: on the same Android devices whose touchscreen probe returns
+	# false, resident prompts must still say USE (the actual HUD button).
+	_check(Resident.should_show_touch_prompt(true, false, false),
+		"native Android shows USE even when touchscreen detection is false")
+	_check(Resident.interaction_caption(Resident.should_show_touch_prompt(true, false, false)) == "USE",
+		"creature interaction instruction matches the mobile button")
+	_check(Resident.should_show_touch_prompt(false, true, false),
+		"touchscreen browser also shows USE prompts")
+	_check(Resident.should_show_touch_prompt(false, false, true),
+		"forced touch QA uses USE prompts")
+	_check(not Resident.should_show_touch_prompt(false, false, false),
+		"keyboard desktop retains E / INTERACT prompts")
 
 	var player_scene := PlayerScene.instantiate()
 	var touch_scene = player_scene.get_node_or_null("TouchControls")
@@ -65,6 +79,32 @@ func _run() -> void:
 		_check(touch.get_child_count() == 1,
 			"reentering ready does not duplicate mobile touch overlays")
 	touch.queue_free()
+
+	# Integration: actual resident prompt is created as USE and stays USE
+	# after its per-frame text refresh under the HUD's project-wide QA flag.
+	var setting_path := "reaper/force_touch_controls"
+	var had_setting := ProjectSettings.has_setting(setting_path)
+	var prior_setting = ProjectSettings.get_setting(setting_path, false)
+	ProjectSettings.set_setting(setting_path, true)
+	var room := Node2D.new()
+	root.add_child(room)
+	var image := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0.3, 0.5, 0.3, 1.0))
+	var resident = Resident.new()
+	resident.name = "PromptProbe"
+	resident.texture = ImageTexture.create_from_image(image)
+	room.add_child(resident)
+	var prompt = resident.get("_prompt") as Label
+	_check(prompt != null and prompt.text == "USE",
+		"actual resident awareness prompt uses visible HUD action label")
+	resident._process(0.05)
+	_check(prompt != null and prompt.text == "USE",
+		"per-frame resident update never changes USE back to keyboard E")
+	room.queue_free()
+	if had_setting:
+		ProjectSettings.set_setting(setting_path, prior_setting)
+	else:
+		ProjectSettings.set_setting(setting_path, null)
 
 	if _failures == 0:
 		print("[MOBILE HUD VISIBILITY] PASS %d checks" % _checks)
