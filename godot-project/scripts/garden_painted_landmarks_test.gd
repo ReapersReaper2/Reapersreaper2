@@ -24,7 +24,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	for i in range(ART.size()):
-		var source := ART[i]
+		var source: String = ART[i]
 		_check(FileAccess.file_exists(source), "approved artwork is in repository: " + source)
 		_check(FileAccess.get_file_as_bytes(source).size() == EXPECTED_BYTES[i],
 			"approved image bytes are intact and not a Git LFS pointer: " + source)
