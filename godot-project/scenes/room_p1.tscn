@@ -1,12 +1,10 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/room_p1.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/luna.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/dialogue_box.tscn" id="4"]
 [ext_resource type="PackedScene" path="res://scenes/npc.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/wave_spawner.gd" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/shrine.tscn" id="8"]
 [ext_resource type="Script" path="res://scripts/prologue_bridge_world.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/prologue_skyline.gd" id="10"]
 
@@ -68,14 +66,7 @@ shape = SubResource("BridgeRail")
 [node name="Player" parent="." instance=ExtResource("2")]
 position = Vector2(-1000, 100)
 
-[node name="Luna" parent="." instance=ExtResource("3")]
-position = Vector2(-1040, 120)
-
 [node name="DialogueBox" parent="." groups=["dialogue_box"] instance=ExtResource("4")]
-
-[node name="ShrineP1" parent="." instance=ExtResource("8")]
-position = Vector2(-860, 220)
-shrine_id = "p1_1"
 
 [node name="Mira" parent="." instance=ExtResource("5")]
 position = Vector2(-500, 150)
