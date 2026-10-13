@@ -76,7 +76,7 @@ func _run() -> void:
 			key + ": a transparent border cannot make the resident miniature")
 		# World coordinates represent the foot/hover anchor; the full
 		# square texture must not leave 70px of invisible space below it.
-		var alpha_foot_offset := float(used.end.y) - 192.0 + resident.offset.y
+		var alpha_foot_offset: float = float(used.end.y) - 192.0 + float(resident.offset.y)
 		_check(absf(alpha_foot_offset * resident.scale.y) < 1.0,
 			key + ": real transparent silhouette bottom rests on the node origin")
 		_check(is_zero_approx(float(resident.get("_ground_offset"))),
