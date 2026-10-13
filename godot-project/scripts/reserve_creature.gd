@@ -64,6 +64,8 @@ var _shadow: Node2D = null
 var _sensor: Area2D = null
 var _prompt: Label = null
 var _using_overworld_art: bool = false
+var _overworld_visible_height: float = 0.0
+var _overworld_visible_width: float = 0.0
 
 func _ready() -> void:
 	# Approved native 384px overworld art takes precedence when delivered.
@@ -89,25 +91,60 @@ func _ready() -> void:
 	_phase = float(abs(hash(String(name))) % 628) * 0.01
 	_motion_seed = _phase
 	if texture != null:
-		_ground_offset = clampf(texture.get_height() * absf(_base_scale.y) * 0.32, 24.0, 100.0)
+		# Native transparent cutouts have their visible feet aligned to the
+		# actual encounter origin. Only the legacy centered battle painting
+		# needs an estimated ground offset.
+		_ground_offset = 0.0 if _using_overworld_art else clampf(
+			texture.get_height() * absf(_base_scale.y) * 0.32, 24.0, 100.0)
 	if is_inside_tree() and get_parent() != null:
 		_create_awareness()
 		_create_contact_shadow()
 
 
-## Production overworld sprites are transparent, not white-matted. Use a
-## per-species target height so the replacement cannot shrink to 30 pixels
-## because its temporary painting was imported at 1600–2240px.
+## Alpha is an essential part of the native Muse overworld masters.
+## Each 384px canvas contains a smaller actual creature, and the source
+## framing leaves the feet around y=353. Measure the visible silhouette,
+## not the empty transparent border, when aligning the sprite to the ground.
+##
+## Return source-pixel coordinates so the method can be headless tested
+## and other sprites can reuse the exact convention.
+static func overworld_layout(art: Texture2D, target_height: float) -> Dictionary:
+	if art == null or art.get_height() <= 0:
+		return {}
+	var image := art.get_image()
+	if image == null or image.is_empty():
+		return {}
+	var visible: Rect2i = image.get_used_rect()
+	if visible.size.x <= 0 or visible.size.y <= 0:
+		return {}
+	return {
+		"visible": visible,
+		"factor": target_height / float(visible.size.y) if target_height > 0.0 else 0.0,
+		"offset_y": float(art.get_height()) * 0.5 - float(visible.end.y),
+	}
+
+
 func _set_overworld_texture(art: Texture2D) -> void:
 	if art == null:
 		return
+	var layout: Dictionary = overworld_layout(art, overworld_display_height)
+	if layout.is_empty():
+		push_warning("[ReserveCreature] transparent overworld image has no visible silhouette")
+		return
+	var visible: Rect2i = layout["visible"]
 	texture = art
 	_using_overworld_art = true
 	material = null
-	if overworld_display_height > 0.0 and art.get_height() > 0:
-		var factor := overworld_display_height / float(art.get_height())
-		scale = Vector2(-factor if scale.x < 0.0 else factor,
-			-factor if scale.y < 0.0 else factor)
+	centered = true
+	# Keep the authored Node2D encounter position unchanged so the
+	# awareness sensor, Guide waypoint and save data still target the
+	# same location. Shift pixels inside Sprite2D instead.
+	offset = Vector2(0.0, float(layout["offset_y"]))
+	if overworld_display_height > 0.0:
+		var factor: float = layout["factor"]
+		scale = Vector2(-factor if scale.x < 0.0 else factor, factor)
+	_overworld_visible_height = float(visible.size.y) * absf(scale.y)
+	_overworld_visible_width = float(visible.size.x) * absf(scale.x)
 
 
 func _apply_paper_cutout_shader() -> void:
@@ -158,7 +195,9 @@ func _create_contact_shadow() -> void:
 	shadow.top_level = true
 	shadow.z_as_relative = false
 	var visual_width := 120.0
-	if texture != null:
+	if _using_overworld_art:
+		visual_width = _overworld_visible_width
+	elif texture != null:
 		visual_width = texture.get_width() * absf(_base_scale.x)
 	shadow.radius_x = clampf(visual_width * 0.28, 22.0, 55.0)
 	shadow.radius_y = shadow.radius_x * 0.34
@@ -178,6 +217,12 @@ func _update_contact_shadow(offset: Vector2, lift: float) -> void:
 
 func _update_prompt_position() -> void:
 	if _prompt == null:
+		return
+	if _using_overworld_art:
+		# The origin is the visible foot/hover contact. Keep the prompt
+		# above the actual silhouette, not halfway through its head.
+		_prompt.position = position + Vector2(-85.0,
+			-maxf(_overworld_visible_height, 65.0) - 44.0)
 		return
 	var half_height := 80.0
 	if texture != null:
