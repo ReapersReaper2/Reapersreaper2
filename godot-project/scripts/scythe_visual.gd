@@ -65,18 +65,68 @@ func _draw() -> void:
 	else:
 		_draw_reaper_scythe()
 
+## The mortal sword uses a short, shoulder-driven slash, not a giant
+## rotating scythe mesh. All angles are in radians relative to the facing
+## direction of ScytheRig. The second combo hit travels back across.
+static func sword_stroke_angle(index: int, fraction: float) -> float:
+	var p := clampf(fraction, 0.0, 1.0)
+	var angle := 0.0
+	if p < 0.19:
+		var u := p / 0.19
+		angle = lerpf(-0.22, -1.22, u * u * (3.0 - 2.0 * u))
+	elif p < 0.67:
+		var u := (p - 0.19) / 0.48
+		# Quick acceleration, a clean middle-strike, then follow-through.
+		var snap := 1.0 - pow(1.0 - u, 2.25)
+		angle = lerpf(-1.22, 1.05, snap)
+	else:
+		var u := (p - 0.67) / 0.33
+		angle = lerpf(1.05, 0.78, u * u * (3.0 - 2.0 * u))
+	return -angle if index == 2 else angle
+
+
+static func sword_trail_opacity(fraction: float) -> float:
+	var p := clampf(fraction, 0.0, 1.0)
+	if p <= 0.24 or p >= 0.78:
+		return 0.0
+	return sin(PI * (p - 0.24) / 0.54) * 0.50
+
+
 func _draw_mortal_sword() -> void:
-	# Form 1: steel longsword and gold crossguard, NEVER a reaper scythe.
-	draw_line(Vector2(22, 21), Vector2(51, -9), SHAFT, 9.0, true)
-	draw_circle(Vector2(20, 25), 7.0, GOLD)
-	draw_line(Vector2(47, -16), Vector2(73, 7), GOLD, 8.0, true)
-	var steel := PackedVector2Array([
-		Vector2(49, -10), Vector2(60, -27), Vector2(127, -102),
-		Vector2(144, -115), Vector2(139, -96), Vector2(74, -17)
+	# The player art already holds a resting blade. Only animate an overlay
+	# in motion, with its grip in reach of the hands and realistic ~90px tip.
+	var attack_state := int(_rig.get("state")) if _rig != null else 0
+	var swing_index := 2 if attack_state == 2 else 1
+	var fraction := 0.0
+	if _rig != null and attack_state >= 1 and attack_state <= 2:
+		var duration := maxf(0.001, float(_rig.call("_swing_duration")))
+		fraction = clampf(float(_rig.get("_swing_t")) / duration, 0.0, 1.0)
+	elif attack_state == 3:
+		fraction = 1.0
+	# The sword belongs in the hands, not at the tip of a 144px triangle.
+	var grip := Vector2(6.0, -31.0)
+	var angle := sword_stroke_angle(swing_index, fraction) if attack_state != 0 else -0.35
+	var trail_alpha := sword_trail_opacity(fraction) if attack_state in [1, 2] else 0.0
+	if trail_alpha > 0.0:
+		# A thin steel glint traces the arc briefly; no big neon sector.
+		var glint := Color(0.86, 0.88, 0.79, trail_alpha)
+		draw_arc(grip, 82.0, angle - 0.26, angle + 0.08, 12, glint, 2.5, true)
+		var echo := Color(0.54, 0.64, 0.62, trail_alpha * 0.40)
+		draw_arc(grip, 77.0, angle - 0.41, angle - 0.14, 12, echo, 4.0, true)
+	draw_set_transform(grip, angle, Vector2.ONE)
+	# Dark grip / gold crossguard; tapered double-edged weathered steel.
+	draw_line(Vector2(-14, 0), Vector2(22, 0), SHAFT, 6.0, true)
+	draw_circle(Vector2(-14, 0), 5.0, GOLD.darkened(0.28))
+	draw_line(Vector2(20, -11), Vector2(20, 11), GOLD, 5.0, true)
+	draw_circle(Vector2(20, 0), 3.5, SHADOW)
+	var metal := PackedVector2Array([
+		Vector2(22, -5.5), Vector2(70, -4.5), Vector2(91, 0),
+		Vector2(70, 4.5), Vector2(22, 5.5),
 	])
-	draw_colored_polygon(steel, STEEL)
-	draw_line(Vector2(54, -12), Vector2(140, -108), EDGE, 3.0, true)
-	draw_line(Vector2(62, -21), Vector2(139, -108), SHADOW.lightened(0.35), 2.0, true)
+	draw_colored_polygon(metal, STEEL)
+	draw_line(Vector2(25, -2.3), Vector2(86, -0.3), EDGE, 2.3, true)
+	draw_line(Vector2(25, 2.4), Vector2(75, 3.0), SHADOW.lightened(0.23), 1.6, true)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _draw_reaper_scythe() -> void:
 	draw_line(Vector2(15, 23), Vector2(113, -6), SHAFT, 10.0, true)
