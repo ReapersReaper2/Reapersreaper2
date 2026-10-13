@@ -20,6 +20,7 @@ const CriticalSpriteLoader := preload("res://scripts/critical_sprite_loader.gd")
 const RestingBladeShader := preload("res://shaders/form1_resting_blade.gdshader")
 const SwingBladeShader := preload("res://shaders/form1_swing_blade.gdshader")
 const SwordArc := preload("res://scripts/scythe_visual.gd")
+const Form1AttackClips := preload("res://scripts/form1_attack_clips.gd")
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
 const WALK_FPS := 6.0
@@ -64,6 +65,10 @@ var _mortal_pose_active: bool = false
 ## Two layers reference the SAME approved sprite texture: an alpha cut on
 ## the resting blade and a rotated copy of its original painted pixels.
 ## No duplicate synthetic sword, no new LFS payload, no change to hitbox.
+## Candidate attack art is NEVER loaded. An explicit 20-strip APPROVED
+## manifest can replace the procedural sword pose without code surgery.
+var _attack_clips: Dictionary = {}
+var _approved_attack_active: bool = false
 var _mortal_blade_sprite: Sprite2D = null
 var _mortal_rest_material: ShaderMaterial = null
 var _mortal_swing_material: ShaderMaterial = null
@@ -143,6 +148,7 @@ func _load_form(form: int) -> void:
 	_swing_frames = 0
 	_ground_offsets.clear()
 	_reset_mortal_sword_pose()
+	_attack_clips = Form1AttackClips.load_approved(Callable(CriticalSpriteLoader, "load_texture")) if form == 1 else {}
 	# Form changes always release Form 1's shader before loading other art.
 	_release_mortal_blade()
 	for d in DIRS:
@@ -523,11 +529,36 @@ func _release_mortal_blade() -> void:
 		_mortal_swing_material.set_shader_parameter("opacity", 0.0)
 
 
+## Unlike the shader fallback, approved painted strips include sword,
+## armor and smear on the SAME transparent frame. No detached weapon mesh.
+func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) -> bool:
+	if _attack_clips.is_empty():
+		return false
+	var sample: Dictionary = Form1AttackClips.sample(_attack_clips, swing_index, fraction, facing)
+	if sample.is_empty():
+		return false
+	_release_mortal_blade()
+	_sprite.material = null
+	_sprite.texture = sample["texture"]
+	_sprite.flip_h = false
+	_sprite.region_enabled = true
+	_sprite.region_rect = Rect2(int(sample["frame"]) * CELL, 0, CELL, CELL)
+	_sprite.rotation = 0.0
+	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
+	_sprite.position = Vector2(0.0,
+		Form1AttackClips.grounded_sprite_y(sample["pivot"], SPRITE_SCALE))
+	_approved_attack_active = true
+	_mortal_pose_active = false
+	return true
+
+
 func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -> void:
 	if _sprite == null:
 		return
 	if _form != 1 or not has_sprites() or swing_index == 0:
 		_reset_mortal_sword_pose()
+		return
+	if _try_approved_attack(swing_index, fraction, facing):
 		return
 	var pose: Dictionary = mortal_sword_pose(swing_index, fraction)
 	var side := -1.0 if facing.x < -0.10 else 1.0
@@ -549,6 +580,13 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 
 func _reset_mortal_sword_pose() -> void:
 	_release_mortal_blade()
+	if _approved_attack_active:
+		_approved_attack_active = false
+		# Returning to the actual walk source is essential; otherwise the
+		# last attack-strip cell sticks on the next idle frame.
+		if _sprite != null:
+			_draw_frame()
+		return
 	if not _mortal_pose_active or _sprite == null:
 		return
 	_sprite.position = Vector2(0.0, _neutral_sprite_y)
