@@ -67,7 +67,7 @@ func _run() -> void:
 			key + ": native alpha completely replaces old paper cutout shader")
 		_check(resident.texture != null and resident.texture.get_size() == Vector2(384, 384),
 			key + ": native texture is resolved by existing critical sprite loader")
-		var actual_height := resident.texture.get_height() * absf(resident.scale.y)
+		var actual_height: float = float(resident.texture.get_height()) * absf(resident.scale.y)
 		_check(absf(actual_height - desired_height) < 1.1,
 			key + ": original in-world size survives sprite replacement")
 		root_node.queue_free()
