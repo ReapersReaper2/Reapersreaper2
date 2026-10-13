@@ -43,6 +43,12 @@ jobs:
       - name: Restore exact approved critical PNGs if Git LFS returned pointers
         run: sh .github/scripts/recover_critical_art.sh
 
+      - name: Embed exact dev build commit in Godot title UI
+        run: |
+          set -eu
+          printf '\n[reaper_build]\nsource_commit="%s"\n' "$GITHUB_SHA" >> godot-project/project.godot
+          grep -F "source_commit=\"$GITHUB_SHA\"" godot-project/project.godot
+
       - name: Import Godot resources
         run: godot --headless --path godot-project --import --quit
 
