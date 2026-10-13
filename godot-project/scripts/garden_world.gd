@@ -195,6 +195,9 @@ func _add_tree_collider(p: Vector2) -> void:
 	var tree := GardenTree.new()
 	tree.name = "SolidTree"
 	tree.position = p
+	# Visual diversity without changing the original RNG stream or where
+	# trees block travel; all three styles retain a 24px trunk collider.
+	tree.art_variant = GardenTree.variant_for(p, seed_value, cell_size)
 	add_child(tree)
 
 func _draw() -> void:
