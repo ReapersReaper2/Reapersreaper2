@@ -172,7 +172,7 @@ var _enemy_label: Label = null
 var _msg: Label = null
 ## Act 2 AI state: player's last ability (for Echomarrow's Echo).
 var _foe_last_ability := ""
-var _menu: GridContainer = null
+var _menu = null  # runtime GridContainer; headless fixtures inject VBoxContainer
 var _battle_background: ColorRect = null
 var _battle_hud: Control = null
 var _message_panel: PanelContainer = null
