@@ -14,7 +14,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var clock = Clock.new()
-	clock.show_clock = false
+	clock.show_clock = true
 	clock.apply_world_tint = false
 	root.add_child(clock)
 	clock.phase_started.connect(_on_started)
@@ -33,6 +33,10 @@ func _run() -> void:
 	check(clock.get_phase() == "dawn", "05:00 is dawn")
 	check(is_equal_approx(clock.get_phase_remaining_seconds(), 60.0),
 		"at dawn start, 60 real seconds remain")
+	check(clock._clock_label != null and
+		clock._clock_label.text.contains("DAY 1  ·  05:00") and
+		clock._clock_label.text.contains("DAWN  ·  01:00 LEFT"),
+		"visible HUD displays day, in-world clock and current phase countdown")
 	clock.advance_seconds(30.0)
 	check(clock.get_phase() == "dawn" and
 		is_equal_approx(clock.get_time_remaining_in_phase(), 30.0) and
@@ -42,6 +46,8 @@ func _run() -> void:
 	check(clock.get_phase() == "day" and
 		is_equal_approx(clock.get_time_remaining_in_phase(), 360.0),
 		"dawn exits precisely at 60 seconds and day begins")
+	check(clock._clock_label.text.contains("DAY  ·  06:00 LEFT"),
+		"day begins with six-minute visible countdown")
 	clock.advance_seconds(359.0)
 	check(clock.get_phase() == "day" and
 		is_equal_approx(clock.get_phase_remaining_seconds(), 1.0),
@@ -54,6 +60,8 @@ func _run() -> void:
 	check(clock.get_phase() == "dusk" and
 		is_equal_approx(clock.get_phase_remaining_seconds(), 45.0),
 		"last-45-second dusk query point is available without plant logic")
+	check(clock._clock_label.text.contains("DUSK  ·  00:45 LEFT"),
+		"existing neutral last-45s dusk window is visible to QA")
 	clock.advance_seconds(45.0)
 	check(clock.get_phase() == "night" and
 		is_equal_approx(clock.get_phase_remaining_seconds(), 180.0),
@@ -62,6 +70,9 @@ func _run() -> void:
 	check(clock.get_phase() == "dawn" and clock.get_day() == 2 and
 		is_equal_approx(clock.get_phase_remaining_seconds(), 60.0),
 		"full 720-second cycle reaches next day's dawn")
+	check(clock._clock_label.text.contains("DAY 2  ·  05:00") and
+		clock._clock_label.text.contains("DAWN  ·  01:00 LEFT"),
+		"clock HUD correctly advances to the next calendar day")
 	check(starts == ["day", "dusk", "night", "dawn"],
 		"phase_started emits each phase exactly once, in order")
 	check(ends == ["dawn", "day", "dusk", "night"],
@@ -79,6 +90,10 @@ func _run() -> void:
 	clock.set_total_minutes(300.0)
 	check(is_equal_approx(clock.phase_duration_seconds("dawn"), 30.0),
 		"optional QA cycle override preserves proportional phase sizes")
+	check(clock._clock_label.text.contains("DAWN  ·  00:30 LEFT"),
+		"HUD respects optional QA cycle scaling, never hardcodes a timer")
+	check(Clock.phase_countdown_label(1020.0, 9, 44.01).contains("DUSK  ·  00:45 LEFT"),
+		"HUD counts partial seconds up so it never shows zero before transition")
 	clock.queue_free()
 
 	if failed == 0:

@@ -167,11 +167,11 @@ func get_phase() -> String:
 
 static func phase_for(minutes: float) -> String:
 	var m := fposmod(minutes, DAY_MINUTES)
-	if m >= 300.0 and m < 420.0:
+	if m >= DAWN_AT and m < DAY_AT:
 		return "dawn"
-	if m >= 420.0 and m < 1020.0:
+	if m >= DAY_AT and m < DUSK_AT:
 		return "day"
-	if m >= 1020.0 and m < 1170.0:
+	if m >= DUSK_AT and m < NIGHT_AT:
 		return "dusk"
 	return "night"
 
@@ -191,6 +191,17 @@ static func light_for(minutes: float) -> Color:
 		return DUSK_LIGHT.lerp(NIGHT_LIGHT, (m - 1110.0) / (NIGHT_AT - 1110.0))
 	return NIGHT_LIGHT
 
+## Counts down to the NEXT phase, not an imaginary fixed-duration hour.
+## Pure formatting allows headless tests without requiring a viewport.
+static func phase_countdown_label(game_minutes: float, day_number: int,
+		remaining_seconds: float) -> String:
+	var display_minutes := int(floor(fposmod(game_minutes, DAY_MINUTES)))
+	var seconds_left := maxi(0, int(ceilf(remaining_seconds)))
+	return "RESERVE  ·  DAY %d  ·  %02d:%02d\n%s  ·  %02d:%02d LEFT" % [
+		day_number, display_minutes / 60, display_minutes % 60,
+		phase_for(game_minutes).to_upper(), seconds_left / 60, seconds_left % 60]
+
+
 func _update_presentation(force_signal: bool) -> void:
 	var new_phase := get_phase()
 	if force_signal or new_phase != _phase:
@@ -200,9 +211,8 @@ func _update_presentation(force_signal: bool) -> void:
 	if _world_tint != null:
 		_world_tint.color = light_for(get_time_of_day())
 	if _clock_label != null:
-		var current: int = int(floor(get_time_of_day()))
-		_clock_label.text = "RESERVE  ·  DAY %d  ·  %02d:%02d  %s" % [
-			get_day(), current / 60, current % 60, new_phase.to_upper()]
+		_clock_label.text = phase_countdown_label(
+			get_time_of_day(), get_day(), get_phase_remaining_seconds())
 
 func _store_progress() -> void:
 	if _game_state == null:
@@ -239,7 +249,7 @@ func _build_hud() -> void:
 	panel.offset_left = -364.0
 	panel.offset_right = -14.0
 	panel.offset_top = 16.0
-	panel.offset_bottom = 62.0
+	panel.offset_bottom = 90.0
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud.add_child(panel)
 	_clock_label = Label.new()
@@ -247,8 +257,9 @@ func _build_hud() -> void:
 	_clock_label.anchor_right = 1.0
 	_clock_label.offset_left = -351.0
 	_clock_label.offset_right = -18.0
-	_clock_label.offset_top = 26.0
-	_clock_label.offset_bottom = 53.0
+	_clock_label.offset_top = 22.0
+	_clock_label.offset_bottom = 84.0
+	_clock_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_clock_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_clock_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_clock_label.add_theme_font_size_override("font_size", 17)
