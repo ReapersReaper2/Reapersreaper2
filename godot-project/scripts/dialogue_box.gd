@@ -67,7 +67,7 @@ static func mobile_dialogue_rect(viewport_size: Vector2) -> Rect2:
 	var left_clear := 236.0 * scale_factor
 	var right_clear := 300.0 * scale_factor
 	var floor_margin := 20.0 * scale_factor
-	var height := 178.0 * scale_factor
+	var height := 228.0 * scale_factor # 218px minimum content + breathing room
 	return Rect2(Vector2(left_clear, viewport_size.y - height - floor_margin),
 		Vector2(maxf(1.0, viewport_size.x - left_clear - right_clear), height))
 
