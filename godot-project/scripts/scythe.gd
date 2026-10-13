@@ -102,6 +102,8 @@ func begin_charge() -> void:
 		try_swing()
 	elif state == State.IDLE and not _charging:
 		_charging = true
+		_player.move_locked = true
+		_player.velocity = _player.velocity.move_toward(Vector2.ZERO, 1200.0)
 		_charge_t = 0.0
 		_charge_announced = false
 		charge_started.emit()
@@ -121,6 +123,8 @@ func cancel_charge() -> void:
 	_charging = false
 	_charge_t = 0.0
 	_charge_announced = false
+	if _player != null:
+		_player.move_locked = false
 	charge_cancelled.emit()
 
 
