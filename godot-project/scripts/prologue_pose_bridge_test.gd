@@ -81,7 +81,7 @@ func _run() -> void:
 	# while the art turns around its foot contact on the bridge floor.
 	var player = PlayerScene.instantiate()
 	root.add_child(player)
-	var manager = player.sprites
+	var manager = player.get("sprites")
 	_check(manager != null and manager.has_sprites(),
 		"approved Mollosar form 1 art is available for body posing")
 	if manager != null and manager.has_sprites():
@@ -93,7 +93,7 @@ func _run() -> void:
 			_check(absf(sprite.rotation) > 0.035,
 				"visible sword slash drives real body rotation")
 			var dist_to_feet: float = 64.0 - y0
-			var simulated_foot := sprite.position + Vector2(
+			var simulated_foot: Vector2 = sprite.position + Vector2(
 				0.0, dist_to_feet * sprite.scale.y / Mollosar.SPRITE_SCALE
 			).rotated(sprite.rotation)
 			_check(simulated_foot.distance_to(Vector2(0.0, 64.0)) < 3.2,
