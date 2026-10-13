@@ -69,6 +69,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/seamless_battle_test.gd
       - name: Test pause, save feedback and menu lifecycle
         run: godot --headless --path godot-project --script res://scripts/pause_menu_test.gd
+      - name: Test debug APK build identity matches exact source SHA
+        run: godot --headless --path godot-project --script res://scripts/build_identity_test.gd
       - name: Test cutscene input locks
         run: godot --headless --path godot-project --script res://scripts/player_input_lock_test.gd
       - name: Test movement step accounting and save migration
