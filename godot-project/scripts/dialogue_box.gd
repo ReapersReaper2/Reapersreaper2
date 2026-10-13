@@ -69,13 +69,23 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-## Begin playing entries from start_index.
-func start_dialogue(entries: Array, start_index: int = 0) -> void:
+## A second NPC/trigger must never overwrite the conversation already
+## on screen. Story and cutscene signals belong to the first dialogue.
+func is_active() -> bool:
+	return _active
+
+
+## Begin playing entries from start_index. Return false when the screen is
+## already occupied (call sites can retry when their own interaction ends).
+func start_dialogue(entries: Array, start_index: int = 0) -> bool:
+	if _active or entries.is_empty():
+		return false
 	_entries = entries
-	_index = start_index
+	_index = clampi(start_index, 0, entries.size() - 1)
 	_active = true
 	visible = true
 	_show_current()
+	return true
 
 
 func advance() -> void:
@@ -163,7 +173,7 @@ func _show_text(speaker: String, text: String, dim: bool) -> void:
 	# Dim style for stage directions / conditional notes.
 	_text_label.modulate = Color(0.65, 0.65, 0.72) if dim else Color.WHITE
 	_name_label.modulate = Color(0.65, 0.65, 0.72) if dim else Color.WHITE
-	_hint_label.text = "[E] continue"
+	_hint_label.text = "USE / SWORD to continue" if (OS.has_feature("android") or OS.has_feature("ios") or DisplayServer.is_touchscreen_available()) else "[E / SPACE] continue"
 
 
 func _show_choice(e: Dictionary) -> void:
