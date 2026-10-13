@@ -187,8 +187,8 @@ static func light_for(minutes: float) -> Color:
 		return DAY_LIGHT
 	if m < 1110.0:
 		return DAY_LIGHT.lerp(DUSK_LIGHT, (m - 1020.0) / 90.0)
-	if m < 1200.0:
-		return DUSK_LIGHT.lerp(NIGHT_LIGHT, (m - 1110.0) / 90.0)
+	if m < NIGHT_AT:
+		return DUSK_LIGHT.lerp(NIGHT_LIGHT, (m - 1110.0) / (NIGHT_AT - 1110.0))
 	return NIGHT_LIGHT
 
 func _update_presentation(force_signal: bool) -> void:
