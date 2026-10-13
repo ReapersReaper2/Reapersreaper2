@@ -14,6 +14,13 @@ static func load_texture(path: String) -> Texture2D:
 		var image := Image.load_from_file(path)
 		if image != null and not image.is_empty():
 			result = ImageTexture.create_from_image(image)
+	# Android export packs imported PNGs as engine Texture2D resources.
+	# Raw FileAccess paths can disappear from the APK even when .ctex is
+	# present. Use the importer before falling back to exact bundled bytes.
+	if result == null and ResourceLoader.exists(path):
+		var imported := ResourceLoader.load(path)
+		if imported is Texture2D:
+			result = imported as Texture2D
 	if result == null:
 		result = _load_bundled(path)
 	if result != null:
@@ -27,7 +34,8 @@ static func has_source(path: String) -> bool:
 	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
 		return true
 	var stem := path.get_file().get_basename()
-	return FileAccess.file_exists(CRITICAL_DIR + stem + ".b64") or \
+	return ResourceLoader.exists(path) or \
+		FileAccess.file_exists(CRITICAL_DIR + stem + ".b64") or \
 		FileAccess.file_exists(CRITICAL_DIR + path.get_file() + ".b64")
 
 static func is_lfs_pointer(path: String) -> bool:

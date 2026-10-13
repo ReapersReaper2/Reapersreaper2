@@ -40,8 +40,14 @@ jobs:
           test -f "$HOME/.local/share/godot/export_templates/4.3.stable/android_debug.apk"
           test -f "$HOME/.config/godot/editor_settings-4.3.tres"
 
+      - name: Restore exact approved critical PNGs if Git LFS returned pointers
+        run: sh .github/scripts/recover_critical_art.sh
+
       - name: Import Godot resources
         run: godot --headless --path godot-project --import --quit
+
+      - name: Verify all approved mortal/bridge textures are accessible
+        run: godot --headless --path godot-project --script res://scripts/essential_mobile_art_test.gd
 
       - name: Export installable Android debug APK
         run: |
