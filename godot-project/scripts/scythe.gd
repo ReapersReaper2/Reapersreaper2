@@ -21,8 +21,11 @@ signal swing_ended
 ## Emitted when a swing finishes without hitting anything — feeds
 ## Despair Feed (Harrow) and any future whiff-reactive systems.
 signal swing_whiffed
+signal charge_started
+signal charge_ready
+signal charge_cancelled
 
-enum State { IDLE, SWING1, SWING2, RECOVER }
+enum State { IDLE, SWING1, SWING2, RECOVER, CHARGED_SWING }
 
 const CombatTime = preload("res://scripts/combat_time.gd")
 const WeaponData = preload("res://scripts/weapon_data.gd")
@@ -32,6 +35,11 @@ const SporeNeedle = preload("res://scripts/spore_needle.gd")
 @export var swing1_time: float = 0.35
 @export var swing2_time: float = 0.30
 @export var recover_time: float = 0.28
+## Tap attack = original combo; holding SWORD/SPACE for half a second
+## stores strength, then RELEASE commits a single wider-paced strike.
+@export var charge_threshold: float = 0.50
+@export var charged_swing_time: float = 0.66
+@export var charged_damage_mult: float = 1.75
 ## Damaging window, as fractions of the swing duration.
 @export var active_from: float = 0.20
 @export var active_to: float = 0.70
@@ -55,6 +63,9 @@ var _hit_this_swing: Array = []
 ## used for the full_combo achievement when swing 2 connects.
 var _swing1_landed: bool = false
 var _combo_reported: bool = false
+var _charging: bool = false
+var _charge_t: float = 0.0
+var _charge_announced: bool = false
 ## Tuning snapshot for the current swing, from WeaponData (scythe.gd reads
 ## it once per swing so a mid-combat weapon/power change can't desync a
 ## swing's timings). Falls back to the @export baselines if GameState is
@@ -84,12 +95,55 @@ func try_swing() -> void:
 		# SWING2 and RECOVER: committed — no buffering, no cancel.
 
 
+## Input-facing hold/release API. Keep try_swing() for combo and other
+## existing direct callers; only the player input route uses charge.
+func begin_charge() -> void:
+	if state == State.SWING1:
+		try_swing()
+	elif state == State.IDLE and not _charging:
+		_charging = true
+		_player.move_locked = true
+		_player.velocity = _player.velocity.move_toward(Vector2.ZERO, 1200.0)
+		_charge_t = 0.0
+		_charge_announced = false
+		charge_started.emit()
+
+
+func release_charge() -> void:
+	if not _charging:
+		return
+	var full_charge := _charge_t >= charge_threshold
+	_charging = false
+	_start_swing(3 if full_charge else 1)
+
+
+func cancel_charge() -> void:
+	if not _charging:
+		return
+	_charging = false
+	_charge_t = 0.0
+	_charge_announced = false
+	if _player != null:
+		_player.move_locked = false
+	charge_cancelled.emit()
+
+
+func is_charging() -> bool:
+	return _charging
+
+
+func charge_progress() -> float:
+	return clampf(_charge_t / maxf(charge_threshold, 0.001), 0.0, 1.0) if _charging else 0.0
+
+
 func is_swinging() -> bool:
 	return state != State.IDLE
 
 
 func _start_swing(index: int) -> void:
-	state = State.SWING1 if index == 1 else State.SWING2
+	state = State.SWING1 if index == 1 else (State.SWING2 if index == 2 else State.CHARGED_SWING)
+	_charging = false
+	_charge_t = 0.0
 	_swing_t = 0.0
 	_combo_queued = false
 	_was_active = false
@@ -118,6 +172,12 @@ func _resolve_entry() -> Dictionary:
 
 
 func _physics_process(delta: float) -> void:
+	if _charging:
+		_charge_t = minf(_charge_t + delta * CombatTime.scale, maxf(charge_threshold, 0.001))
+		if not _charge_announced and _charge_t >= charge_threshold:
+			_charge_announced = true
+			charge_ready.emit()
+		return
 	if state == State.IDLE:
 		return
 	# Combat-scaled delta: the swing hangs on its impact frame during hitstop.
@@ -138,13 +198,15 @@ func _swing_duration() -> float:
 			return float(_entry.get("swing1_time", swing1_time))
 		State.SWING2:
 			return float(_entry.get("swing2_time", swing2_time))
+		State.CHARGED_SWING:
+			return charged_swing_time
 		State.RECOVER:
 			return recover_time
 	return 0.0
 
 
 func _in_active_window() -> bool:
-	if state != State.SWING1 and state != State.SWING2:
+	if state != State.SWING1 and state != State.SWING2 and state != State.CHARGED_SWING:
 		return false
 	var f: float = _swing_t / _swing_duration()
 	return f >= active_from and f <= active_to
@@ -153,7 +215,7 @@ func _in_active_window() -> bool:
 func _advance() -> void:
 	if state == State.SWING1 and _combo_queued:
 		_start_swing(2)
-	elif state == State.SWING1 or state == State.SWING2:
+	elif state == State.SWING1 or state == State.SWING2 or state == State.CHARGED_SWING:
 		# Whiff check before the swing state changes: Despair Feed.
 		var whiffed := _hit_this_swing.is_empty()
 		state = State.RECOVER
@@ -181,7 +243,7 @@ func _on_hitbox_body_entered(body: Node2D) -> void:
 
 
 func _try_hit(body: Node2D) -> void:
-	if state != State.SWING1 and state != State.SWING2:
+	if state != State.SWING1 and state != State.SWING2 and state != State.CHARGED_SWING:
 		return
 	if not _in_active_window():
 		return
@@ -200,6 +262,8 @@ func _try_hit(body: Node2D) -> void:
 	if cam != null and cam.has_method("add_trauma"):
 		cam.add_trauma(float(_entry.get("shake_trauma", shake_trauma)))
 	var dmg: int = maxi(1, int(round(float(_entry.get("damage_mult", 1.0)))))
+	if state == State.CHARGED_SWING:
+		dmg = maxi(dmg + 1, int(round(float(dmg) * charged_damage_mult)))
 	# Ch13-14 depower: scythe hits at 50% (full) or 75% (partial).
 	dmg = maxi(1, int(round(float(dmg) * Depower.damage_mult(_dep_game_state()))))
 	target.take_hit(dmg, dir)
@@ -242,7 +306,7 @@ func _snap8(v: Vector2) -> Vector2:
 func _draw() -> void:
 	if not show_debug_arc:
 		return
-	if state != State.SWING1 and state != State.SWING2:
+	if state != State.SWING1 and state != State.SWING2 and state != State.CHARGED_SWING:
 		return
 	var radius: float = float(_entry.get("arc_radius", arc_radius))
 	var base: Color = _entry.get("arc_color", Color(0.70, 0.30, 1.0))

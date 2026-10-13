@@ -56,7 +56,19 @@ func _weapon() -> String:
 		return WeaponData.current_weapon(state)
 	return WeaponData.WEAPON_SCYTHE
 
+## A populated painted character strip owns all visible weapons.
+static func should_draw_external_weapon(has_painted_character: bool) -> bool:
+	return not has_painted_character
+
+
 func _draw() -> void:
+	# Painted Mollosar already carries his weapon. Movement/strike must
+	# happen within that character art, never as an external sword/scythe
+	# orbiting around him. Use this procedural rig ONLY for greybox fallback.
+	var painted_manager = _player.get("sprites") if _player != null else null
+	if painted_manager != null and painted_manager.has_method("has_sprites"):
+		if not should_draw_external_weapon(painted_manager.has_sprites()):
+			return
 	if _form() <= 1:
 		# Form 1's painted walk sheets already contain the longsword.
 		# Show the overlaid weapon only during attacks, never two swords at idle.
@@ -85,7 +97,7 @@ static func sword_stroke_angle(index: int, fraction: float) -> float:
 	var angle := 0.0
 	if p < 0.19:
 		var u := p / 0.19
-		angle = lerpf(-0.22, -1.22, u * u * (3.0 - 2.0 * u))
+		angle = lerpf(0.0, -1.22, u * u * (3.0 - 2.0 * u))
 	elif p < 0.67:
 		var u := (p - 0.19) / 0.48
 		# Quick acceleration, a clean middle-strike, then follow-through.
@@ -93,7 +105,7 @@ static func sword_stroke_angle(index: int, fraction: float) -> float:
 		angle = lerpf(-1.22, 1.05, snap)
 	else:
 		var u := (p - 0.67) / 0.33
-		angle = lerpf(1.05, 0.78, u * u * (3.0 - 2.0 * u))
+		angle = lerpf(1.05, 0.0, u * u * (3.0 - 2.0 * u))
 	return -angle if index == 2 else angle
 
 

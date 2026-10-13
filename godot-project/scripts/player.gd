@@ -73,6 +73,9 @@ func _gameplay_modal_open() -> bool:
 
 func _physics_process(delta: float) -> void:
 	var modal_open := _gameplay_modal_open()
+	var attack_rig_for_lock = get_node_or_null("ScytheRig")
+	if (modal_open or input_locked or guide_active) and attack_rig_for_lock != null:
+		attack_rig_for_lock.cancel_charge()
 	var gs = _game_state()
 	var before := global_position  # C1: per-frame baseline, captured every frame
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -102,11 +105,14 @@ func _physics_process(delta: float) -> void:
 		var attack_rig = get_node_or_null("ScytheRig")
 		if attack_rig != null and sprites.has_method("set_mortal_sword_pose"):
 			var state_value := int(attack_rig.get("state"))
-			var swing_index := state_value if state_value == 1 or state_value == 2 else 0
+			var swing_index := state_value if state_value == 1 or state_value == 2 or state_value == 4 else 0
 			var progress := 0.0
 			if swing_index > 0:
 				var duration: float = maxf(0.001, float(attack_rig.call("_swing_duration")))
 				progress = clampf(float(attack_rig.get("_swing_t")) / duration, 0.0, 1.0)
+			elif attack_rig.has_method("is_charging") and attack_rig.is_charging():
+				swing_index = 3 # Hold anticipation; blade stays in painted hand.
+				progress = float(attack_rig.charge_progress())
 			sprites.set_mortal_sword_pose(swing_index, progress, facing)
 	# --- StepDriver odometer (spec §4) ---
 	# C2: no-count guards — tendril_riding, move_locked, input_locked.
@@ -135,16 +141,28 @@ func _update_flight_visual() -> void:
 	visuals.position.y = lerpf(visuals.position.y, target_y, 0.2)
 
 
+func _notification(what: int) -> void:
+	if (what == NOTIFICATION_APPLICATION_PAUSED
+			or what == NOTIFICATION_APPLICATION_FOCUS_OUT
+			or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT):
+		var rig = get_node_or_null("ScytheRig")
+		if rig != null and rig.has_method("cancel_charge"):
+			rig.cancel_charge()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if input_locked or _gameplay_modal_open():
 		return
 	if event.is_action_pressed("scythe_swing"):
 		if guide_active:
 			return
-		# Untyped var on purpose: try_swing() is dynamically dispatched.
 		var rig = get_node_or_null("ScytheRig")
 		if rig != null:
-			rig.try_swing()
+			rig.begin_charge()
+	elif event.is_action_released("scythe_swing"):
+		var rig = get_node_or_null("ScytheRig")
+		if rig != null:
+			rig.release_charge()
 	elif event.is_action_pressed("interact"):
 		# Guide-touch gets first claim on E: taking up a soul swallows
 		# the press so NPCs/dialogue don't also fire.
