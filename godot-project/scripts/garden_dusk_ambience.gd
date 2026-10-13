@@ -62,8 +62,8 @@ static func glow_for_minutes(minutes: float) -> float:
 		return lerpf(1.0, 0.12, (m - 300.0) / 120.0)
 	if m < 1020.0:
 		return 0.12
-	if m < 1200.0:
-		return lerpf(0.12, 1.0, (m - 1020.0) / 180.0)
+	if m < 1170.0:
+		return lerpf(0.12, 1.0, (m - 1020.0) / 150.0)
 	return 1.0
 
 static func mote_opacity(minutes: float) -> float:

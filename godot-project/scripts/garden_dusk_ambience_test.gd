@@ -20,6 +20,10 @@ func _run() -> void:
 		"night glow wraps midnight correctly")
 	_check(Atmosphere.glow_for_minutes(1110.0) > Atmosphere.glow_for_minutes(1020.0),
 		"glow ramps up during dusk")
+	_check(is_equal_approx(Atmosphere.glow_for_minutes(1170.0), 1.0),
+		"lanterns reach night glow exactly at the shared phase boundary")
+	_check(Clock.light_for(1170.0).is_equal_approx(Clock.NIGHT_LIGHT),
+		"world tint reaches night color at the same boundary")
 	_check(Atmosphere.glow_for_minutes(360.0) < Atmosphere.glow_for_minutes(300.0),
 		"glow fades during dawn")
 	_check(is_equal_approx(Atmosphere.glow_for_minutes(360.0),
