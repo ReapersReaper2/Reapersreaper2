@@ -25,7 +25,7 @@ func _run() -> void:
 		check(tex != null and tex.get_width() >= 384 and tex.get_height() >= 170,
 			"runtime load approved source image: " + path)
 	for facing in ["down", "up", "left", "right"]:
-		var path := "res://sprites/mollosar/form1_walk_" + facing + "_spec384.png"
+		var path: String = "res://sprites/mollosar/form1_walk_" + str(facing) + "_spec384.png"
 		check(Loader.has_source(path),
 			"mortal sprite source discoverable before greybox fallback: " + facing)
 	if failed == 0:
