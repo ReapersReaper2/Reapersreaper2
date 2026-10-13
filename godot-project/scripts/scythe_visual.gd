@@ -97,7 +97,7 @@ static func sword_stroke_angle(index: int, fraction: float) -> float:
 	var angle := 0.0
 	if p < 0.19:
 		var u := p / 0.19
-		angle = lerpf(-0.22, -1.22, u * u * (3.0 - 2.0 * u))
+		angle = lerpf(0.0, -1.22, u * u * (3.0 - 2.0 * u))
 	elif p < 0.67:
 		var u := (p - 0.19) / 0.48
 		# Quick acceleration, a clean middle-strike, then follow-through.
@@ -105,7 +105,7 @@ static func sword_stroke_angle(index: int, fraction: float) -> float:
 		angle = lerpf(-1.22, 1.05, snap)
 	else:
 		var u := (p - 0.67) / 0.33
-		angle = lerpf(1.05, 0.78, u * u * (3.0 - 2.0 * u))
+		angle = lerpf(1.05, 0.0, u * u * (3.0 - 2.0 * u))
 	return -angle if index == 2 else angle
 
 
