@@ -39,7 +39,7 @@ func apply_depths() -> void:
 	if _creatures == null or not is_instance_valid(_creatures):
 		return
 	for resident in _creatures.get_children():
-		if not (resident is Node2D) or not (resident is CanvasItem):
+		if not (resident is Sprite2D):
 			continue
 		var ground_y: float = (resident as Node2D).position.y
 		if resident.has_method("depth_ground_y"):
