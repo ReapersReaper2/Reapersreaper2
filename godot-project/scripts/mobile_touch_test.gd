@@ -74,6 +74,46 @@ func _run() -> void:
 		not Input.is_action_pressed("interact"),
 		"scene exit releases held action states")
 	leaving.queue_free()
+	# An Android app switch, notification shade or phone call may swallow
+	# touch release events; focus/pause notifications must release all inputs.
+	var interrupted = OverlayScript.new()
+	root.add_child(interrupted)
+	interrupted.size = Vector2(1280, 720)
+	interrupted._begin_touch(10, interrupted._joy_center() + Vector2(70, 0))
+	interrupted._begin_touch(11, interrupted._attack_center())
+	interrupted._begin_touch(12, interrupted._interact_center())
+	# parse_input_event() queues synthetic action handling; unlike the
+	# joystick's Input.action_press(), attack/interact need not report held
+	# synchronously in this headless frame. Verify finger ownership instead.
+	_check(interrupted._joystick_id == 10 and interrupted._attack_id == 11 and
+		interrupted._interact_id == 12 and Input.is_action_pressed("move_right"),
+		"multiple fingers are captured before the application loses focus")
+	interrupted._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	_check(interrupted._joystick_id == -1 and interrupted._attack_id == -1 and
+		interrupted._interact_id == -1,
+		"application focus loss discards all captured finger indices")
+	_check(not Input.is_action_pressed("move_right") and
+		not Input.is_action_pressed("scythe_swing") and
+		not Input.is_action_pressed("interact"),
+		"application focus loss releases all synthetic gameplay actions")
+	# Reused Android finger indices must work after resuming.
+	interrupted._begin_touch(10, interrupted._joy_center() + Vector2(70, 0))
+	_check(interrupted._joystick_id == 10 and Input.is_action_pressed("move_right"),
+		"first fresh touch after resume can move again")
+	interrupted._end_touch(10)
+	interrupted._begin_touch(13, interrupted._attack_center())
+	interrupted._begin_touch(14, interrupted._interact_center())
+	interrupted._notification(Node.NOTIFICATION_APPLICATION_PAUSED)
+	_check(interrupted._attack_id == -1 and interrupted._interact_id == -1 and
+		not Input.is_action_pressed("scythe_swing") and
+		not Input.is_action_pressed("interact"),
+		"mobile OS backgrounding releases action fingers without touch-up")
+	interrupted._begin_touch(15, interrupted._pause_center())
+	_check(interrupted._pause_id == 15, "menu gesture exists before window defocus")
+	interrupted._notification(Node.NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	_check(interrupted._pause_id == -1,
+		"window focus loss also clears menu finger capture")
+	interrupted.queue_free()
 	if _failed == 0:
 		print("[MOBILE HUD] PASS %d checks" % _checks)
 	else:

@@ -30,6 +30,15 @@ func _ready() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		queue_redraw()
+	elif (what == NOTIFICATION_APPLICATION_PAUSED
+			or what == NOTIFICATION_APPLICATION_FOCUS_OUT
+			or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT):
+		# Android interruptions (notification shade, incoming calls, app switch)
+		# can swallow finger-up events. Clear synthetic actions on backgrounding,
+		# so returning to play never resumes a stuck walk, swing, or interaction.
+		_cancel_gameplay_touches()
+		_pause_id = -1
+		queue_redraw()
 
 func _radius() -> float:
 	return minf(joystick_radius, size.y * 0.145)
