@@ -33,6 +33,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/form1_painted_blade_test.gd
       - name: Test grounded mortal sword pose and organic Bellhollow flagstones
         run: godot --headless --path godot-project --script res://scripts/prologue_pose_bridge_test.gd
+      - name: Test approved hand-painted Bellhollow stone deck and fallback
+        run: godot --headless --path godot-project --script res://scripts/bellhollow_painted_deck_test.gd
       - name: Test Bellhollow battlefield smoke and grounding ash
         run: godot --headless --path godot-project --script res://scripts/prologue_bridge_atmosphere_test.gd
       - name: Test mortal canon, sword strike and dialog/menu ownership
