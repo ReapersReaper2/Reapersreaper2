@@ -270,11 +270,20 @@ static func battle_layout(viewport_size: Vector2) -> Dictionary:
 	return {"message": message_rect, "commands": command_rect}
 
 
+## Staged boss/trainer scenes use a dedicated dark arena; seamless
+## encounters MUST let the existing painted room show through.
+static func battle_background_color(is_embedded: bool) -> Color:
+	return Color(0.055, 0.059, 0.074, 0.0 if is_embedded else 1.0)
+
+
 func _build_ui() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	_battle_background = ColorRect.new()
 	_battle_background.name = "BattleBackground"
-	_battle_background.color = Color(0.055, 0.059, 0.074, 0.95) if embedded_mode else Color(0.055, 0.059, 0.074)
+	# Wild encounters happen inside the *actual* room. The old near-opaque
+	# background covered 95% of that room after the host already dimmed it,
+	# erasing the game's painted environment and breaking seamless combat.
+	_battle_background.color = battle_background_color(embedded_mode)
 	_battle_background.size = viewport_size
 	_battle_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_battle_background)
