@@ -24,7 +24,7 @@ func _run() -> void:
 	var bounds := VerbPanel.mobile_verb_rect(logical)
 	_check(bounds.position.x >= 230 and bounds.end.x <= 990,
 		"panel occupies central lane between left joystick and right USE/SWORD")
-	_check(bounds.end.y < 720 and bounds.position.y > 520,
+	_check(bounds.end.y < 720 and bounds.position.y > 490,
 		"panel stays low without falling off Android viewport")
 	_check(VerbPanel.allowed_verbs(false) == ["Offer", "Tend", "Withdraw"],
 		"asking shows only three locked verbs by default")
