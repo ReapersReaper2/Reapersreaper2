@@ -83,7 +83,9 @@ func is_observing_resident() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _selected == null or not event.is_action_pressed("interact"):
+	if not event.is_action_pressed("interact"):
+		return
+	if _selected == null:
 		return
 	if get_tree().paused:
 		return
@@ -93,8 +95,31 @@ func _unhandled_input(event: InputEvent) -> void:
 	var cs = get_tree().get_first_node_in_group("cutscene")
 	if cs != null and cs.has_method("is_playing") and cs.is_playing():
 		return
+	# ReserveGuide runs earlier in scene order than Player. Explicitly
+	# give the actual GuideRig first refusal instead of allowing nearby
+	# residents to swallow E/USE before a guidable soul can receive it.
+	var guide_rig: Node = _player.get_node_or_null("GuideRig") if _player != null else null
+	if claim_guide_first(guide_rig):
+		get_viewport().set_input_as_handled()
+		return
 	get_viewport().set_input_as_handled()
 	_selected.call("trigger_interaction")
+
+## When a guidable soul and ambient resident overlap, GUIDE owns the
+## single press. False returns control to ordinary creature observation.
+static func claim_guide_first(guide_rig: Node) -> bool:
+	return guide_rig != null and guide_rig.has_method("try_guide") and \
+		bool(guide_rig.call("try_guide"))
+
+
+## Native Android can report touchscreen_available=false even when the
+## mobile control overlay is visible. Reuse the authoritative HUD rule.
+static func mobile_observation_prompt(is_native_mobile: bool,
+		touchscreen_available: bool, forced: bool = false) -> String:
+	var mobile := ResidentScript.should_show_touch_prompt(
+		is_native_mobile, touchscreen_available, forced)
+	return ResidentScript.interaction_caption(mobile)
+
 
 func _on_noticed(creature: Node2D) -> void:
 	_highlight_text = "%s NOTICED YOU" % String(creature.name).to_upper()
@@ -231,7 +256,10 @@ func _update_hud() -> void:
 		_status.text = _highlight_text
 		_status.add_theme_color_override("font_color", GOLD)
 	elif _selected != null:
-		_status.text = ResidentScript.interaction_caption(DisplayServer.is_touchscreen_available()) + "   " + String(_selected.name).to_upper()
+		var native_mobile := OS.has_feature("android") or OS.has_feature("ios") or OS.has_feature("mobile")
+		var forced := bool(ProjectSettings.get_setting("reaper/force_touch_controls", false))
+		_status.text = mobile_observation_prompt(native_mobile,
+			DisplayServer.is_touchscreen_available(), forced) + "   " + String(_selected.name).to_upper()
 		_status.add_theme_color_override("font_color", GOLD)
 	elif _resident_count() > 0 and _observed_count() >= _resident_count():
 		_status.text = "Residents recorded  ·  continue along the trail"
