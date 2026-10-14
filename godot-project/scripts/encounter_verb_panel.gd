@@ -27,7 +27,7 @@ static func mobile_verb_rect(viewport_size: Vector2) -> Rect2:
 	var scale_factor := minf(viewport_size.x / 1280.0, viewport_size.y / 720.0)
 	var left := 236.0 * scale_factor
 	var right := 300.0 * scale_factor
-	var height := 152.0 * scale_factor
+	var height := 176.0 * scale_factor
 	var bottom := 20.0 * scale_factor
 	return Rect2(Vector2(left, viewport_size.y - height - bottom),
 		Vector2(maxf(1.0, viewport_size.x - left - right), height))
@@ -36,8 +36,8 @@ static func mobile_verb_rect(viewport_size: Vector2) -> Rect2:
 static func button_target_width(viewport_size: Vector2, count: int) -> float:
 	var area := mobile_verb_rect(viewport_size)
 	var scale_factor := minf(viewport_size.x / 1280.0, viewport_size.y / 720.0)
-	return maxf(1.0, (area.size.x - 36.0 * scale_factor -
-		maxi(0, count - 1) * 8.0 * scale_factor) / maxi(1, count))
+	return maxf(1.0, (area.size.x - 56.0 * scale_factor -
+		maxi(0, count - 1) * 12.0 * scale_factor) / maxi(1, count))
 
 
 static func allowed_verbs(can_guide: bool) -> Array[String]:
@@ -121,7 +121,7 @@ func _build() -> void:
 	_buttons = HBoxContainer.new()
 	_buttons.name = "Verbs"
 	_buttons.alignment = BoxContainer.ALIGNMENT_CENTER
-	_buttons.add_theme_constant_override("separation", 8)
+	_buttons.add_theme_constant_override("separation", 12)
 	body.add_child(_buttons)
 
 
