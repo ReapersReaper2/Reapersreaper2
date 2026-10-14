@@ -25,6 +25,10 @@ void fragment() {
 static var _paper_shader: Shader = null
 
 @export var art_id: String = ""
+## Stable instance key (room_<zone>_<index>), NOT the species/art_id.
+## Authored per room; never derive from moving position or display name.
+## Encounter records will use this key so saves survive renames/reloads.
+@export var creature_id: String = ""
 ## ART REVIEW: first three native masters are QA-verified CANDIDATE exports.
 ## This per-resident switch permits side-by-side phone comparison against the
 ## old source painting without changing art files, story or save data.
