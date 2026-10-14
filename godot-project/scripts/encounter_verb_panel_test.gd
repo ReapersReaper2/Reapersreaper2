@@ -59,6 +59,8 @@ func _run() -> void:
 	var options: HBoxContainer = panel.get_node("AskingFrame/Body/Verbs")
 	var actual := frame.get_global_rect()
 	var wanted := VerbPanel.mobile_verb_rect(root.get_visible_rect().size)
+	print("[ENCOUNTER VERBS BOUNDS] wanted=", wanted, " actual=", actual,
+		" min=", frame.get_combined_minimum_size())
 	_check(frame.visible and panel.is_open() and panel.has_verb("Offer") and
 		not panel.has_verb("Guide"),
 		"opening creates exactly permitted three-verb asking")
@@ -70,6 +72,7 @@ func _run() -> void:
 	for child in options.get_children():
 		if child is Button:
 			var rect := (child as Button).get_global_rect()
+			print("[ENCOUNTER VERBS BUTTON] ", child.name, " rect=", rect)
 			_check(rect.position.x >= wanted.position.x and
 				rect.end.x <= wanted.end.x and rect.end.y <= wanted.end.y,
 				"each 3-verb touch hitbox stays inside frame")
@@ -91,6 +94,7 @@ func _run() -> void:
 	for child in options.get_children():
 		if child is Button:
 			var rect := (child as Button).get_global_rect()
+			print("[ENCOUNTER VERBS BUTTON] ", child.name, " rect=", rect)
 			_check(rect.position.x >= wanted.position.x and
 				rect.end.x <= wanted.end.x and rect.end.y <= wanted.end.y,
 				"four-verb button fits actual mobile viewport")
