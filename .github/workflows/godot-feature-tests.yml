@@ -103,6 +103,10 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/save_atomic_test.gd
       - name: Test future-version saves and safe Continue
         run: godot --headless --path godot-project --script res://scripts/save_compat_test.gd
+      - name: Test additive v4 encounter saves, idempotence and legacy safety
+        run: godot --headless --path godot-project --script res://scripts/save_v4_encounter_test.gd
+      - name: Test stable author-time Reserve resident identities
+        run: godot --headless --path godot-project --script res://scripts/creature_id_test.gd
       - name: Test playtime counting and paused-title exclusions
         run: godot --headless --path godot-project --script res://scripts/playtime_test.gd
       - name: Test shrine healing, position and save transaction
