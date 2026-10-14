@@ -55,6 +55,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/reserve_native_overworld_test.gd
       - name: Test Reserve clock, creature interaction and artwork
         run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
+      - name: Test consent-driven encounter session, no capture or free items
+        run: godot --headless --path godot-project --script res://scripts/encounter_session_test.gd
       - name: Test 12-minute day/night phase contract
         run: godot --headless --path godot-project --script res://scripts/day_night_clock_test.gd
       - name: Test living Reserve motion, shadows and awareness
