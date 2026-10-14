@@ -67,6 +67,7 @@ func _ready() -> void:
 	_build_slots()
 	_build_menu()
 	_build_dev_reserve_shortcut()
+	_build_dev_identity()
 	_refresh()
 
 
@@ -224,6 +225,41 @@ func _build_dev_reserve_shortcut() -> void:
 	b.offset_bottom = 72.0
 	b.pressed.connect(_enter_reserve_test)
 	add_child(b)
+
+
+## The APK's COMMIT.txt is inside its artifact ZIP, not visible to a
+## person installing on their phone. Debug exports add the SAME commit
+## to ProjectSettings at build time, making device feedback reproducible.
+static func debug_build_caption(commit: String) -> String:
+	var normalized := commit.strip_edges().to_lower()
+	if normalized.length() != 40:
+		return ""
+	for letter in normalized:
+		if not "0123456789abcdef".contains(letter):
+			return ""
+	return "DEV BUILD  " + normalized.substr(0, 8)
+
+
+func _build_dev_identity() -> void:
+	if not dev_shortcuts_enabled():
+		return
+	var commit := str(ProjectSettings.get_setting("reaper_build/source_commit", ""))
+	var caption := debug_build_caption(commit)
+	if caption.is_empty():
+		return
+	var stamp := Label.new()
+	stamp.name = "DebugBuildIdentity"
+	stamp.text = caption
+	stamp.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	stamp.add_theme_font_size_override("font_size", 15)
+	stamp.add_theme_color_override("font_color", DIM)
+	stamp.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	stamp.offset_left = 18.0
+	stamp.offset_top = -30.0
+	stamp.offset_right = 300.0
+	stamp.offset_bottom = -9.0
+	stamp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(stamp)
 
 
 func _enter_reserve_test() -> void:
