@@ -43,6 +43,8 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/prologue_canon_combat_test.gd
       - name: Test integrated sprite-based charged sword attack
         run: godot --headless --path godot-project --script res://scripts/in_sprite_charge_test.gd
+      - name: Test approval-gated twenty-strip Form 1 sword animation contract
+        run: godot --headless --path godot-project --script res://scripts/form1_attack_clips_test.gd
       - name: Test visible prologue art and animations
         run: godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
       - name: Test required Android prologue PNGs resolve without placeholders
