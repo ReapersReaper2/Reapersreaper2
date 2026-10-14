@@ -8,6 +8,9 @@ var failed := 0
 class FakeGuideRig extends Node:
 	var claims := 0
 	var should_claim := false
+	var guiding := false
+	func is_guiding() -> bool:
+		return guiding
 	func try_guide() -> bool:
 		claims += 1
 		return should_claim
@@ -39,6 +42,11 @@ func _run() -> void:
 	_check(not Guide.claim_guide_first(mock),
 		"when no guidable soul claims touch, resident may still be observed")
 	_check(mock.claims == 2, "declining guide does not double invoke")
+	mock.guiding = true
+	_check(Guide.claim_guide_first(mock),
+		"active guide hold keeps owning USE even when no new guide can start")
+	_check(mock.claims == 2, "active guide never starts another guide or observes resident")
+	mock.guiding = false
 	_check(not Guide.claim_guide_first(null),
 		"resident observation survives a missing GuideRig")
 	var plain := Node.new()
