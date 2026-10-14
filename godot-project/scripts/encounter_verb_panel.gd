@@ -18,6 +18,7 @@ var _guide_available: bool = false
 var _actor_name: String = ""
 var _is_open: bool = false
 var _controls: Dictionary = {}
+var _generation: int = 0
 
 ## At 1280x720: left edge 236 (joystick ends ~216);
 ## right edge 980 (USE starts ~1002), bottom = 700.
@@ -71,6 +72,7 @@ func open_for(actor_name: String, can_guide: bool = false) -> void:
 func dismiss() -> void:
 	_is_open = false
 	visible = false
+	_generation += 1
 	# Button events already queued by a departing touch must be ignored.
 	for button_value in _controls.values():
 		(button_value as Button).disabled = true
@@ -84,8 +86,8 @@ func has_verb(verb: String) -> bool:
 	return _controls.has(verb)
 
 
-func _on_pressed(verb: String) -> void:
-	if _is_open and has_verb(verb):
+func _on_pressed(verb: String, generation: int) -> void:
+	if _is_open and generation == _generation and has_verb(verb):
 		verb_chosen.emit(verb)
 
 
@@ -124,6 +126,8 @@ func _build() -> void:
 
 
 func _rebuild_buttons() -> void:
+	# Old touch-up events must never trigger a newer creature's asking.
+	_generation += 1
 	for child in _buttons.get_children():
 		_buttons.remove_child(child)
 		child.queue_free()
@@ -143,7 +147,7 @@ func _rebuild_buttons() -> void:
 			_button_style(Color(0.20, 0.16, 0.14), Color(0.95, 0.76, 0.46)))
 		button.add_theme_stylebox_override("pressed",
 			_button_style(Color(0.24, 0.19, 0.16), Color(1.0, 0.88, 0.57)))
-		button.pressed.connect(_on_pressed.bind(verb))
+		button.pressed.connect(_on_pressed.bind(verb, _generation))
 		_buttons.add_child(button)
 		_controls[verb] = button
 
