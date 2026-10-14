@@ -152,6 +152,36 @@ func _run() -> void:
 		"restoring scene from saved record preserves warmth, not reset to zero")
 	_check(not recreated.has_active_asking(),
 		"session's asking/held fruit are never serialized")
+	# Isolated offer-cancel and pause cases must not mutate the main run.
+	var cancel_data: Dictionary = {}
+	var leaving = Session.new(cancel_data)
+	_check(leaving.register("room_gd2_01", "rot", 288, 0.5) and
+		leaving.notice("room_gd2_01", 3) and leaving.try_ask("room_gd2_01", 3),
+		"offer-cancel fixture begins with normal asking")
+	_check(leaving.offer("room_gd2_01", "sample_fruit", "rot") and
+		leaving.cancel_offer("room_gd2_01", 3, 1),
+		"clean held fruit withdrawal succeeds")
+	_check(leaving.has_active_asking() and leaving.held_fruit.is_empty() and
+		not leaving.is_wary("room_gd2_01", 3),
+		"clean offer withdrawal neither consumes nor startles the creature")
+	_check(leaving.offer("room_gd2_01", "sample_fruit", "rot") and
+		leaving.set_approaching("room_gd2_01", true) and
+		leaving.cancel_offer("room_gd2_01", 3, 1),
+		"snapping offer back mid-approach causes WARY instead of neutral")
+	_check(not leaving.has_active_asking() and
+		leaving.state_of("room_gd2_01") == Session.WARY and
+		int(cancel_data["room_gd2_01"]["wariness_until_day"]) == 4,
+		"snapped offer persists the director-supplied one-day wariness stamp")
+	_check(leaving.notice("room_gd2_01", 3) and
+		leaving.try_ask("room_gd2_01", 3) and leaving.cancel_for_pause(),
+		"pausing from a wary asking safely closes the transient UI")
+	_check(not leaving.has_active_asking() and
+		leaving.state_of("room_gd2_01") == Session.NEUTRAL and
+		int(cancel_data["room_gd2_01"]["wariness_until_day"]) == 4,
+		"pause has no extra penalty and does not silently erase saved wariness")
+	_check(not leaving.cancel_for_pause(),
+		"pause again without a live asking is an idempotent no-op")
+
 	if failures == 0:
 		print("[ENCOUNTER SESSION] PASS %d checks" % checks)
 	else:
