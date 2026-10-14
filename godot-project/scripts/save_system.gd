@@ -15,7 +15,7 @@ extends Node
 ##
 ## Registered as an autoload (project.godot) ahead of GameState.
 
-const SAVE_VERSION := 3
+const SAVE_VERSION := 4
 const SAVE_DIR := "user://saves"
 const AUTOSAVE_SLOT := 0
 const MANUAL_SLOTS: Array[int] = [1, 2, 3]
@@ -65,6 +65,10 @@ static func default_save() -> Dictionary:
 		# Field encounters record refusals separately from the creature-owned
 		# offer_memory. Missing in old saves is treated as an empty log.
 		"field_encounters": [],
+		# New encounter persistence is isolated from the existing field-
+		# battle log. Merely storing this section awards no captures,
+		# changes no balance, and never consumes fruit.
+		"encounters": default_encounters(),
 		"stats": StatsScript.default_stats(),
 		# Step clock (spec §2/§3): placeholder sentinels — GameState.new_game()
 		# upgrades these to a real run_id/started_at via StepDriver.reset_run().
@@ -190,6 +194,8 @@ func migrate(data: Dictionary) -> Dictionary:
 				data = migrate_v1_to_v2(data)
 			2:
 				data = migrate_v2_to_v3(data)
+			3:
+				data = migrate_v3_to_v4(data)
 			_:
 				push_error("SaveSystem: no migration path from save v%d" % version)
 				return {}
@@ -238,4 +244,47 @@ func migrate_v2_to_v3(data: Dictionary) -> Dictionary:
 		if not (r.get("steps_total", -1) is int) or int(r.get("steps_total", -1)) < 0:
 			r["steps_total"] = 0
 	data["save_version"] = 3
+	return data
+
+
+## Encounter state shape follows ENCOUNTER-IMPL-wrath §2 and Grimley's
+## adopted Q5 ruling. Proposed pod production values are only saved;
+## no plant grows / resolves until the separately reviewed encounter code.
+static func default_encounters() -> Dictionary:
+	return {
+		"creatures": {},
+		"lullmothers": [],
+		"pod_stock": 0,
+		"pod_production": {"per_day": 0.333}, # PROPOSED, not human-ratified
+		"seen_lurk_warning": false,
+	}
+
+
+## Strictly additive save v3->v4. Never reset a creature's remembered
+## warmth, Lullmother's rooting accumulator or resolved_dusk day-stamp.
+## Corrupt container types are repaired with an empty safe default.
+func migrate_v3_to_v4(data: Dictionary) -> Dictionary:
+	var existing: Variant = data.get("encounters", null)
+	if not (existing is Dictionary):
+		data["encounters"] = default_encounters()
+	else:
+		var record: Dictionary = existing
+		if not (record.get("creatures", null) is Dictionary):
+			record["creatures"] = {}
+		if not (record.get("lullmothers", null) is Array):
+			record["lullmothers"] = []
+		if not (record.get("pod_stock", null) is int) or int(record["pod_stock"]) < 0:
+			record["pod_stock"] = 0
+		var prod: Variant = record.get("pod_production", null)
+		if not (prod is Dictionary):
+			record["pod_production"] = {"per_day": 0.333}
+		else:
+			var production: Dictionary = prod
+			if not ((production.get("per_day", null) is float) or
+					(production.get("per_day", null) is int)) or float(
+					production.get("per_day", 0.0)) < 0.0:
+				production["per_day"] = 0.333
+		if not (record.get("seen_lurk_warning", null) is bool):
+			record["seen_lurk_warning"] = false
+	data["save_version"] = 4
 	return data
