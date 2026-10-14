@@ -1,7 +1,7 @@
 extends SceneTree
 ## Visually safe touch layout for ENCOUNTER-IMPL §1.6.
 ## No inventory mutation or capture math can be triggered in this widget.
-const Panel := preload("res://scripts/encounter_verb_panel.gd")
+const VerbPanel := preload("res://scripts/encounter_verb_panel.gd")
 const TouchHUD := preload("res://scripts/mobile_touch_overlay.gd")
 var checks := 0
 var failed := 0
@@ -21,21 +21,21 @@ func _chosen(verb: String) -> void:
 
 func _run() -> void:
 	var logical := Vector2(1280, 720)
-	var bounds := Panel.mobile_verb_rect(logical)
+	var bounds := VerbPanel.mobile_verb_rect(logical)
 	_check(bounds.position.x >= 230 and bounds.end.x <= 990,
 		"panel occupies central lane between left joystick and right USE/SWORD")
 	_check(bounds.end.y < 720 and bounds.position.y > 520,
 		"panel stays low without falling off Android viewport")
-	_check(Panel.allowed_verbs(false) == ["Offer", "Tend", "Withdraw"],
+	_check(VerbPanel.allowed_verbs(false) == ["Offer", "Tend", "Withdraw"],
 		"asking shows only three locked verbs by default")
-	_check(Panel.allowed_verbs(true) == ["Offer", "Tend", "Withdraw", "Guide"],
+	_check(VerbPanel.allowed_verbs(true) == ["Offer", "Tend", "Withdraw", "Guide"],
 		"Guide is conditional fourth verb, not always exposed")
-	_check(Panel.button_target_width(logical, 4) >= 160,
+	_check(VerbPanel.button_target_width(logical, 4) >= 160,
 		"four thumb-sized buttons fit horizontally inside 744px lane")
-	var narrow := Panel.mobile_verb_rect(Vector2(960, 540))
+	var narrow := VerbPanel.mobile_verb_rect(Vector2(960, 540))
 	_check(narrow.position.x >= 175 and narrow.end.x <= 740 and narrow.end.y < 540,
 		"same proportions remain clear on lower resolution landscape")
-	var wide := Panel.mobile_verb_rect(Vector2(1600, 900))
+	var wide := VerbPanel.mobile_verb_rect(Vector2(1600, 900))
 	_check(wide.position.x >= 290 and wide.end.x <= 1240,
 		"high-resolution widescreen keeps input margins")
 
@@ -47,7 +47,7 @@ func _run() -> void:
 	_check(bounds.position.x > joystick_limit and bounds.end.x < interact_limit,
 		"panel doesn't overlap actual mobile joystick or USE circle")
 
-	var panel = Panel.new()
+	var panel = VerbPanel.new()
 	panel.verb_chosen.connect(_chosen)
 	root.add_child(panel)
 	await process_frame
@@ -58,7 +58,7 @@ func _run() -> void:
 	var frame: PanelContainer = panel.get_node("AskingFrame")
 	var options: HBoxContainer = panel.get_node("AskingFrame/Body/Verbs")
 	var actual := frame.get_global_rect()
-	var wanted := Panel.mobile_verb_rect(get_viewport().get_visible_rect().size)
+	var wanted := VerbPanel.mobile_verb_rect(root.get_visible_rect().size)
 	_check(frame.visible and panel.is_open() and panel.has_verb("Offer") and
 		not panel.has_verb("Guide"),
 		"opening creates exactly permitted three-verb asking")
