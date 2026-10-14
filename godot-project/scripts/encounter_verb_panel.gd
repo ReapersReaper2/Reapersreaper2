@@ -27,7 +27,7 @@ static func mobile_verb_rect(viewport_size: Vector2) -> Rect2:
 	var scale_factor := minf(viewport_size.x / 1280.0, viewport_size.y / 720.0)
 	var left := 236.0 * scale_factor
 	var right := 300.0 * scale_factor
-	var height := 176.0 * scale_factor
+	var height := 200.0 * scale_factor # Godot VBox/title/button min is 186 at 1280x720
 	var bottom := 20.0 * scale_factor
 	return Rect2(Vector2(left, viewport_size.y - height - bottom),
 		Vector2(maxf(1.0, viewport_size.x - left - right), height))
