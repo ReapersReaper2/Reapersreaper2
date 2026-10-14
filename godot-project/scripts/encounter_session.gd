@@ -152,6 +152,27 @@ func set_approaching(id: String, is_approaching: bool) -> bool:
 	return true
 
 
+## Retracting a held offer while the creature approaches is an
+## explicit wary transition; ordinary retraction leaves fruit untouched.
+func cancel_offer(id: String, today: int, wary_days: int) -> bool:
+	if id != active_creature_id or held_fruit.is_empty():
+		return false
+	if approaching:
+		_stamp_wariness(id, today, wary_days)
+		_finish(id, WARY)
+	else:
+		_clear_held()
+	return true
+
+
+## Pausing during the asking should cleanly close the verbs, with no
+## punishment and no held-item transfer. UI implements the actual pause.
+func cancel_for_pause() -> bool:
+	if active_creature_id.is_empty():
+		return false
+	return walk_away(active_creature_id)
+
+
 ## "Withdraw" is clean except during a creature's mid-approach.
 ## The duration is [PROPOSED] and injected by the director, not canon.
 func withdraw(id: String, today: int, wary_days: int) -> bool:
