@@ -107,8 +107,9 @@ func _run() -> void:
 	_check(encounter.withdraw("room_gd1_01", 2, 1) and
 		int(records["room_gd1_01"]["wariness_until_day"]) == -1,
 		"clean withdraw is safe and clears wariness")
-	_check(encounter.notice("room_gd1_02", 2) and encounter.try_ask("room_gd1_02", 2),
-		"other creature can now take focus")
+	_check(encounter.state_of("room_gd1_02") == Session.ATTENDING and
+		encounter.try_ask("room_gd1_02", 2),
+		"already-attending second creature can take focus without new area entry")
 	_check(encounter.set_approaching("room_gd1_02", true) and
 		encounter.withdraw("room_gd1_02", 2, 1),
 		"withdrawing mid-approach is wary, not neutral")
