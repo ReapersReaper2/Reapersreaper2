@@ -322,7 +322,7 @@ func _test_migration() -> void:
 	v2d.erase("run")
 	v2d["save_version"] = 2
 	var chained: Dictionary = ss.migrate(v2d)
-	_check("migrate() chain runs v2->v3", int(chained.get("save_version", 0)) == 3 and (chained.get("run", {}) as Dictionary).has("run_id"))
+	_check("migrate() chain runs v2->v3->v4", int(chained.get("save_version", 0)) == 4 and (chained.get("run", {}) as Dictionary).has("run_id") and (chained.get("encounters", {}) as Dictionary).has("creatures"))
 	# SaveSystem must never preload StepDriver (preload-cycle boundary).
 	var src := FileAccess.get_file_as_string("res://scripts/save_system.gd")
 	_check("SaveSystem independent of StepDriver", src.find("step_driver.gd") < 0)

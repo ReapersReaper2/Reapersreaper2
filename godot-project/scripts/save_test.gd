@@ -31,7 +31,7 @@ func _init() -> void:
 
 	# 1. Default structure.
 	var d: Dictionary = save_system_script.default_save()
-	_check("default has save_version 3", int(d.get("save_version", 0)) == 3)
+	_check("default has save_version 4", int(d.get("save_version", 0)) == 4)
 	_check("default player form 1", int((d["player"] as Dictionary).get("form", 0)) == 1)
 	_check("default position room", str(((d["player"] as Dictionary)["position"] as Dictionary).get("room", "")) == "P1_BELLHOLLOW_BRIDGE")
 	_check("default has flags/ledger/inventory/party", d.has("flags") and d.has("ledger") and d.has("inventory") and d.has("party"))
@@ -62,7 +62,7 @@ func _init() -> void:
 	# 4. Save info header.
 	var info: Dictionary = ss.get_save_info(91)
 	_check("info exists", bool(info.get("exists", false)))
-	_check("info version 3", int(info.get("version", 0)) == 3)
+	_check("info version 4", int(info.get("version", 0)) == 4)
 	_check("info chapter prologue", str(info.get("chapter", "")) == "prologue")
 	_check("info timestamp stamped", int(info.get("timestamp", 0)) > 0)
 	var info_missing: Dictionary = ss.get_save_info(99)
@@ -102,7 +102,7 @@ func _init() -> void:
 
 	# 9. migrate() is a no-op on current version.
 	var cur: Dictionary = ss.migrate(save_system_script.default_save())
-	_check("migrate no-op on v3", int(cur.get("save_version", 0)) == 3)
+	_check("migrate no-op on v4", int(cur.get("save_version", 0)) == 4)
 
 	# 9b. Migration v2 -> v3: grants the run section (step-driver wiring).
 	# A v2 save (no "run" key) gets the placeholder sentinels.
