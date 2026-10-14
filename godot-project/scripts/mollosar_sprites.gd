@@ -47,6 +47,7 @@ var _frames: Dictionary = {}
 ## an idle sheet keep the old behavior (walk strip, frame 0).
 var _idle: Dictionary = {}
 var _idle_frames: Dictionary = {}
+var _idle_scales: Dictionary = {}
 var _ground_offsets: Dictionary = {}
 var _idle_on: bool = false
 var _idle_t: float = 0.0
@@ -86,6 +87,7 @@ func _ready() -> void:
 	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
 	_sprite.position.y = SPRITE_Y_OFFSET
 	_sprite.centered = true
+	_sprite.region_filter_clip_enabled = true
 	add_child(_sprite)
 	_build_mortal_blade_rig()
 	# Everything else under the parent (the greybox polygons) is the
@@ -144,6 +146,7 @@ func _load_form(form: int) -> void:
 	_frames.clear()
 	_idle.clear()
 	_idle_frames.clear()
+	_idle_scales.clear()
 	_swing_tex = null
 	_swing_frames = 0
 	_ground_offsets.clear()
@@ -176,6 +179,13 @@ func _load_form(form: int) -> void:
 		if itex != null:
 			_idle[d] = itex
 			_idle_frames[d] = maxi(1, int(itex.get_width() / CELL))
+			# The front idle master has much more padding than the walk.
+			# Match the figure height once, retaining original painted bytes.
+			if form == 1 and tex != null:
+				var walk_bounds := tex.get_image().get_region(Rect2i(0, 0, CELL, CELL)).get_used_rect()
+				var idle_bounds := itex.get_image().get_region(Rect2i(0, 0, CELL, CELL)).get_used_rect()
+				if walk_bounds.has_area() and idle_bounds.has_area():
+					_idle_scales[d] = SPRITE_SCALE * float(walk_bounds.size.y) / float(idle_bounds.size.y)
 	# Form 3's reap-swing strip exists: use it during scythe swings.
 	var swing_path := "%sform%d_reap_swing_spec384.png" % [SPRITE_DIR, form]
 	_swing_tex = _load_tex(swing_path) if CriticalSpriteLoader.has_source(swing_path) else null
@@ -232,6 +242,7 @@ func _draw_frame() -> void:
 	if _sprite == null:
 		return
 	if _swinging and _swing_tex != null:
+		_sprite.scale = Vector2.ONE * SPRITE_SCALE
 		_sprite.texture = _swing_tex
 		_sprite.flip_h = false
 		var n := _swing_frames
@@ -242,14 +253,18 @@ func _draw_frame() -> void:
 		return
 	var tex: Texture2D = _strips.get(_strip_dir, null)
 	var count: int = int(_frames.get(_strip_dir, 1))
+	var display_scale := SPRITE_SCALE
 	if _idle_on:
 		var itex: Texture2D = _idle.get(_strip_dir, null)
 		if itex != null:
 			tex = itex
 			count = int(_idle_frames.get(_strip_dir, 1))
+			display_scale = float(_idle_scales.get(_strip_dir, SPRITE_SCALE))
 	if tex == null:
 		return
 	_sprite.texture = tex
+	_sprite.rotation = 0.0
+	_sprite.scale = Vector2.ONE * display_scale
 	_sprite.flip_h = _mirrored
 	_sprite.region_enabled = true
 	var strip_frame := _frame % count
@@ -260,7 +275,7 @@ func _draw_frame() -> void:
 ## Each 384px cell has its own transparent padding and foot placement.
 ## Whole-sheet bounds mix poses and make the character float or sink.
 ## Keep the collision capsule's +64 baseline for walk, idle, and swing.
-static func grounding_offset_for_frame(image: Image, frame_index: int) -> float:
+static func grounding_offset_for_frame(image: Image, frame_index: int, display_scale: float = SPRITE_SCALE) -> float:
 	if image == null or image.is_empty() or frame_index < 0:
 		return SPRITE_Y_OFFSET
 	var left := frame_index * CELL
@@ -275,8 +290,8 @@ static func grounding_offset_for_frame(image: Image, frame_index: int) -> float:
 	if not used.has_area():
 		return SPRITE_Y_OFFSET
 	var bottom_px := float(used.end.y)
-	var offset := 64.0 - (bottom_px - float(CELL) * 0.5) * SPRITE_SCALE
-	return clampf(offset, -28.0, 22.0)
+	var offset := 64.0 - (bottom_px - float(CELL) * 0.5) * display_scale
+	return clampf(offset, -28.0, 22.0) if is_equal_approx(display_scale, SPRITE_SCALE) else offset
 
 
 ## Cache by (texture, frame), not by texture alone. At 5-6fps this
@@ -284,9 +299,9 @@ static func grounding_offset_for_frame(image: Image, frame_index: int) -> float:
 func _apply_grounding(tex: Texture2D, frame_index: int) -> void:
 	if _sprite == null or tex == null:
 		return
-	var key := "%d:%d" % [tex.get_instance_id(), frame_index]
+	var key := "%d:%d:%f" % [tex.get_instance_id(), frame_index, _sprite.scale.y]
 	if not _ground_offsets.has(key):
-		_ground_offsets[key] = grounding_offset_for_frame(tex.get_image(), frame_index)
+		_ground_offsets[key] = grounding_offset_for_frame(tex.get_image(), frame_index, _sprite.scale.y)
 	_neutral_sprite_y = float(_ground_offsets[key])
 	_sprite.position.y = _neutral_sprite_y
 
@@ -323,12 +338,16 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		var rig: Node = actor.get_node_or_null("ScytheRig") if actor != null else null
 		var attack_state: int = int(rig.get("state")) if rig != null else 0
 		if attack_state != 0 or (rig != null and rig.has_method("is_charging") and rig.is_charging()):
+			if not _attack_clips.is_empty():
+				return # Player applies the coherent attack frame below tick().
 			var was_idle := _idle_on
 			_idle_on = false
 			if _frame != 0 or was_idle:
 				_frame = 0
 				_draw_frame()
 			return
+	if _approved_attack_active:
+		_reset_mortal_sword_pose()
 	var d := strip_for(facing)
 	if d != _strip_dir and not _swinging:
 		_set_strip(d)
@@ -560,6 +579,9 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 		return
 	if _try_approved_attack(swing_index, fraction, facing):
 		return
+	if swing_index == 5:
+		_reset_mortal_sword_pose()
+		return
 	var pose: Dictionary = mortal_sword_pose(swing_index, fraction)
 	var side := -1.0 if facing.x < -0.10 else 1.0
 	var lean: float = float(pose["lean"]) * side
@@ -582,6 +604,10 @@ func _reset_mortal_sword_pose() -> void:
 	_release_mortal_blade()
 	if _approved_attack_active:
 		_approved_attack_active = false
+		_frame = 0
+		_walk_t = 0.0
+		_idle_t = 0.0
+		_idle_on = false
 		# Returning to the actual walk source is essential; otherwise the
 		# last attack-strip cell sticks on the next idle frame.
 		if _sprite != null:

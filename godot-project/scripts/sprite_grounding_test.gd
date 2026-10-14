@@ -34,6 +34,7 @@ func _run() -> void:
 
 	var mgr = Mgr.new()
 	var display := Sprite2D.new()
+	display.scale = Vector2.ONE * Mgr.SPRITE_SCALE
 	mgr._sprite = display
 	var texture := ImageTexture.create_from_image(sheet)
 	mgr._apply_grounding(texture, 0)

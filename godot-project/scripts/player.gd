@@ -106,6 +106,10 @@ func _physics_process(delta: float) -> void:
 		if attack_rig != null and sprites.has_method("set_mortal_sword_pose"):
 			var state_value := int(attack_rig.get("state"))
 			var swing_index := state_value if state_value == 1 or state_value == 2 or state_value == 4 else 0
+			# Recovery is its own committed combat state. Give the six-frame
+			# painted recovery its full duration instead of returning to idle.
+			if state_value == 3:
+				swing_index = 5
 			var progress := 0.0
 			if swing_index > 0:
 				var duration: float = maxf(0.001, float(attack_rig.call("_swing_duration")))
