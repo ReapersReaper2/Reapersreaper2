@@ -108,8 +108,13 @@ func _unhandled_input(event: InputEvent) -> void:
 ## When a guidable soul and ambient resident overlap, GUIDE owns the
 ## single press. False returns control to ordinary creature observation.
 static func claim_guide_first(guide_rig: Node) -> bool:
-	return guide_rig != null and guide_rig.has_method("try_guide") and \
-		bool(guide_rig.call("try_guide"))
+	if guide_rig == null:
+		return false
+	# An already-guided soul owns the interact mode until the beam ends:
+	# pressing USE again must not also observe a nearby resident.
+	if guide_rig.has_method("is_guiding") and bool(guide_rig.call("is_guiding")):
+		return true
+	return guide_rig.has_method("try_guide") and bool(guide_rig.call("try_guide"))
 
 
 ## Native Android can report touchscreen_available=false even when the
