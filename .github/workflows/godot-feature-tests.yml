@@ -57,6 +57,12 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/reserve_loop_test.gd
       - name: Test scoped encounter slow-motion does not stop global input or time
         run: godot --headless --path godot-project --script res://scripts/encounter_time_test.gd
+      - name: Test Android Garden USE hint and GuideRig priority
+        run: godot --headless --path godot-project --script res://scripts/garden_guide_mobile_test.gd
+      - name: Test consent-driven encounter session, no capture or free items
+        run: godot --headless --path godot-project --script res://scripts/encounter_session_test.gd
+      - name: Test responsive creature asking verb panel on Android
+        run: godot --headless --path godot-project --script res://scripts/encounter_verb_panel_test.gd
       - name: Test 12-minute day/night phase contract
         run: godot --headless --path godot-project --script res://scripts/day_night_clock_test.gd
       - name: Test living Reserve motion, shadows and awareness

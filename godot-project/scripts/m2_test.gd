@@ -144,7 +144,7 @@ func _verify_h1() -> void:
 	# Townsfolk NPCs.
 	var folk := 0
 	for n in _room.find_children("*", "Area2D", true, false):
-		if str(n.get("npc_name", "")) == "TOWNSFOLK":
+		if str(n.get("npc_name")) == "TOWNSFOLK":
 			folk += 1
 	_check("h1 has 3 townsfolk", folk == 3)
 
