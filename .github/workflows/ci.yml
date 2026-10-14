@@ -39,12 +39,15 @@ jobs:
           FAILED=""
           for t in scripts/*_test.gd; do
             echo "=== $t ==="
-            if ../Godot_v4.3-stable_linux.x86_64 --headless --script "$t" 2>&1; then
+            TEST_LOG=$(mktemp)
+            if ../Godot_v4.3-stable_linux.x86_64 --headless --script "$t" > "$TEST_LOG" 2>&1 && ! grep -q '^SCRIPT ERROR:' "$TEST_LOG"; then
               PASS=$((PASS + 1))
             else
               FAIL=$((FAIL + 1))
               FAILED="$FAILED $t"
             fi
+            cat "$TEST_LOG"
+            rm -f "$TEST_LOG"
           done
           echo "---"
           echo "Passed: $PASS  Failed: $FAIL"
