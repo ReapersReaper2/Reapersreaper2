@@ -79,7 +79,11 @@ func _run() -> void:
 	(panel._controls["Tend"] as Button).pressed.emit()
 	_check(choices.size() == 1 and choices[0] == "Tend",
 		"pressing Tend emits a verb request rather than awarding warmth")
+	var stale_offer: Button = panel._controls["Offer"]
 	panel.open_for("Gloomcap", true)
+	stale_offer.pressed.emit()
+	_check(choices.size() == 1,
+		"queued touch from old creature cannot select fruit for new creature")
 	await process_frame
 	options = panel.get_node("AskingFrame/Body/Verbs")
 	_check(options.get_child_count() == 4 and panel.has_verb("Guide"),
