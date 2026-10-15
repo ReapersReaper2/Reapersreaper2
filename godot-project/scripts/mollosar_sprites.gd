@@ -258,12 +258,22 @@ static func strip_for(facing: Vector2) -> String:
 	return "down" if facing.y > 0.0 else "up"
 
 
-func _set_strip(d: String) -> void:
+func _set_strip(d: String, preserve_walk_phase: bool = false) -> void:
+	# Joystick input oscillates across the diagonal threshold. Resetting the
+	# walk clock on every facing switch repeatedly replays contact pose 0,
+	# which looks like rocking/sliding even with correct leg animation.
+	var prior_walk_t := _walk_t
 	_strip_dir = d
 	_mirrored = bool(_strips.get(d + "_mirrored", false))
 	_frame = 0
 	_walk_t = 0.0
 	_idle_t = 0.0
+	if preserve_walk_phase and _frames.has(d):
+		var rate := CANON_WALK_FPS if _canon_walk_active else WALK_FPS
+		var cycle_length := float(maxi(1, int(_frames[d]))) / rate
+		_walk_t = fposmod(prior_walk_t, cycle_length)
+		_frame = int(floorf(_walk_t * rate))
+		_idle_on = false
 	_draw_frame()
 
 
@@ -379,7 +389,7 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		_reset_mortal_sword_pose()
 	var d := strip_for(facing)
 	if d != _strip_dir and not _swinging:
-		_set_strip(d)
+		_set_strip(d, moving)
 	if _swinging:
 		_swing_t += delta
 		var sf := int(_swing_t * SWING_FPS)
