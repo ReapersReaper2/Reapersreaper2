@@ -48,6 +48,9 @@ func _run() -> void:
 	_check(mgr != null and mgr.has_sprites(),
 		"approved Form1 sprite loads before painted sword test")
 	if mgr != null and mgr.has_sprites():
+		# Exercise the emergency fallback explicitly; approved production
+		# strips now take precedence and are covered by the runtime test.
+		mgr._attack_clips = {}
 		var art := mgr.get("_sprite") as Sprite2D
 		var blade := mgr.get("_mortal_blade_sprite") as Sprite2D
 		var rest_mat := mgr.get("_mortal_rest_material") as ShaderMaterial

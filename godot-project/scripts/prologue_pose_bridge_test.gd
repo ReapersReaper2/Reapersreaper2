@@ -85,6 +85,8 @@ func _run() -> void:
 	_check(manager != null and manager.has_sprites(),
 		"approved Mollosar form 1 art is available for body posing")
 	if manager != null and manager.has_sprites():
+		# Keep testing fallback body posing independently of artist strips.
+		manager._attack_clips = {}
 		var sprite = manager.get("_sprite") as Sprite2D
 		var y0 := float(manager.get("_neutral_sprite_y"))
 		_check(sprite != null, "mortal sprite manager provides an editable art layer")

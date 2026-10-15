@@ -55,6 +55,9 @@ jobs:
       - name: Verify all approved mortal/bridge textures are accessible
         run: godot --headless --path godot-project --script res://scripts/essential_mobile_art_test.gd
 
+      - name: Verify real directional attack and recovery assets
+        run: godot --headless --path godot-project --script res://scripts/form1_animation_runtime_test.gd
+
       - name: Export installable Android debug APK
         run: |
           mkdir -p "$GITHUB_WORKSPACE/dist"

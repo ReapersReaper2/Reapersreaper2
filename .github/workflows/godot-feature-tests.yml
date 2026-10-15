@@ -45,6 +45,12 @@ jobs:
         run: godot --headless --path godot-project --script res://scripts/in_sprite_charge_test.gd
       - name: Test approval-gated twenty-strip Form 1 sword animation contract
         run: godot --headless --path godot-project --script res://scripts/form1_attack_clips_test.gd
+      - name: Test real whole-character attacks and walk recovery
+        run: godot --headless --path godot-project --script res://scripts/form1_animation_runtime_test.gd
+      - name: Verify attack manifest and imported textures inside exported game pack
+        run: |
+          godot --headless --path godot-project --export-pack "Windows" /tmp/reaper-animation-check.pck
+          godot --headless --main-pack /tmp/reaper-animation-check.pck --script res://scripts/form1_animation_runtime_test.gd
       - name: Test visible prologue art and animations
         run: godot --headless --path godot-project --script res://scripts/prologue_visual_smoke_test.gd
       - name: Test required Android prologue PNGs resolve without placeholders

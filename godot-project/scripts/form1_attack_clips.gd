@@ -56,7 +56,10 @@ static func validate_manifest(source: Dictionary, loader: Callable) -> Dictionar
 		if frames != (8 if key.begins_with("heavy_") else 6):
 			return {}
 		var cell: Variant = entry.get("cell", [])
-		if not (cell is Array) or cell != [CELL, CELL]:
+		# JSON parses numbers as floats; whole-array equality rejects a
+		# valid on-disk [384,384] even though synthetic integer fixtures pass.
+		if not (cell is Array) or cell.size() != 2 or \
+				float(cell[0]) != float(CELL) or float(cell[1]) != float(CELL):
 			return {}
 		var pivot: Variant = entry.get("pivot", [])
 		if not _valid_pivot(pivot):
@@ -92,8 +95,9 @@ static func load_approved(loader: Callable) -> Dictionary:
 
 ## Combat drive's normalized progress, not animation FPS, owns the hit
 ## window. The art strip poses sample without ever looping mid-swing.
-## Windup 3: held charge; normal 1, reverse 2, heavy 4: direct strike
-## then recovery. The rest pose comes from existing walking strip.
+## Windup 3: held charge; normal 1, reverse 2, heavy 4: strike;
+## recovery 5: the rig's separate RECOVER state. Each strip gets the
+## entire existing state duration, including combat-scoped hitstop.
 static func sample(clips: Dictionary, swing_index: int, fraction: float,
 		facing: Vector2) -> Dictionary:
 	if clips.is_empty() or swing_index <= 0:
@@ -104,13 +108,9 @@ static func sample(clips: Dictionary, swing_index: int, fraction: float,
 		2: action = "rslash"
 		3: action = "windup"
 		4: action = "heavy"
+		5: action = "recover"
 		_: return {}
 	var p := clampf(fraction, 0.0, 1.0)
-	if swing_index != 3 and p >= 0.68:
-		action = "recover"
-		p = (p - 0.68) / 0.32
-	elif swing_index != 3:
-		p /= 0.68
 	var key := clip_key(action, direction_for_facing(facing))
 	var clip: Dictionary = clips.get(key, {})
 	if clip.is_empty():

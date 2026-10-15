@@ -38,6 +38,8 @@ func _run() -> void:
 	var loader := func(path: String) -> Texture2D:
 		return inventory.get(path)
 	var accepted := Clips.validate_manifest(spec, loader)
+	_check(Clips.validate_manifest(JSON.parse_string(JSON.stringify(spec)), loader).size() == 20,
+		"real JSON numeric types accept the same complete manifest as in-memory fixtures")
 	_check(accepted.size() == 20, "all 20 direction/action strips accepted atomically")
 	_check(Clips.direction_for_facing(Vector2.DOWN) == "front" and
 		Clips.direction_for_facing(Vector2.UP) == "back" and
@@ -55,13 +57,13 @@ func _run() -> void:
 	var charged := Clips.sample(accepted, 3, 1.0, Vector2.UP)
 	_check(charged.get("action") == "windup" and int(charged.get("frame", -1)) == 5,
 		"held charge settles on the final windup frame, never loops")
-	var heavy := Clips.sample(accepted, 4, 0.65, Vector2.RIGHT)
+	var heavy := Clips.sample(accepted, 4, 0.99, Vector2.RIGHT)
 	_check(heavy.get("action") == "heavy" and int(heavy.get("frame", -1)) == 7,
 		"heavy eight-frame strike lands at its last committed frame")
-	var recover := Clips.sample(accepted, 4, 0.92, Vector2.RIGHT)
+	var recover := Clips.sample(accepted, 5, 0.92, Vector2.RIGHT)
 	_check(recover.get("action") == "recover" and int(recover.get("frame", -1)) > 0,
 		"release transitions to painted recovery without a detached blade")
-	_check(Clips.sample(accepted, 1, 1.0, Vector2.DOWN).get("frame") == 5,
+	_check(Clips.sample(accepted, 5, 1.0, Vector2.DOWN).get("frame") == 5,
 		"recovery samples final frame without wrapping to first")
 	_check(Clips.sample(accepted, 0, 0.0, Vector2.DOWN).is_empty(),
 		"idle remains the previously approved walk and idle art")
@@ -92,7 +94,7 @@ func _run() -> void:
 	manager._frames["down"] = 6
 	manager._strip_dir = "down"
 	manager._attack_clips = accepted
-	_check(manager._try_approved_attack(4, 0.65, Vector2.RIGHT),
+	_check(manager._try_approved_attack(4, 0.99, Vector2.RIGHT),
 		"player renderer can display approved painted attack when available")
 	_check(manager._sprite.texture == eight and
 		manager._sprite.region_rect.size == Vector2(384, 384) and
@@ -103,8 +105,10 @@ func _run() -> void:
 	_check(manager._sprite.texture == six and not manager._approved_attack_active,
 		"recovering to idle restores the real walking artwork")
 	manager.free()
-	_check(Clips.load_approved(loader).is_empty(),
-		"until signed-off production manifest lands, existing fallback stays live")
+	var real := Clips.load_approved(Callable(preload("res://scripts/critical_sprite_loader.gd"), "load_texture"))
+	_check(real.size() == 20, "signed-off production manifest loads all 20 real attack sheets")
+	_check(Clips.sample(real, 1, 0.70, Vector2.DOWN).get("action") == "slash",
+		"damage window never swaps to recovery artwork early")
 
 	if failed == 0:
 		print("[FORM1 APPROVED ATTACK] PASS %d checks" % checks)

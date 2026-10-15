@@ -1,0 +1,3 @@
+# Keep this approved animation set in ordinary Git blobs so connected API
+# publication and fresh builds retain the exact reviewed PNG bytes.
+*.png -filter -diff -merge -text
