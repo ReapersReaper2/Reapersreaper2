@@ -600,6 +600,10 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 		return
 	if _try_approved_attack(swing_index, fraction, facing):
 		return
+	# If an optional partial clip does not cover this action or direction,
+	# restore the regular walk source before applying the shader fallback.
+	if _approved_attack_active:
+		_reset_mortal_sword_pose()
 	if swing_index == 5:
 		_reset_mortal_sword_pose()
 		return
