@@ -94,21 +94,21 @@ func _run() -> void:
 	_check("form defaults to 1", mgr.current_form() == 1)
 	_check("has sprites", mgr.has_sprites())
 	_check("walk strips loaded x4", mgr._strips.size() == 4)
-	_check("idle_down loaded", mgr._idle.has("down"))
-	_check("walk frame count 4", int(mgr._frames.get("down", 0)) == 4)
-	_check("idle frame count 2", int(mgr._idle_frames.get("down", 0)) == 2)
+	_check("idle matches active outfit", mgr._idle.is_empty() if mgr._canon_walk_active else mgr._idle.has("down"))
+	_check("walk frame count", int(mgr._frames.get("down", 0)) == (6 if mgr._canon_walk_active else 4))
+	_check("idle frame count matches outfit", int(mgr._idle_frames.get("down", 0)) == (0 if mgr._canon_walk_active else 2))
 	_check("sprite visible", mgr._sprite.visible)
 	for c in visuals.get_children():
 		if c != mgr:
 			_check("greybox hidden: " + c.name, not (c as CanvasItem).visible)
 	_check("sprite grounded on capsule", mgr._sprite.position.y >= -28.0 and mgr._sprite.position.y <= 22.0)
-	_check("walk uses 6 fps", Mgr.WALK_FPS == 6.0)
+	_check("walk FPS keeps legacy and canon rates", Mgr.WALK_FPS == 6.0 and Mgr.CANON_WALK_FPS == 10.0)
 	_check("idle uses 1-1.5 fps", Mgr.IDLE_FPS >= 1.0 and Mgr.IDLE_FPS <= 1.5)
 
 	# 4. Direction hook: facing selects the matching strip.
 	mgr.tick(0.5, Vector2.LEFT, true)
 	_check("left strip selected", mgr._strip_dir == "left")
-	_check("left strip texture is walk sheet", (mgr._sprite.texture as Texture2D).get_width() == 1536)
+	_check("left strip texture matches active walk", (mgr._sprite.texture as Texture2D).get_width() == (2304 if mgr._canon_walk_active else 1536))
 	mgr.tick(0.5, Vector2.UP, true)
 	_check("up strip selected", mgr._strip_dir == "up")
 	mgr.tick(0.5, Vector2.RIGHT, true)
@@ -121,18 +121,18 @@ func _run() -> void:
 
 	# 5. Idle: standing still with an idle sheet animates it.
 	mgr.tick(0.0, Vector2.DOWN, false)
-	_check("idle mode on for down", mgr._idle_on)
-	_check("idle texture is idle sheet", (mgr._sprite.texture as Texture2D).get_width() == 768)
+	_check("idle respects the active outfit", (not mgr._idle_on) if mgr._canon_walk_active else mgr._idle_on)
+	_check("idle texture retains same outfit", (mgr._sprite.texture as Texture2D).get_width() == (2304 if mgr._canon_walk_active else 768))
 	var ix0: float = mgr._sprite.region_rect.position.x
 	mgr.tick(0.85, Vector2.DOWN, false)
-	_check("idle frame advances", mgr._sprite.region_rect.position.x != ix0)
+	_check("idle frame behavior", (mgr._sprite.region_rect.position.x == ix0) if mgr._canon_walk_active else (mgr._sprite.region_rect.position.x != ix0))
 	# No idle sheet for left: falls back to walk frame 0, idle off.
 	mgr.tick(0.0, Vector2.LEFT, false)
 	_check("idle off without idle sheet", not mgr._idle_on)
-	_check("walk strip frame 0 when idle-less", (mgr._sprite.texture as Texture2D).get_width() == 1536 and mgr._sprite.region_rect.position.x == 0.0)
+	_check("walk strip frame 0 when idle-less", (mgr._sprite.texture as Texture2D).get_width() == (2304 if mgr._canon_walk_active else 1536) and mgr._sprite.region_rect.position.x == 0.0)
 	# Moving again leaves idle mode.
 	mgr.tick(0.0, Vector2.DOWN, true)
-	_check("walk resumes from idle", not mgr._idle_on and (mgr._sprite.texture as Texture2D).get_width() == 1536)
+	_check("walk resumes from idle", not mgr._idle_on and (mgr._sprite.texture as Texture2D).get_width() == (2304 if mgr._canon_walk_active else 1536))
 
 	# 6. Scythe-rig nodes are untouched: the manager only parents under
 	# Visuals and never touches siblings outside it (verified by mock:

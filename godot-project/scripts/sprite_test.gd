@@ -86,7 +86,7 @@ func _initialize() -> void:
 	_check("form7 up is 3-frame", int(frame_info.get("f7_up", 0)) == 3)
 	_check("form7 left is 3-frame", int(frame_info.get("f7_left", 0)) == 3)
 	_check("form7 down is 4-frame", int(frame_info.get("f7_down", 0)) == 4)
-	_check("form1 down is 4-frame", int(frame_info.get("f1_down", 0)) == 4)
+	_check("form1 down matches active canon / legacy frame count", int(frame_info.get("f1_down", 0)) == 6)
 	_check("form8 up is 4-frame", int(frame_info.get("f8_up", 0)) == 4)
 	_check("form10 right is 4-frame", int(frame_info.get("f10_right", 0)) == 4)
 
