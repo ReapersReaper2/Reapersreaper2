@@ -24,6 +24,8 @@ const Form1AttackClips := preload("res://scripts/form1_attack_clips.gd")
 const SPRITE_DIR := "res://sprites/mollosar/"
 const CELL := 384
 const WALK_FPS := 6.0
+const CANON_WALK_FPS := 10.0
+const CANON_WALK_DIR := "res://sprites/mollosar/canon_walk/"
 const SWING_FPS := 14.0
 ## Figure is ~256px tall inside the 384 cell; 0.5 scale ~= 128px,
 ## matching the old greybox capsule.
@@ -40,6 +42,7 @@ const IDLE_FPS := 1.25
 const SPRITE_Y_OFFSET := -5.0
 
 var _form: int = 0
+var _canon_walk_active: bool = false
 var _strips: Dictionary = {}
 var _frames: Dictionary = {}
 ## Optional idle strips: form{N}_idle_{down,up,left,right}_spec384.png.
@@ -146,6 +149,7 @@ static func _is_lfs_pointer(path: String) -> bool:
 
 func _load_form(form: int) -> void:
 	_form = form
+	_canon_walk_active = false
 	_strips.clear()
 	_frames.clear()
 	_idle.clear()
@@ -171,10 +175,23 @@ func _load_form(form: int) -> void:
 			else:
 				push_warning("[MOLLOSAR] New attack strip invalid: 7 cells of 384x384 required")
 	# Form changes always release Form 1's shader before loading other art.
+	var canon_textures: Dictionary = {}
+	# The entire canon outfit is activated only when all four sides decode.
+	# Never ship a mix of the old green outfit and new charcoal crusader.
+	if form == 1:
+		for direction in DIRS:
+			var canon_path := CANON_WALK_DIR + "form1_walk_%s_spec384.png" % direction
+			if CriticalSpriteLoader.has_source(canon_path):
+				var candidate: Texture2D = _load_tex(canon_path)
+				if candidate != null and candidate.get_width() == CELL * 6 and candidate.get_height() == CELL:
+					canon_textures[direction] = candidate
+		_canon_walk_active = canon_textures.size() == DIRS.size()
+		if not _canon_walk_active and not canon_textures.is_empty():
+			push_warning("[MOLLOSAR] Canon walk incomplete, keeping original set")
 	_release_mortal_blade()
 	for d in DIRS:
 		var wpath := "%sform%d_walk_%s_spec384.png" % [SPRITE_DIR, form, d]
-		var tex := _load_tex(wpath)
+		var tex: Texture2D = canon_textures[d] if _canon_walk_active else _load_tex(wpath)
 		if tex == null and d == "right":
 			# Form 7 shipped without a right strip (Gage's ChatGPT
 			# retry pending): mirror the left strip until it lands.
@@ -192,7 +209,7 @@ func _load_form(form: int) -> void:
 		# Optional idle sheet for this direction (Form 1 ships idle_down).
 		var ipath := "%sform%d_idle_%s_spec384.png" % [SPRITE_DIR, form, d]
 		var itex: Texture2D = null
-		if CriticalSpriteLoader.has_source(ipath):
+		if not _canon_walk_active and CriticalSpriteLoader.has_source(ipath):
 			itex = _load_tex(ipath)
 		if itex != null:
 			_idle[d] = itex
@@ -387,7 +404,7 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		_draw_frame()
 	if moving:
 		_walk_t += delta
-		var f := int(_walk_t * WALK_FPS)
+		var f := int(_walk_t * (CANON_WALK_FPS if _canon_walk_active else WALK_FPS))
 		if f != _frame:
 			_frame = f
 			_draw_frame()
