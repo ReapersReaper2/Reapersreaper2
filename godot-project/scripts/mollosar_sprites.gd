@@ -477,23 +477,24 @@ static func mortal_sword_pose(swing_index: int, fraction: float) -> Dictionary:
 	}
 
 
-## Hand-authored from the approved Muse walk sheets (384px cells).
+## Sampled from the CANON charcoal/ivory crusader Form 1 walk frame 0 (384px cells).
+## Previous coordinate anchors referenced retired green-cloak artwork and cut body pixels.
 ## Anchor = tip of gold crossguard/right wrist; tip = steel point.
 ## This is PRESENTATION ONLY. Rig/hitbox remain governed by ScytheRig.
 static func mortal_blade_geometry(direction: String) -> Dictionary:
 	match direction:
 		"down":
-			return {"guard": Vector2(138.0, 229.0),
-				"tip": Vector2(64.0, 342.0), "sign": 1.0, "fill": -1.0}
+			return {"guard": Vector2(117.0, 220.0),
+				"tip": Vector2(70.0, 328.0), "sign": 1.0, "fill": -1.0}
 		"left":
-			return {"guard": Vector2(144.0, 220.0),
-				"tip": Vector2(51.0, 327.0), "sign": 1.0, "fill": -1.0}
+			return {"guard": Vector2(67.0, 220.0),
+				"tip": Vector2(11.0, 318.0), "sign": 1.0, "fill": -1.0}
 		"right":
-			return {"guard": Vector2(199.0, 228.0),
-				"tip": Vector2(302.0, 347.0), "sign": -1.0, "fill": 1.0}
+			return {"guard": Vector2(206.0, 230.0),
+				"tip": Vector2(297.0, 327.0), "sign": -1.0, "fill": 1.0}
 		"up":
-			return {"guard": Vector2(291.0, 197.0),
-				"tip": Vector2(326.0, 285.0), "sign": -1.0, "fill": 1.0}
+			return {"guard": Vector2(280.0, 225.0),
+				"tip": Vector2(335.0, 336.0), "sign": -1.0, "fill": 1.0}
 	return {}
 
 

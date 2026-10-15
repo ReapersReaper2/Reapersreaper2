@@ -151,10 +151,13 @@ func _stats_hook(method: String) -> void:
 func _draw() -> void:
 	# Silhouette-first ash marauder; replace the old red test circle with a
 	# hostile humanoid who reads at native Android resolution.
-	var metal := Color(0.32, 0.34, 0.37).lerp(Color.WHITE, _flash)
-	var cloth := Color(0.20, 0.13, 0.15).lerp(Color.WHITE, _flash)
-	var blood := Color(0.55, 0.21, 0.17).lerp(Color.WHITE, _flash)
-	var edge := Color(0.57, 0.44, 0.34).lerp(Color.WHITE, _flash)
+	# White-out had turned these invaders into featureless paper cutouts on hit.
+	# Preserve the masked armor/cloak details while still giving a short glint.
+	var glint := _flash * 0.22
+	var metal := Color(0.32, 0.34, 0.37).lerp(Color(0.94, 0.83, 0.70), glint)
+	var cloth := Color(0.20, 0.13, 0.15).lerp(Color(0.70, 0.48, 0.43), glint)
+	var blood := Color(0.55, 0.21, 0.17).lerp(Color(0.96, 0.58, 0.31), glint)
+	var edge := Color(0.57, 0.44, 0.34).lerp(Color(1.0, 0.80, 0.56), glint)
 	var charcoal := Color(0.07, 0.08, 0.10)
 	draw_circle(Vector2(7, 7), 26.0, Color(0.02, 0.02, 0.03, 0.36))
 	# Legs + layered boots.

@@ -71,6 +71,27 @@ func _run() -> void:
 	_check("strip_for down-left -> down", Mgr.strip_for(Vector2(-1, 1)) == "down")
 	_check("strip_for up-right -> up", Mgr.strip_for(Vector2(1, -1)) == "up")
 
+	# Canon weapon rig must sample the NEW charcoal/ivory character, not
+	# the retired green-outfit texture geometry that produced detached blades.
+	for d in ["down", "up", "left", "right"]:
+		var geo: Dictionary = Mgr.mortal_blade_geometry(d)
+		_check("canon sword geometry " + d, not geo.is_empty() and geo.has("guard") and geo.has("tip"))
+		var source: Texture2D = Mgr._load_tex("res://sprites/mollosar/canon_walk/form1_walk_%s_spec384.png" % d)
+		if source != null:
+			var pixels: Image = source.get_image()
+			var grip: Vector2i = Vector2i(geo["guard"])
+			var point: Vector2i = Vector2i(geo["tip"])
+			_check("canon sword guard painted " + d,
+				grip.x >= 0 and grip.x < 384 and grip.y >= 0 and grip.y < 384 and pixels.get_pixelv(grip).a > 0.1)
+			# Sword tips are narrow; allow a 6px search neighborhood for the
+			# antialiased metal, but never accept coordinates on a distant limb.
+			var tip_found := false
+			for yy in range(maxi(0, point.y - 6), mini(384, point.y + 7)):
+				for xx in range(maxi(0, point.x - 6), mini(384, point.x + 7)):
+					if pixels.get_pixel(xx, yy).a > 0.1:
+						tip_found = true
+			_check("canon sword tip painted " + d, tip_found)
+
 	# 2. LFS-pointer detection on a temp stub file.
 	var stub := "user://_lfs_stub_test.png"
 	var f := FileAccess.open(stub, FileAccess.WRITE)

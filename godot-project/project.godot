@@ -21,7 +21,9 @@ boot_splash/bg_color=Color(0.039, 0.039, 0.071, 1)
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+; Expand the 16:9 design canvas to use 19.5:9 Android screens without pillarboxes.
+; CanvasItem anchors retain gameplay UI while the camera reveals more world.
+window/stretch/aspect="expand"
 
 [input]
 
