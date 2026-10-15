@@ -119,8 +119,10 @@ func _run() -> void:
 	# Production rejected this asset set; synthetic fixture above still
 	# validates the future 20-strip interface without reinstating it.
 	var real := Clips.load_approved(Callable(preload("res://scripts/critical_sprite_loader.gd"), "load_texture"))
-	_check(real.is_empty() and not FileAccess.file_exists(Clips.MANIFEST_PATH),
-		"rejected production manifest stays absent")
+	if FileAccess.file_exists(Clips.MANIFEST_PATH):
+		_check(real.size() == 20, "only a complete 20-strip approved set can load")
+	else:
+		_check(real.is_empty(), "without a manifest no attack textures are promoted")
 	_check(Clips.sample(accepted, 1, 0.70, Vector2.DOWN).get("action") == "slash",
 		"damage window never swaps to recovery artwork early")
 

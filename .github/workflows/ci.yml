@@ -31,6 +31,16 @@ jobs:
           cd godot-project
           ../Godot_v4.3-stable_linux.x86_64 --headless --import 2>&1 | tail -3
 
+      - name: Validate new-canon Form 1 sword sprites
+        run: |
+          if [ -f godot-project/sprites/mollosar/approved/form1_attack_manifest.json ]; then
+            python3 -m venv /tmp/rr-form1-art-env
+            /tmp/rr-form1-art-env/bin/pip install --quiet Pillow numpy
+            /tmp/rr-form1-art-env/bin/python .github/scripts/validate_form1_attack_art.py --require-approved
+          else
+            python3 .github/scripts/validate_form1_attack_art.py
+          fi
+
       - name: Run GDScript tests (headless)
         run: |
           cd godot-project
