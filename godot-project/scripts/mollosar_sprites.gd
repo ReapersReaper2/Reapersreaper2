@@ -70,6 +70,10 @@ var _mortal_pose_active: bool = false
 ## manifest can replace the procedural sword pose without code surgery.
 var _attack_clips: Dictionary = {}
 var _approved_attack_active: bool = false
+## Freeze facing for the duration of one attack action. The player can turn
+## between strikes, but never splice front/side/back art within a single cut.
+var _approved_action: int = 0
+var _approved_facing: Vector2 = Vector2.DOWN
 var _mortal_blade_sprite: Sprite2D = null
 var _mortal_rest_material: ShaderMaterial = null
 var _mortal_swing_material: ShaderMaterial = null
@@ -151,6 +155,7 @@ func _load_form(form: int) -> void:
 	_swing_frames = 0
 	_ground_offsets.clear()
 	_reset_mortal_sword_pose()
+	_approved_action = 0
 	_attack_clips = Form1AttackClips.load_approved(Callable(CriticalSpriteLoader, "load_texture")) if form == 1 else {}
 	# Form changes always release Form 1's shader before loading other art.
 	_release_mortal_blade()
@@ -553,7 +558,10 @@ func _release_mortal_blade() -> void:
 func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) -> bool:
 	if _attack_clips.is_empty():
 		return false
-	var sample: Dictionary = Form1AttackClips.sample(_attack_clips, swing_index, fraction, facing)
+	if not _approved_attack_active or _approved_action != swing_index:
+		_approved_action = swing_index
+		_approved_facing = facing if facing.length_squared() > 0.001 else Vector2.DOWN
+	var sample: Dictionary = Form1AttackClips.sample(_attack_clips, swing_index, fraction, _approved_facing)
 	if sample.is_empty():
 		return false
 	_release_mortal_blade()
@@ -604,6 +612,7 @@ func _reset_mortal_sword_pose() -> void:
 	_release_mortal_blade()
 	if _approved_attack_active:
 		_approved_attack_active = false
+		_approved_action = 0
 		_frame = 0
 		_walk_t = 0.0
 		_idle_t = 0.0
