@@ -68,6 +68,17 @@ func _run() -> void:
 	_check(Clips.sample(accepted, 0, 0.0, Vector2.DOWN).is_empty(),
 		"idle remains the previously approved walk and idle art")
 
+	# The new seven-frame replacement is intentionally front-only until other
+	# directions pass art QA. Never substitute its front art for a side/back pose.
+	var replacement := {"slash_front": {"texture": six, "frames": 7, "pivot": Vector2(192, 192)}}
+	var forward := Clips.sample(replacement, 1, 0.5, Vector2.DOWN)
+	_check(forward.get("texture") == six and forward.get("frames") == 7,
+		"front-only replacement samples all seven frames without changing actor")
+	_check(Clips.sample(replacement, 1, 0.5, Vector2.LEFT).is_empty() and
+		Clips.sample(replacement, 1, 0.5, Vector2.RIGHT).is_empty() and
+		Clips.sample(replacement, 1, 0.5, Vector2.UP).is_empty(),
+		"no front sword pose is incorrectly mirrored into other directions")
+
 	var candidate: Dictionary = spec.duplicate(true)
 	candidate["status"] = "CANDIDATE"
 	_check(Clips.validate_manifest(candidate, loader).is_empty(),
