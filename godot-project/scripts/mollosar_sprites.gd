@@ -156,7 +156,9 @@ func _load_form(form: int) -> void:
 	_ground_offsets.clear()
 	_reset_mortal_sword_pose()
 	_approved_action = 0
-	_attack_clips = Form1AttackClips.load_approved(Callable(CriticalSpriteLoader, "load_texture")) if form == 1 else {}
+	# Attack sheets were visually rejected: they do not depict the same Mollosar.
+	# Keep them quarantined until replacement frames match the walk/idle master.
+	_attack_clips = {}
 	# Form changes always release Form 1's shader before loading other art.
 	_release_mortal_blade()
 	for d in DIRS:
