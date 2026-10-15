@@ -135,6 +135,8 @@ func _run() -> void:
 	mgr.tick(0.5, Vector2.RIGHT, true)
 	_check("right strip selected", mgr._strip_dir == "right")
 	# A diagonal joystick wobble must NOT keep restarting frame zero.
+	mgr._walk_t = 0.0
+	mgr._frame = 0
 	mgr.tick(0.17, Vector2.LEFT, true)
 	var phase_before := mgr._frame % int(mgr._frames["left"])
 	_check("walking phase progressed before turn", phase_before > 0)
