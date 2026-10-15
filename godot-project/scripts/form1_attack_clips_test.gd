@@ -105,9 +105,12 @@ func _run() -> void:
 	_check(manager._sprite.texture == six and not manager._approved_attack_active,
 		"recovering to idle restores the real walking artwork")
 	manager.free()
+	# Production rejected this asset set; synthetic fixture above still
+	# validates the future 20-strip interface without reinstating it.
 	var real := Clips.load_approved(Callable(preload("res://scripts/critical_sprite_loader.gd"), "load_texture"))
-	_check(real.size() == 20, "signed-off production manifest loads all 20 real attack sheets")
-	_check(Clips.sample(real, 1, 0.70, Vector2.DOWN).get("action") == "slash",
+	_check(real.is_empty() and not FileAccess.file_exists(Clips.MANIFEST_PATH),
+		"rejected production manifest stays absent")
+	_check(Clips.sample(accepted, 1, 0.70, Vector2.DOWN).get("action") == "slash",
 		"damage window never swaps to recovery artwork early")
 
 	if failed == 0:
