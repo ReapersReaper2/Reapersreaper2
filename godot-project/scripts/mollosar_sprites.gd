@@ -159,6 +159,17 @@ func _load_form(form: int) -> void:
 	# Attack sheets were visually rejected: they do not depict the same Mollosar.
 	# Keep them quarantined until replacement frames match the walk/idle master.
 	_attack_clips = {}
+	# New-library-art integration hook, intentionally restricted to the exact
+	# cleaned front slash. Never fall back to the rejected 20-strip manifest.
+	# Missing art leaves existing combat visuals intact, including Android builds.
+	if form == 1:
+		var new_path := "res://sprites/mollosar/new_attack/attack_front_clean_384.png"
+		if FileAccess.file_exists(new_path):
+			var new_tex: Texture2D = CriticalSpriteLoader.load_texture(new_path)
+			if new_tex != null and new_tex.get_width() == 7 * CELL and new_tex.get_height() == CELL:
+				_attack_clips["slash_front"] = {"texture": new_tex, "frames": 7, "pivot": Vector2(192.0, 192.0)}
+			else:
+				push_warning("[MOLLOSAR] New attack strip invalid: 7 cells of 384x384 required")
 	# Form changes always release Form 1's shader before loading other art.
 	_release_mortal_blade()
 	for d in DIRS:
