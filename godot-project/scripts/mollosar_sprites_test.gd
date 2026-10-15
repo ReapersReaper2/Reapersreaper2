@@ -134,6 +134,14 @@ func _run() -> void:
 	_check("up strip selected", mgr._strip_dir == "up")
 	mgr.tick(0.5, Vector2.RIGHT, true)
 	_check("right strip selected", mgr._strip_dir == "right")
+	# A diagonal joystick wobble must NOT keep restarting frame zero.
+	mgr.tick(0.17, Vector2.LEFT, true)
+	var phase_before := mgr._frame % int(mgr._frames["left"])
+	_check("walking phase progressed before turn", phase_before > 0)
+	mgr.tick(0.0, Vector2.UP, true)
+	_check("direction change keeps stepping phase", mgr._frame % int(mgr._frames["up"]) == phase_before)
+	mgr.tick(0.0, Vector2.LEFT, true)
+	_check("return turn keeps stepping phase", mgr._frame % int(mgr._frames["left"]) == phase_before)
 	# Walk animation advances frames across the 4-frame strip.
 	mgr.tick(0.0, Vector2.DOWN, true)
 	var x0: float = mgr._sprite.region_rect.position.x
