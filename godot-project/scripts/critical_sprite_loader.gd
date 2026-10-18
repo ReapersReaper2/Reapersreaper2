@@ -7,24 +7,30 @@ const CRITICAL_DIR := "res://assets/critical_sprites/"
 static var _cache: Dictionary = {}
 
 static func load_texture(path: String) -> Texture2D:
+	print("[DQ005] critical.load_texture %s raw=%s import_remap=%s resource=%s" % [path, str(FileAccess.file_exists(path)), str(FileAccess.file_exists(path+".import")), str(ResourceLoader.exists(path))])
 	if _cache.has(path):
+		print("[DQ005] critical cache-hit "+path)
 		return _cache[path]
 	var result: Texture2D = null
 	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
 		var image := Image.load_from_file(path)
 		if image != null and not image.is_empty():
 			result = ImageTexture.create_from_image(image)
+			print("[DQ005] critical decoded raw image "+path)
 	# Android export packs imported PNGs as engine Texture2D resources.
 	# Raw FileAccess paths can disappear from the APK even when .ctex is
 	# present. Use the importer before falling back to exact bundled bytes.
 	if result == null and ResourceLoader.exists(path):
 		var imported := ResourceLoader.load(path)
+		print("[DQ005] critical ResourceLoader.load class=%s" % [(imported.get_class() if imported is Object else type_string(typeof(imported)))])
 		if imported is Texture2D:
 			result = imported as Texture2D
 	if result == null:
+		print("[DQ005] critical imported path failed; trying _load_bundled "+path)
 		result = _load_bundled(path)
 	if result != null:
 		_cache[path] = result
+	print("[DQ005] critical RESULT path=%s class=%s size=%s" % [path, (result.get_class() if result is Object else "NULL"), (str(result.get_size()) if result is Texture2D else "n/a")])
 	return result
 
 ## Check presence without emitting missing-art errors. Use this ONLY for
