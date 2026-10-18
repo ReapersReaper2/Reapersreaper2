@@ -1,0 +1,80 @@
+name: DQ-005 Android emulator import probe
+on:
+  push:
+    branches: [fix/dq005-packed-form1-runtime]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic-apk:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Prepare Android SDK and debug export templates
+        run: |
+          set -eu
+          mkdir -p "$HOME/.local/share/godot/export_templates" "$HOME/.config/godot"
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+      - name: Force diagnostic probe boot and x86_64 test ABI (not a production change)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('godot-project/project.godot')
+          s=p.read_text()
+          old='run/main_scene="res://scenes/title_screen.tscn"'
+          assert old in s
+          p.write_text(s.replace(old,'run/main_scene="res://scenes/dq005_android_probe.tscn"'))
+          p=Path('godot-project/export_presets.cfg')
+          s=p.read_text()
+          assert 'architectures/x86_64=false' in s
+          p.write_text(s.replace('architectures/x86_64=false','architectures/x86_64=true'))
+          PY
+      - name: Import resources
+        run: godot --headless --path godot-project --import --quit
+      - name: Build emulator-compatible Android debug APK
+        run: |
+          mkdir -p dist
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/dq005-emulator-debug.apk"
+          test -s dist/dq005-emulator-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dq005-android-probe
+          path: dist/dq005-emulator-debug.apk
+          retention-days: 3
+  android-emulator:
+    needs: diagnostic-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dq005-android-probe
+          path: dist
+      - name: Launch a real Android runtime and collect DQ005 logs
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            adb install -r dist/dq005-emulator-debug.apk
+            adb logcat -c
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 35
+            adb logcat -d -v time > dq005-logcat.txt
+            grep -E '\[DQ005' dq005-logcat.txt | tail -110 || true
+            grep -q '\[DQ005 ANDROID\] PASS all 20 real-art samples' dq005-logcat.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-android-logcat
+          path: dq005-logcat.txt
+          retention-days: 3
