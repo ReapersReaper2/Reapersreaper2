@@ -7,6 +7,13 @@ on:
     paths:
       - ".github/workflows/android-dev-apk.yml"
       - "godot-project/**"
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - ".github/workflows/android-dev-apk.yml"
+      - "godot-project/sprites/mollosar/approved/**"
+      - "godot-project/scripts/form1_animation_runtime_test.gd"
   workflow_dispatch:
 
 permissions:
