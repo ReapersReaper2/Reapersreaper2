@@ -1,7 +1,7 @@
 name: DQ-005 packed Form 1 diagnosis
 on:
   push:
-    branches: [fix/dq005-packed-form1-runtime]
+    branches: [fix/dq005-packed-form1-runtime, test/dq005-packed-bridge-scene]
   workflow_dispatch:
 permissions:
   contents: read
@@ -28,3 +28,4 @@ jobs:
           mkdir -p /tmp/form1-isolated
           cd /tmp/form1-isolated
           godot --headless --main-pack "$GITHUB_WORKSPACE/form1-packed.pck" --script res://scripts/form1_packed_export_probe.gd
+          godot --headless --main-pack "$GITHUB_WORKSPACE/form1-packed.pck" --script res://scripts/dq005_bridge_packed_probe.gd
