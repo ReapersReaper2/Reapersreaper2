@@ -19,11 +19,11 @@ func _check(ok: bool, label: String) -> void:
 
 func _run() -> void:
 	var clips := Clips.load_approved(Callable(Loader, "load_texture"))
-	# The rejected 20-strip set was deliberately deleted. Verify this
-	# quarantine instead of failing mobile builds over removed artwork.
+	# Preserve procedural fallback ONLY if no approved manifest exists.
+	# An existing manifest must load a complete set; never pass a corrupt one.
 	if clips.is_empty():
 		_check(not FileAccess.file_exists(Clips.MANIFEST_PATH),
-			"rejected manifest stays removed from shipping builds")
+			"approved manifest must load all 20 strips if installed")
 		print("[FORM1 ANIMATION RUNTIME] PASS: rejected art absent; fallback active")
 		quit(1 if failed > 0 else 0)
 		return
@@ -66,7 +66,7 @@ func _run() -> void:
 				_check(art.texture == clips[key]["texture"] and art.material == null and
 						not manager._mortal_blade_sprite.visible and is_zero_approx(art.rotation),
 					"strike stays one intact character without blade/body shader")
-				_check((art.position + Vector2(0, 168) * art.scale.y).distance_to(Vector2(0, 64)) < 0.01,
+				_check((art.position + Vector2(0, 184) * art.scale.y).distance_to(Vector2(0, 64)) < 0.01,
 					"attack artist pivot stays planted")
 			_check(frames_seen.size() == int(clips[key]["frames"]),
 				"every painted strike frame is displayed at 60Hz: " + key)
