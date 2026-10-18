@@ -1,0 +1,265 @@
+{
+  "status": "APPROVED",
+  "strips": {
+    "windup_front": {
+      "texture": "res://sprites/mollosar/approved/form1_windup_front.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "windup_back": {
+      "texture": "res://sprites/mollosar/approved/form1_windup_back.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "windup_side-l": {
+      "texture": "res://sprites/mollosar/approved/form1_windup_side-l.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "windup_side-r": {
+      "texture": "res://sprites/mollosar/approved/form1_windup_side-r.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "slash_front": {
+      "texture": "res://sprites/mollosar/approved/form1_slash_front.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "slash_back": {
+      "texture": "res://sprites/mollosar/approved/form1_slash_back.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "slash_side-l": {
+      "texture": "res://sprites/mollosar/approved/form1_slash_side-l.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "slash_side-r": {
+      "texture": "res://sprites/mollosar/approved/form1_slash_side-r.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "rslash_front": {
+      "texture": "res://sprites/mollosar/approved/form1_rslash_front.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "rslash_back": {
+      "texture": "res://sprites/mollosar/approved/form1_rslash_back.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "rslash_side-l": {
+      "texture": "res://sprites/mollosar/approved/form1_rslash_side-l.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "rslash_side-r": {
+      "texture": "res://sprites/mollosar/approved/form1_rslash_side-r.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "heavy_front": {
+      "texture": "res://sprites/mollosar/approved/form1_heavy_front.png",
+      "frames": 8,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "heavy_back": {
+      "texture": "res://sprites/mollosar/approved/form1_heavy_back.png",
+      "frames": 8,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "heavy_side-l": {
+      "texture": "res://sprites/mollosar/approved/form1_heavy_side-l.png",
+      "frames": 8,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "heavy_side-r": {
+      "texture": "res://sprites/mollosar/approved/form1_heavy_side-r.png",
+      "frames": 8,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "recover_front": {
+      "texture": "res://sprites/mollosar/approved/form1_recover_front.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "recover_back": {
+      "texture": "res://sprites/mollosar/approved/form1_recover_back.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "recover_side-l": {
+      "texture": "res://sprites/mollosar/approved/form1_recover_side-l.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    },
+    "recover_side-r": {
+      "texture": "res://sprites/mollosar/approved/form1_recover_side-r.png",
+      "frames": 6,
+      "cell": [
+        384,
+        384
+      ],
+      "pivot": [
+        192,
+        376
+      ],
+      "fps": 12
+    }
+  }
+}

@@ -160,8 +160,8 @@ func _load_form(form: int) -> void:
 	_ground_offsets.clear()
 	_reset_mortal_sword_pose()
 	_approved_action = 0
-	# Attack sheets were visually rejected: they do not depict the same Mollosar.
-	# Keep them quarantined until replacement frames match the walk/idle master.
+	# Only the 2026-10-18 verified Form 1 set may be loaded from the
+	# complete approved manifest; earlier rejected artwork remains excluded.
 	_attack_clips = {}
 	# Load attacks only as one complete artist-approved 20-strip collection.
 	# Never substitute the old rejected 7-frame slash for missing directions.
