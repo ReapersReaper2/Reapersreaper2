@@ -23,18 +23,10 @@ jobs:
           cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
       - name: Force diagnostic probe boot and x86_64 test ABI (not a production change)
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('godot-project/project.godot')
-          s=p.read_text()
-          old='run/main_scene="res://scenes/title_screen.tscn"'
-          assert old in s
-          p.write_text(s.replace(old,'run/main_scene="res://scenes/dq005_android_probe.tscn"'))
-          p=Path('godot-project/export_presets.cfg')
-          s=p.read_text()
-          assert 'architectures/x86_64=false' in s
-          p.write_text(s.replace('architectures/x86_64=false','architectures/x86_64=true'))
-          PY
+          sed -i 's@run/main_scene="res://scenes/title_screen.tscn"@run/main_scene="res://scenes/dq005_android_probe.tscn"@' godot-project/project.godot
+          grep -F 'run/main_scene="res://scenes/dq005_android_probe.tscn"' godot-project/project.godot
+          sed -i 's@architectures/x86_64=false@architectures/x86_64=true@g' godot-project/export_presets.cfg
+          grep -F 'architectures/x86_64=true' godot-project/export_presets.cfg
       - name: Import resources
         run: godot --headless --path godot-project --import --quit
       - name: Build emulator-compatible Android debug APK
