@@ -36,8 +36,35 @@ func _process(delta: float) -> void:
 		return
 	var clip_count: int = mgr._attack_clips.size()
 	print("[DQ005_ANDROID] bridge form=", mgr._form, " clips=", clip_count)
-	var rendered: bool = mgr._try_approved_attack(1, 0.5, Vector2.DOWN)
-	print("[DQ005_ANDROID] approved slash displayed=", rendered,
-		" texture=", mgr._sprite.texture.get_class() if mgr._sprite.texture != null else "<null>",
-		" frames=", mgr._sprite.region_rect)
-	print("[DQ005_ANDROID] RESULT ", "PASS" if rendered and clip_count == 20 else "FAIL")
+
+	# Exercise the EXACT Player -> rig -> sprite-manager path used by a swing,
+	# not just Form1AttackClips.sample() or a direct _try_approved_attack() call.
+	player.facing = Vector2.DOWN
+	mgr.tick(0.0, Vector2.DOWN, true)
+	var rig = player.get_node_or_null("ScytheRig")
+	if rig == null:
+		push_error("[DQ005_ANDROID] Missing ScytheRig in bridge")
+		return
+	rig._start_swing(1)
+	var seen: Dictionary = {}
+	var all_painted: bool = true
+	var sample_tex: Texture2D = mgr._attack_clips["slash_front"]["texture"] if clip_count == 20 else null
+	var frames: int = int(ceilf(rig._swing_duration() * 60.0))
+	for n in range(frames):
+		rig._swing_t = float(n) / 60.0
+		player._physics_process(0.0)
+		var frame_id := int(mgr._sprite.region_rect.position.x / 384.0)
+		seen[frame_id] = true
+		var is_painted: bool = (mgr._approved_attack_active and
+				mgr._sprite.texture == sample_tex and
+				mgr._sprite.material == null and
+				not mgr._mortal_blade_sprite.visible)
+		if not is_painted:
+			print("[DQ005_ANDROID] fallback at swing step=", n,
+				" frame=", frame_id, " approved=", mgr._approved_attack_active,
+				" material=", mgr._sprite.material,
+				" blade_visible=", mgr._mortal_blade_sprite.visible)
+			all_painted = false
+	print("[DQ005_ANDROID] real bridge swing painted=", all_painted,
+		" unique_frames=", seen.size(), " clips=", clip_count)
+	print("[DQ005_ANDROID] RESULT ", "PASS" if all_painted and seen.size() > 1 and clip_count == 20 else "FAIL")
