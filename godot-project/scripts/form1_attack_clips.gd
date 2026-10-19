@@ -39,51 +39,67 @@ static func _valid_pivot(pivot: Variant) -> bool:
 ## The loader is injected to keep every validation unit-testable.
 static func validate_manifest(source: Dictionary, loader: Callable) -> Dictionary:
 	if str(source.get("status", "")) != "APPROVED":
+		print("[DQ005] reject: status=", source.get("status", "<missing>"))
 		return {}
 	var strips: Variant = source.get("strips", {})
 	if not (strips is Dictionary):
+		print("[DQ005] reject: strips not Dictionary: ", type_string(typeof(strips)))
 		return {}
 	var loaded: Dictionary = {}
 	for key in required_keys():
 		var entry: Variant = strips.get(key, {})
 		if not (entry is Dictionary):
+			print("[DQ005] reject: missing/non-dictionary entry ", key)
 			return {}
 		var path := str(entry.get("texture", ""))
 		if not path.begins_with(ALLOWED_ROOT) or not path.ends_with(".png") or \
 				path.contains("..") or not loader.is_valid():
+			print("[DQ005] reject: invalid texture path or callable: ", key, " path=", path)
 			return {}
 		var frames := int(entry.get("frames", -1))
 		if frames != (8 if key.begins_with("heavy_") else 6):
+			print("[DQ005] reject: frame count ", key, " got=", frames)
 			return {}
 		var cell: Variant = entry.get("cell", [])
 		# JSON parses numbers as floats; whole-array equality rejects a
 		# valid on-disk [384,384] even though synthetic integer fixtures pass.
 		if not (cell is Array) or cell.size() != 2 or \
 				float(cell[0]) != float(CELL) or float(cell[1]) != float(CELL):
+			print("[DQ005] reject: bad cell ", key, " value=", cell)
 			return {}
 		var pivot: Variant = entry.get("pivot", [])
 		if not _valid_pivot(pivot):
+			print("[DQ005] reject: invalid pivot ", key, " value=", pivot)
 			return {}
 		if absf(float(entry.get("fps", 0.0)) - 12.0) > 0.01:
+			print("[DQ005] reject: fps ", key, " value=", entry.get("fps", "<missing>"))
 			return {}
+		print("[DQ005] validate ", key, " raw_exists=", FileAccess.file_exists(path), " resource_exists=", ResourceLoader.exists(path))
 		var tex: Variant = loader.call(path)
 		if not (tex is Texture2D):
+			print("[DQ005] reject: texture loader returned ", type_string(typeof(tex)), " for ", key, " path=", path)
 			return {}
 		var texture: Texture2D = tex as Texture2D
+		print("[DQ005] loaded ", key, " class=", texture.get_class(), " size=", texture.get_width(), "x", texture.get_height())
 		if texture.get_width() != frames * CELL or texture.get_height() != CELL:
+			print("[DQ005] reject: invalid texture dimensions ", key)
 			return {}
 		loaded[key] = {
 			"texture": texture,
 			"frames": frames,
 			"pivot": Vector2(float(pivot[0]), float(pivot[1])),
 		}
+	print("[DQ005] validate PASS clips=", loaded.size())
 	return loaded
 
 
 static func load_approved(loader: Callable) -> Dictionary:
+	print("[DQ005] manifest raw_exists=", FileAccess.file_exists(MANIFEST_PATH), " resource_exists=", ResourceLoader.exists(MANIFEST_PATH), " path=", MANIFEST_PATH)
 	if not FileAccess.file_exists(MANIFEST_PATH):
+		print("[DQ005] reject: manifest FileAccess.file_exists returned false")
 		return {}
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
+	print("[DQ005] manifest bytes=", FileAccess.get_file_as_string(MANIFEST_PATH).length(), " parsed=", type_string(typeof(parsed)))
 	if not (parsed is Dictionary):
 		push_error("[FORM1 ATTACK] Approved manifest is not valid JSON object")
 		return {}
