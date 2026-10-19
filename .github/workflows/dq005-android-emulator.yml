@@ -1,0 +1,78 @@
+name: DQ005 Android Packed Runtime Probe
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - 'godot-project/scripts/dq005_android_probe.gd'
+      - 'godot-project/project.godot'
+      - 'godot-project/export_presets.cfg'
+      - '.github/workflows/dq005-android-emulator.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  debug-apk:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Restore Android export templates and signer
+        run: |
+          set -eu
+          mkdir -p "$HOME/.local/share/godot/export_templates" "$HOME/.config/godot"
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+      - name: Restore critical art
+        run: sh .github/scripts/recover_critical_art.sh
+      - name: Import
+        run: godot --headless --path godot-project --import --quit
+      - name: Export instrumented Android APK (x86_64 added solely for emulator)
+        run: |
+          mkdir -p dist
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/dq005-probe.apk"
+          test -s dist/dq005-probe.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dq005-probe-apk
+          path: dist/dq005-probe.apk
+          retention-days: 3
+  emulator:
+    needs: debug-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dq005-probe-apk
+          path: dist
+      - name: Enable KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 3072M
+          disk-size: 6000M
+          disable-animations: true
+          script: |
+            adb install -r dist/dq005-probe.apk
+            adb logcat -c
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 25
+            adb logcat -d -v brief > dq005-android-logcat.txt
+            grep -E 'DQ005|FORM1 ATTACK|CriticalSpriteLoader' dq005-android-logcat.txt | tail -150 || true
+            grep -q '\[DQ005_ANDROID\] RESULT' dq005-android-logcat.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-android-logcat
+          path: dq005-android-logcat.txt
+          retention-days: 4
