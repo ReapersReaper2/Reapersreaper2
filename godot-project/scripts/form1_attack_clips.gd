@@ -136,13 +136,21 @@ static func sample(clips: Dictionary, swing_index: int, fraction: float,
 	if clip.is_empty():
 		return {}
 	var frames := int(clip["frames"])
+	var frame := mini(frames - 1, int(floorf(p * float(frames))))
+	var direction := direction_for_facing(facing)
+	if bool(ProjectSettings.get_setting("debug/dq005_trace", false)):
+		var trace_key := "%s|%s|%d" % [action, direction, frame]
+		if str(ProjectSettings.get_setting("debug/dq005_last_sample_trace", "")) != trace_key:
+			ProjectSettings.set_setting("debug/dq005_last_sample_trace", trace_key)
+			var trace_texture: Texture2D = clip["texture"] as Texture2D
+			print("[DQ005 PATH] Form1AttackClips.sample action=%s direction=%s fraction=%.3f frame=%d/%d texture_size=%s" % [action, direction, p, frame, frames, str(trace_texture.get_size() if trace_texture != null else Vector2.ZERO)])
 	return {
 		"texture": clip["texture"],
-		"frame": mini(frames - 1, int(floorf(p * float(frames)))),
+		"frame": frame,
 		"frames": frames,
 		"pivot": clip["pivot"],
 		"action": action,
-		"direction": direction_for_facing(facing),
+		"direction": direction,
 	}
 
 

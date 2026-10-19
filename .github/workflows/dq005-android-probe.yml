@@ -1,7 +1,7 @@
 name: DQ-005 Android emulator import probe
 on:
   push:
-    branches: [fix/dq005-packed-form1-runtime]
+    branches: [fix/dq005-packed-form1-runtime, test/dq005-packed-bridge-scene]
   workflow_dispatch:
 permissions:
   contents: read

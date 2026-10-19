@@ -55,6 +55,7 @@ signal flight_changed(flying: bool)
 ## Untyped on purpose: class_name globals don't resolve in headless
 ## -s runs (same reason as the rig vars below).
 var sprites = null
+var _dq005_last_attack_trace: String = ""
 
 
 ## Modal gameplay UI owns input while it is visible. This prevents the
@@ -117,6 +118,12 @@ func _physics_process(delta: float) -> void:
 			elif attack_rig.has_method("is_charging") and attack_rig.is_charging():
 				swing_index = 3 # Hold anticipation; blade stays in painted hand.
 				progress = float(attack_rig.charge_progress())
+			if bool(ProjectSettings.get_setting("debug/dq005_trace", false)):
+				var charging_trace: bool = attack_rig.has_method("is_charging") and bool(attack_rig.call("is_charging"))
+				var trace_key := "%d|%d|%s|%s" % [state_value, swing_index, str(facing), str(charging_trace)]
+				if trace_key != _dq005_last_attack_trace:
+					_dq005_last_attack_trace = trace_key
+					print("[DQ005 PATH] player._physics_process rig_state=%d charging=%s mapped_action=%d progress=%.3f facing=%s" % [state_value, str(charging_trace), swing_index, progress, str(facing)])
 			sprites.set_mortal_sword_pose(swing_index, progress, facing)
 	# --- StepDriver odometer (spec §4) ---
 	# C2: no-count guards — tendril_riding, move_locked, input_locked.

@@ -84,6 +84,10 @@ var _greybox: Array = []
 
 
 var _ready_done := false
+# DQ-005 diagnostic trace state; only enabled by packed/device probes.
+var _dq005_empty_attack_logged: bool = false
+var _dq005_last_display_trace: String = ""
+var _dq005_last_fallback_trace: String = ""
 
 
 func _ready() -> void:
@@ -107,9 +111,15 @@ func _ready() -> void:
 
 ## Re-read the form from GameState; reload strips if it changed.
 ## Safe to call every frame (cheap int compare).
+func _dq005_trace_enabled() -> bool:
+	return bool(ProjectSettings.get_setting("debug/dq005_trace", false))
+
+
 func refresh() -> void:
 	var form := _current_form()
 	if form != _form:
+		if _dq005_trace_enabled():
+			print("[DQ005 PATH] refresh invokes _load_form old=%d new=%d node=%s" % [_form, form, str(get_path())])
 		_load_form(form)
 
 
@@ -148,7 +158,13 @@ static func _is_lfs_pointer(path: String) -> bool:
 
 
 func _load_form(form: int) -> void:
+	var previous_form := _form
+	if _dq005_trace_enabled():
+		print("[DQ005 PATH] _load_form enter old=%d requested=%d node=%s" % [previous_form, form, str(get_path())])
 	_form = form
+	_dq005_empty_attack_logged = false
+	_dq005_last_display_trace = ""
+	_dq005_last_fallback_trace = ""
 	_canon_walk_active = false
 	_strips.clear()
 	_frames.clear()
@@ -168,6 +184,8 @@ func _load_form(form: int) -> void:
 	# If the manifest is absent, keep the working procedural fallback.
 	if form == 1:
 		_attack_clips = Form1AttackClips.load_approved(Callable(CriticalSpriteLoader, "load_texture"))
+		if _dq005_trace_enabled():
+			print("[DQ005 PATH] _load_form result form=1 clips=%d has_sprites=%s sprite_texture=%s" % [_attack_clips.size(), str(has_sprites()), str(_sprite.texture.resource_path if _sprite != null and _sprite.texture != null else "NULL")])
 	# Form changes always release Form 1's shader before loading other art.
 	var canon_textures: Dictionary = {}
 	# The entire canon outfit is activated only when all four sides decode.
@@ -592,6 +610,9 @@ func _release_mortal_blade() -> void:
 ## armor and smear on the SAME transparent frame. No detached weapon mesh.
 func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) -> bool:
 	if _attack_clips.is_empty():
+		if _dq005_trace_enabled() and not _dq005_empty_attack_logged:
+			_dq005_empty_attack_logged = true
+			print("[DQ005 PATH] _try_approved_attack REJECT empty clips form=%d action=%d facing=%s" % [_form, swing_index, str(facing)])
 		return false
 	if not _approved_attack_active or _approved_action != swing_index:
 		_approved_action = swing_index
@@ -611,8 +632,15 @@ func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) ->
 		Form1AttackClips.grounded_sprite_y(sample["pivot"], SPRITE_SCALE))
 	_approved_attack_active = true
 	_mortal_pose_active = false
+	if _dq005_trace_enabled():
+		var trace_key := "%s|%s|%d" % [str(sample.get("action", "")), str(sample.get("direction", "")), int(sample.get("frame", -1))]
+		if trace_key != _dq005_last_display_trace:
+			_dq005_last_display_trace = trace_key
+			print("[DQ005 PATH] DISPLAY action=%s direction=%s frame=%d region=%s texture_size=%s sprite_visible=%s material_null=%s blade_visible=%s" % [
+				str(sample.get("action", "")), str(sample.get("direction", "")), int(sample.get("frame", -1)),
+				str(_sprite.region_rect), str(_sprite.texture.get_size()), str(_sprite.visible),
+				str(_sprite.material == null), str(_mortal_blade_sprite.visible if _mortal_blade_sprite != null else false)])
 	return true
-
 
 func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -> void:
 	if _sprite == null:
@@ -622,6 +650,12 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 		return
 	if _try_approved_attack(swing_index, fraction, facing):
 		return
+	if _dq005_trace_enabled():
+		var fallback_reason := "empty_clip_set" if _attack_clips.is_empty() else "sample_missing"
+		var fallback_key := "%d|%s|%s" % [swing_index, Form1AttackClips.direction_for_facing(facing), fallback_reason]
+		if fallback_key != _dq005_last_fallback_trace:
+			_dq005_last_fallback_trace = fallback_key
+			print("[DQ005 PATH] PROCEDURAL_FALLBACK action=%d direction=%s reason=%s loaded_clips=%d form=%d" % [swing_index, Form1AttackClips.direction_for_facing(facing), fallback_reason, _attack_clips.size(), _form])
 	# If an optional partial clip does not cover this action or direction,
 	# restore the regular walk source before applying the shader fallback.
 	if _approved_attack_active:
