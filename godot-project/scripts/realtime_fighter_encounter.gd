@@ -6,7 +6,7 @@ signal fight_ended(outcome: String)
 signal actor_killed(actor: RefCounted)
 
 const BattleUnit = preload("res://scripts/battle_unit.gd")
-const GUARD_MITIGATION = BattleUnit.GUARD_MITIGATION
+const CombatDamage = preload("res://scripts/combat_damage.gd")
 
 var fighter_hp: int = 3
 var fighter_max_hp: int = 3
@@ -20,8 +20,7 @@ var flee_duration := 1.5  # provisional parameter, not a design lock
 var actor_kill_opt_in := false  # explicit opt-in only; companions never qualify
 
 static func calculate_damage(raw: float, defense: int, incoming_mult: float = 1.0, no_armor: bool = false) -> int:
-    var soak := 0.0 if no_armor else float(defense) * GUARD_MITIGATION
-    return maxi(1, int(round(raw * incoming_mult - soak)))
+    return CombatDamage.dealt(raw, defense, incoming_mult, no_armor)
 
 func begin(field_enemy_id: String, level: int, vigor: int = 3, vigor_max: int = 3) -> void:
     enemy = BattleUnit.new(field_enemy_id, level)
