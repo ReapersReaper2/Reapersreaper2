@@ -36,7 +36,7 @@ func _probe() -> void:
 	root.add_child(actor)
 	var mgr = actor.sprites
 	print("[FORM1_PACKED] actor_clips=" + str(mgr._attack_clips.size()))
-	var ok := mgr._attack_clips.size() == 20
+	var ok: bool = mgr._attack_clips.size() == 20
 	for facing in [Vector2.DOWN, Vector2.UP, Vector2.LEFT, Vector2.RIGHT]:
 		for action in [1, 2, 3, 4, 5]:
 			mgr.set_mortal_sword_pose(action, 0.5, facing)
