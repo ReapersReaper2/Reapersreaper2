@@ -1,0 +1,27 @@
+name: DQ005 packed-resource diagnostic
+on:
+  push:
+    branches: [fix/dq005-form1-packed-runtime]
+  workflow_dispatch:
+jobs:
+  packed-probe:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Restore critical art pointers
+        run: sh .github/scripts/recover_critical_art.sh
+      - name: Import textures as Godot 4.3 does for APK
+        run: godot --headless --path godot-project --import --quit
+      - name: Export packed Android resources
+        run: |
+          godot --headless --path godot-project --export-pack "Android Dev" /tmp/dq005-export.pck
+          test -s /tmp/dq005-export.pck
+          ls -lh /tmp/dq005-export.pck
+      - name: Diagnose actual packed resource loader (expected to fail until fixed)
+        run: |
+          DQ005_PROBE=1 godot --headless --main-pack /tmp/dq005-export.pck --script res://scripts/dq005_packed_probe.gd

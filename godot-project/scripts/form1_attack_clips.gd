@@ -9,6 +9,15 @@ const ACTIONS := ["windup", "slash", "rslash", "heavy", "recover"]
 const DIRECTIONS := ["front", "back", "side-l", "side-r"]
 const ALLOWED_ROOT := "res://sprites/mollosar/approved/"
 
+static func _trace(message: String) -> void:
+	if OS.has_environment("DQ005_PROBE"):
+		print("[DQ005 FORM1] " + message)
+
+static func _reject(message: String) -> Dictionary:
+	_trace("REJECT " + message)
+	return {}
+
+
 static func direction_for_facing(facing: Vector2) -> String:
 	if absf(facing.x) > absf(facing.y):
 		return "side-r" if facing.x > 0.0 else "side-l"
@@ -39,53 +48,60 @@ static func _valid_pivot(pivot: Variant) -> bool:
 ## The loader is injected to keep every validation unit-testable.
 static func validate_manifest(source: Dictionary, loader: Callable) -> Dictionary:
 	if str(source.get("status", "")) != "APPROVED":
-		return {}
+		return _reject("manifest status=" + str(source.get("status", "")))
 	var strips: Variant = source.get("strips", {})
 	if not (strips is Dictionary):
-		return {}
+		return _reject("strips is not Dictionary; type=" + type_string(typeof(strips)))
 	var loaded: Dictionary = {}
 	for key in required_keys():
 		var entry: Variant = strips.get(key, {})
 		if not (entry is Dictionary):
-			return {}
+			return _reject(key + ": missing dictionary entry")
 		var path := str(entry.get("texture", ""))
 		if not path.begins_with(ALLOWED_ROOT) or not path.ends_with(".png") or \
 				path.contains("..") or not loader.is_valid():
-			return {}
+			return _reject(key + ": forbidden texture path or invalid loader " + path)
 		var frames := int(entry.get("frames", -1))
 		if frames != (8 if key.begins_with("heavy_") else 6):
-			return {}
+			return _reject(key + ": frame count=" + str(frames))
 		var cell: Variant = entry.get("cell", [])
 		# JSON parses numbers as floats; whole-array equality rejects a
 		# valid on-disk [384,384] even though synthetic integer fixtures pass.
 		if not (cell is Array) or cell.size() != 2 or \
 				float(cell[0]) != float(CELL) or float(cell[1]) != float(CELL):
-			return {}
+			return _reject(key + ": cell mismatch=" + str(cell))
 		var pivot: Variant = entry.get("pivot", [])
 		if not _valid_pivot(pivot):
-			return {}
+			return _reject(key + ": bad pivot=" + str(pivot))
 		if absf(float(entry.get("fps", 0.0)) - 12.0) > 0.01:
-			return {}
+			return _reject(key + ": bad fps=" + str(entry.get("fps", null)))
 		var tex: Variant = loader.call(path)
+		_trace(key + ": loader returned " + ("null" if tex == null else str(tex.get_class())) + " from " + path)
 		if not (tex is Texture2D):
-			return {}
+			return _reject(key + ": loader did not return Texture2D")
 		var texture: Texture2D = tex as Texture2D
 		if texture.get_width() != frames * CELL or texture.get_height() != CELL:
-			return {}
+			return _reject(key + ": loaded texture geometry=" + str(texture.get_size()))
 		loaded[key] = {
 			"texture": texture,
 			"frames": frames,
 			"pivot": Vector2(float(pivot[0]), float(pivot[1])),
 		}
+	_trace("validate success count=" + str(loaded.size()))
 	return loaded
 
 
 static func load_approved(loader: Callable) -> Dictionary:
+	_trace("manifest exists=" + str(FileAccess.file_exists(MANIFEST_PATH)) + " resource_exists=" + str(ResourceLoader.exists(MANIFEST_PATH)))
 	if not FileAccess.file_exists(MANIFEST_PATH):
-		return {}
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
+		return _reject("manifest not found by FileAccess")
+	var raw_json := FileAccess.get_file_as_string(MANIFEST_PATH)
+	_trace("manifest byte_count=" + str(raw_json.to_utf8_buffer().size()))
+	var parsed: Variant = JSON.parse_string(raw_json)
+	_trace("JSON parsed type=" + type_string(typeof(parsed)))
 	if not (parsed is Dictionary):
 		push_error("[FORM1 ATTACK] Approved manifest is not valid JSON object")
+		_trace("REJECT invalid JSON")
 		return {}
 	var clips := validate_manifest(parsed, loader)
 	if clips.is_empty():

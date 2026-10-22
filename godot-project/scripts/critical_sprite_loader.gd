@@ -10,19 +10,28 @@ static func load_texture(path: String) -> Texture2D:
 	if _cache.has(path):
 		return _cache[path]
 	var result: Texture2D = null
+	var trace := OS.has_environment("DQ005_PROBE") and path.begins_with("res://sprites/mollosar/approved/")
+	if trace:
+		print("[DQ005 TEXTURE] path=" + path + " FileAccess.exists=" + str(FileAccess.file_exists(path)) + " ResourceLoader.exists=" + str(ResourceLoader.exists(path)))
 	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
 		var image := Image.load_from_file(path)
 		if image != null and not image.is_empty():
 			result = ImageTexture.create_from_image(image)
+			if trace:
+				print("[DQ005 TEXTURE] raw ImageTexture=" + str(result.get_size()))
 	# Android export packs imported PNGs as engine Texture2D resources.
 	# Raw FileAccess paths can disappear from the APK even when .ctex is
 	# present. Use the importer before falling back to exact bundled bytes.
 	if result == null and ResourceLoader.exists(path):
 		var imported := ResourceLoader.load(path)
+		if trace:
+			print("[DQ005 TEXTURE] ResourceLoader.load returned=" + ("null" if imported == null else imported.get_class()))
 		if imported is Texture2D:
 			result = imported as Texture2D
 	if result == null:
 		result = _load_bundled(path)
+	if trace:
+		print("[DQ005 TEXTURE] final result=" + ("null" if result == null else result.get_class() + " " + str(result.get_size())))
 	if result != null:
 		_cache[path] = result
 	return result
