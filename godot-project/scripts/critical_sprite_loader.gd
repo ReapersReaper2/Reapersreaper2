@@ -10,7 +10,7 @@ static func load_texture(path: String) -> Texture2D:
 	if _cache.has(path):
 		return _cache[path]
 	var result: Texture2D = null
-	var trace := OS.has_environment("DQ005_PROBE") and path.begins_with("res://sprites/mollosar/approved/")
+	var trace := (OS.has_environment("DQ005_PROBE") or bool(ProjectSettings.get_setting("dq005_probe/enabled", false))) and path.begins_with("res://sprites/mollosar/approved/")
 	if trace:
 		print("[DQ005 TEXTURE] path=" + path + " FileAccess.exists=" + str(FileAccess.file_exists(path)) + " ResourceLoader.exists=" + str(ResourceLoader.exists(path)))
 	if FileAccess.file_exists(path) and not is_lfs_pointer(path):

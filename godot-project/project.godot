@@ -89,8 +89,13 @@ renderer/rendering_method.mobile="gl_compatibility"
 
 [autoload]
 
+DQ005AndroidProbe="*res://scripts/dq005_android_probe.gd"
+
 SaveSystem="*res://scripts/save_system.gd"
 GameState="*res://scripts/game_state.gd"
 Achievements="*res://scripts/achievements.gd"
 Stats="*res://scripts/stats.gd"
 BattleManager="*res://scripts/battle_manager.gd"
+
+[dq005_probe]
+enabled=true

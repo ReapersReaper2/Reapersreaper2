@@ -1,0 +1,72 @@
+name: DQ005 Android emulator diagnostics
+on:
+  push:
+    branches: [fix/dq005-form1-packed-runtime]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Android template setup
+        run: |
+          mkdir -p "$HOME/.local/share/godot/export_templates" "$HOME/.config/godot"
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+          sh .github/scripts/recover_critical_art.sh
+      - name: Enable diagnostic-only x86_64 emulator architecture
+        run: |
+          sed -i 's/architectures\/arm64-v8a=true/architectures\/arm64-v8a=false/' godot-project/export_presets.cfg
+          sed -i 's/architectures\/armeabi-v7a=true/architectures\/armeabi-v7a=false/' godot-project/export_presets.cfg
+          sed -i 's/architectures\/x86_64=false/architectures\/x86_64=true/' godot-project/export_presets.cfg
+          godot --headless --path godot-project --import --quit
+      - name: Export diagnostic emulator APK
+        run: |
+          mkdir -p out
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/out/dq005-android-diagnostic.apk"
+          test -s out/dq005-android-diagnostic.apk
+          sha256sum out/dq005-android-diagnostic.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dq005-emulator-apk
+          path: out/dq005-android-diagnostic.apk
+          retention-days: 3
+  emulator:
+    needs: apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dq005-emulator-apk
+          path: out
+      - name: Start x86_64 emulator and log actual Android resource path
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: |
+            adb install -r out/dq005-android-diagnostic.apk
+            adb logcat -c
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 12
+            adb logcat -d > out/android-logcat.txt
+            grep -E '\[DQ005 (ANDROID|FORM1|TEXTURE)\]|CriticalSpriteLoader' out/android-logcat.txt | tee out/android-diagnostics.txt || true
+            grep -q '\[DQ005 ANDROID\] VERDICT=' out/android-logcat.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-android-logcat
+          path: out/*txt
+          if-no-files-found: warn

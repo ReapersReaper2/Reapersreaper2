@@ -10,7 +10,7 @@ const DIRECTIONS := ["front", "back", "side-l", "side-r"]
 const ALLOWED_ROOT := "res://sprites/mollosar/approved/"
 
 static func _trace(message: String) -> void:
-	if OS.has_environment("DQ005_PROBE"):
+	if OS.has_environment("DQ005_PROBE") or bool(ProjectSettings.get_setting("dq005_probe/enabled", false)):
 		print("[DQ005 FORM1] " + message)
 
 static func _reject(message: String) -> Dictionary:
