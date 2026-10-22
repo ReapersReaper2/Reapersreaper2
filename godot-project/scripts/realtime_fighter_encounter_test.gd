@@ -2,6 +2,7 @@ extends SceneTree
 ## Run: godot --headless --path godot-project -s res://scripts/realtime_fighter_encounter_test.gd
 const Fight = preload("res://scripts/realtime_fighter_encounter.gd")
 var failures := 0
+const FOE := {"actor_id":"field_enemy_01", "side":"hostile", "role":"fighter", "stats":{"vigor":3, "might":2, "guard":0, "speed":5}}
 
 func _initialize() -> void:
     call_deferred("_run")
@@ -15,7 +16,7 @@ func check(condition: bool, label: String) -> void:
 
 func _run() -> void:
     var win = Fight.new()
-    win.begin("snapling", 1)
+    win.begin(FOE)
     check(win.active and win.fighter_hp == 3 and win.fighter_max_hp == 3, "fighter vigor maps to 3 HP")
     for i in range(100):
         win.fighter_strike(1000.0)
@@ -23,18 +24,23 @@ func _run() -> void:
             break
     check(win.outcome == "victory" and not win.active, "victory tears down")
     var lose = Fight.new()
-    lose.begin("snapling", 1)
+    lose.begin(FOE)
     lose.enemy_strike(1000.0)
     check(lose.outcome == "defeat" and lose.fighter_hp == 0, "Mollosar defeat")
     var flee = Fight.new()
-    flee.begin("snapling", 1)
+    flee.begin(FOE)
+    check(is_equal_approx(flee.flee_duration, 2.0), "REV 3 wild flee is two seconds")
     flee.advance_flee(0.7, true)
     flee.enemy_strike(1.0)
     check(flee.active and is_zero_approx(flee.flee_progress), "hit interrupts flee channel")
     flee.advance_flee(flee.flee_duration + 0.1, true)
     check(flee.outcome == "fled", "completed flee resolves")
+    var no_flee = Fight.new()
+    no_flee.begin(FOE, 3, 3, false)
+    no_flee.advance_flee(3.0, true)
+    check(no_flee.active and no_flee.outcome == "", "non-wild fights cannot flee")
     var forced = Fight.new()
-    forced.begin("snapling", 1)
+    forced.begin(FOE)
     forced.force_teardown()
     check(forced.outcome == "forced_teardown" and not forced.active, "forced teardown")
     forced.force_teardown()
