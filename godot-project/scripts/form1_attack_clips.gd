@@ -37,53 +37,60 @@ static func _valid_pivot(pivot: Variant) -> bool:
 ## A complete sheet set is atomic. If heavy_back (or any other strip)
 ## is absent, do not load a mix of production and provisional animation.
 ## The loader is injected to keep every validation unit-testable.
+static func _reject(reason: String) -> Dictionary:
+	print("[FORM1_DIAG] REJECT " + reason)
+	return {}
+
+
 static func validate_manifest(source: Dictionary, loader: Callable) -> Dictionary:
 	if str(source.get("status", "")) != "APPROVED":
-		return {}
+		return _reject("manifest status " + str(source.get("status", "<missing>")))
 	var strips: Variant = source.get("strips", {})
 	if not (strips is Dictionary):
-		return {}
+		return _reject("strips is not Dictionary: " + type_string(typeof(strips)))
 	var loaded: Dictionary = {}
 	for key in required_keys():
 		var entry: Variant = strips.get(key, {})
 		if not (entry is Dictionary):
-			return {}
+			return _reject(key + " entry missing/not dictionary")
 		var path := str(entry.get("texture", ""))
 		if not path.begins_with(ALLOWED_ROOT) or not path.ends_with(".png") or \
 				path.contains("..") or not loader.is_valid():
-			return {}
+			return _reject(key + " invalid path/callable: " + path)
 		var frames := int(entry.get("frames", -1))
 		if frames != (8 if key.begins_with("heavy_") else 6):
-			return {}
+			return _reject(key + " frame count " + str(frames))
 		var cell: Variant = entry.get("cell", [])
-		# JSON parses numbers as floats; whole-array equality rejects a
-		# valid on-disk [384,384] even though synthetic integer fixtures pass.
 		if not (cell is Array) or cell.size() != 2 or \
 				float(cell[0]) != float(CELL) or float(cell[1]) != float(CELL):
-			return {}
+			return _reject(key + " invalid cell " + str(cell))
 		var pivot: Variant = entry.get("pivot", [])
 		if not _valid_pivot(pivot):
-			return {}
+			return _reject(key + " invalid pivot " + str(pivot))
 		if absf(float(entry.get("fps", 0.0)) - 12.0) > 0.01:
-			return {}
+			return _reject(key + " invalid fps " + str(entry.get("fps")))
 		var tex: Variant = loader.call(path)
 		if not (tex is Texture2D):
-			return {}
+			return _reject(key + " load_texture returned " + type_string(typeof(tex)) + " from " + path)
 		var texture: Texture2D = tex as Texture2D
+		print("[FORM1_DIAG] texture " + key + " class=" + texture.get_class() +
+			" size=" + str(texture.get_width()) + "x" + str(texture.get_height()))
 		if texture.get_width() != frames * CELL or texture.get_height() != CELL:
-			return {}
+			return _reject(key + " bad texture dimensions")
 		loaded[key] = {
 			"texture": texture,
 			"frames": frames,
 			"pivot": Vector2(float(pivot[0]), float(pivot[1])),
 		}
+	print("[FORM1_DIAG] accepted " + str(loaded.size()) + " complete strips")
 	return loaded
-
 
 static func load_approved(loader: Callable) -> Dictionary:
 	if not FileAccess.file_exists(MANIFEST_PATH):
-		return {}
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
+		return _reject("manifest missing: " + MANIFEST_PATH)
+	var body := FileAccess.get_file_as_string(MANIFEST_PATH)
+	print("[FORM1_DIAG] manifest found; bytes=" + str(body.length()))
+	var parsed: Variant = JSON.parse_string(body)
 	if not (parsed is Dictionary):
 		push_error("[FORM1 ATTACK] Approved manifest is not valid JSON object")
 		return {}
