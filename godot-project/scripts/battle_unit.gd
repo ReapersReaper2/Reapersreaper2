@@ -16,6 +16,7 @@ extends RefCounted
 
 const CreatureData = preload("res://scripts/creature_data.gd")
 const CreatureAI = preload("res://scripts/creature_ai.gd")
+const CombatDamage = preload("res://scripts/combat_damage.gd")
 
 const LEVEL_GROWTH := 0.08        # +8% per level over level 1 (tuning placeholder)
 const GUARD_MITIGATION := 0.6     # each point of defense soaks 0.6 raw damage
@@ -219,8 +220,7 @@ func use_ability(ability_id: String, target: RefCounted, ctx: Dictionary = {}) -
 
 
 func take_damage(raw_amount: float, _attacker: RefCounted) -> int:
-	var soak := 0.0 if mod_no_armor else float(effective_defense()) * GUARD_MITIGATION
-	var dealt := maxi(1, int(round(raw_amount * mod_incoming_mult - soak)))
+	var dealt: int = CombatDamage.dealt(raw_amount, effective_defense(), mod_incoming_mult, mod_no_armor)
 	hp = maxi(0, hp - dealt)
 	if hp <= 0:
 		fainted = true
