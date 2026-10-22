@@ -1,0 +1,40 @@
+name: Form 1 packed export reproduction
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - "godot-project/scripts/form1_attack_clips.gd"
+      - "godot-project/scripts/critical_sprite_loader.gd"
+      - "godot-project/scripts/form1_packaged_probe.gd"
+      - ".github/workflows/form1-packed-probe.yml"
+  workflow_dispatch:
+
+jobs:
+  packed-probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Download Godot 4.3 stable
+        run: |
+          curl -fsSL -o godot.zip https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          unzip -q godot.zip
+          chmod +x Godot_v4.3-stable_linux.x86_64
+      - name: Import and export actual resource pack
+        run: |
+          set -eu
+          ./Godot_v4.3-stable_linux.x86_64 --headless --path godot-project --import --quit
+          mkdir -p "$RUNNER_TEMP/dq005-packed"
+          ./Godot_v4.3-stable_linux.x86_64 --headless --path godot-project --export-pack "Android Dev" "$RUNNER_TEMP/dq005-packed/game.pck"
+          test -s "$RUNNER_TEMP/dq005-packed/game.pck"
+      - name: Run probe with ONLY exported resources
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP/dq005-packed"
+          "$GITHUB_WORKSPACE/Godot_v4.3-stable_linux.x86_64" --headless --main-pack game.pck --script res://scripts/form1_packaged_probe.gd
+      - name: Run real runtime test with ONLY exported resources
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP/dq005-packed"
+          "$GITHUB_WORKSPACE/Godot_v4.3-stable_linux.x86_64" --headless --main-pack game.pck --script res://scripts/form1_animation_runtime_test.gd

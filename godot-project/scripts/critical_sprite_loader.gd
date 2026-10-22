@@ -7,6 +7,9 @@ const CRITICAL_DIR := "res://assets/critical_sprites/"
 static var _cache: Dictionary = {}
 
 static func load_texture(path: String) -> Texture2D:
+	if path.begins_with("res://sprites/mollosar/approved/"):
+		print("[FORM1_DIAG] load_texture " + path + " raw=" + str(FileAccess.file_exists(path)) +
+			" resource=" + str(ResourceLoader.exists(path)) + " cached=" + str(_cache.has(path)))
 	if _cache.has(path):
 		return _cache[path]
 	var result: Texture2D = null
@@ -23,6 +26,8 @@ static func load_texture(path: String) -> Texture2D:
 			result = imported as Texture2D
 	if result == null:
 		result = _load_bundled(path)
+	if path.begins_with("res://sprites/mollosar/approved/"):
+		print("[FORM1_DIAG] loader result " + path + " = " + ("null" if result == null else (result.get_class() + " " + str(result.get_size()))))
 	if result != null:
 		_cache[path] = result
 	return result
