@@ -14,7 +14,7 @@ func _check_packed() -> void:
 		var p = JSON.parse_string(json)
 		print("[DQ005 PACKED] bytes=" + str(json.to_utf8_buffer().size()) + " status=" + str(p.get("status", "?") if p is Dictionary else "INVALID"))
 	for file in ["form1_windup_front.png", "form1_slash_front.png", "form1_heavy_back.png"]:
-		var tex_path := "res://sprites/mollosar/approved/" + file
+		var tex_path: String = "res://sprites/mollosar/approved/" + str(file)
 		print("[DQ005 PACKED] check " + file + " FileAccess=" + str(FileAccess.file_exists(tex_path)) + " ResourceLoader=" + str(ResourceLoader.exists(tex_path)))
 		var candidate = Loader.load_texture(tex_path)
 		print("[DQ005 PACKED] check result=" + ("NULL" if candidate == null else str(candidate.get_class()) + " " + str(candidate.get_size())))
