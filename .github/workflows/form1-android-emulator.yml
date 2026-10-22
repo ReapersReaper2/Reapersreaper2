@@ -1,0 +1,84 @@
+name: DQ-005 Android runtime smoke
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - "godot-project/scripts/form1_attack_clips.gd"
+      - "godot-project/scripts/critical_sprite_loader.gd"
+      - "godot-project/scripts/mollosar_sprites.gd"
+      - ".github/workflows/form1-android-emulator.yml"
+  workflow_dispatch:
+
+jobs:
+  build-emulator-debug:
+    runs-on: ubuntu-24.04
+    container:
+      image: barichello/godot-ci:4.3
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Restore export toolchain
+        run: |
+          set -eu
+          mkdir -p "$HOME/.local/share/godot/export_templates" "$HOME/.config/godot"
+          cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/"
+          cp /root/.config/godot/editor_settings-4.3.tres "$HOME/.config/godot/"
+          sh .github/scripts/recover_critical_art.sh
+      - name: Build x86_64-compatible Android diagnostic APK
+        run: |
+          set -eu
+          sed -i '/\[preset.3.options\]/,$s|^architectures/x86_64=false$|architectures/x86_64=true|' godot-project/export_presets.cfg
+          grep -F 'architectures/x86_64=true' godot-project/export_presets.cfg
+          godot --headless --path godot-project --import --quit
+          mkdir -p "$GITHUB_WORKSPACE/emulator-build"
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/emulator-build/form1-emulator.apk"
+          test -s emulator-build/form1-emulator.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: form1-android-emulator-debug
+          path: emulator-build/form1-emulator.apk
+          retention-days: 3
+
+  android-device-probe:
+    needs: build-emulator-debug
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: form1-android-emulator-debug
+          path: emulator-build
+      - name: Open bridge and sample one sword attack on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: pixel_2
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            set -eu
+            adb install -r emulator-build/form1-emulator.apk
+            adb logcat -c
+            adb shell am start -n com.reapersreaper2.reapersreaper.dev/org.godotengine.godot.GodotApp
+            sleep 16
+            adb shell input keyevent 66
+            sleep 12
+            adb shell input keyevent 62
+            sleep 4
+            adb logcat -d -v brief > "$GITHUB_WORKSPACE/form1-android-logcat.txt"
+            grep -E 'FORM1_DIAG|FORM1_ANDROID|Godot|godot' "$GITHUB_WORKSPACE/form1-android-logcat.txt" | tail -90 || true
+            grep -q '\[FORM1_ANDROID\] _load_form form=1 clips=20 OS=Android' "$GITHUB_WORKSPACE/form1-android-logcat.txt" || {
+              echo "DQ-005 FAIL: the actual Android build did not confirm 20 loaded clips at bridge startup"
+              exit 1
+            }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: form1-android-logcat
+          path: form1-android-logcat.txt
+          if-no-files-found: ignore
+          retention-days: 3

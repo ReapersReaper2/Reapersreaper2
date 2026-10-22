@@ -168,6 +168,7 @@ func _load_form(form: int) -> void:
 	# If the manifest is absent, keep the working procedural fallback.
 	if form == 1:
 		_attack_clips = Form1AttackClips.load_approved(Callable(CriticalSpriteLoader, "load_texture"))
+		print("[FORM1_ANDROID] _load_form form=1 clips=" + str(_attack_clips.size()) + " OS=" + OS.get_name())
 	# Form changes always release Form 1's shader before loading other art.
 	var canon_textures: Dictionary = {}
 	# The entire canon outfit is activated only when all four sides decode.
@@ -592,6 +593,8 @@ func _release_mortal_blade() -> void:
 ## armor and smear on the SAME transparent frame. No detached weapon mesh.
 func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) -> bool:
 	if _attack_clips.is_empty():
+		if not _approved_attack_active and fraction < 0.1:
+			print("[FORM1_ANDROID] Fallback active swing=" + str(swing_index) + " manifest_file=" + str(FileAccess.file_exists(Form1AttackClips.MANIFEST_PATH)))
 		return false
 	if not _approved_attack_active or _approved_action != swing_index:
 		_approved_action = swing_index
@@ -609,6 +612,8 @@ func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) ->
 	_sprite.scale = Vector2(SPRITE_SCALE, SPRITE_SCALE)
 	_sprite.position = Vector2(0.0,
 		Form1AttackClips.grounded_sprite_y(sample["pivot"], SPRITE_SCALE))
+	if not _approved_attack_active and fraction < 0.1:
+		print("[FORM1_ANDROID] Painted attack action=" + str(swing_index) + " clip_total=" + str(_attack_clips.size()))
 	_approved_attack_active = true
 	_mortal_pose_active = false
 	return true
