@@ -22,8 +22,35 @@ const INTRO_LINES: Array = [
 ]
 
 
+const CriticalSpriteLoader = preload("res://scripts/critical_sprite_loader.gd")
+const ShoreFallback = preload("res://scripts/prologue_black_sand_fallback.gd")
+const SHORE_PATH := "res://assets/backgrounds/p3_black_sand_shore_1280x720.png"
+
+# A Git LFS pointer in the Android pack cannot be used as a Texture2D.
+# Check the actual decoded art before the player's first view of the shore.
+func _ensure_shore_art() -> void:
+	var background := get_node_or_null("Background") as Sprite2D
+	if background == null:
+		return
+	var texture: Texture2D = CriticalSpriteLoader.load_texture(SHORE_PATH)
+	if texture != null and texture.get_width() >= 640 and texture.get_height() >= 360:
+		background.texture = texture
+		_fit_background()
+		return
+	background.texture = null
+	if get_node_or_null("ShoreFallback") != null:
+		return
+	var fallback := ShoreFallback.new()
+	fallback.name = "ShoreFallback"
+	fallback.z_as_relative = false
+	fallback.z_index = -100
+	add_child(fallback)
+	print("[P3] Missing source shore PNG in packed build; rendering temporary dark-shore fallback")
+
+
 func _ready() -> void:
 	super._ready()
+	_ensure_shore_art()
 	# Defer so the room (and dialogue box) is fully settled first.
 	_play_intro.call_deferred()
 
