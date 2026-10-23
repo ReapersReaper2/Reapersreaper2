@@ -45,9 +45,18 @@ jobs:
         run: |
           set -eux
           wget -q https://github.com/godot-mobile-plugins/godot-share/releases/download/v5.0/SharePlugin-Android-v5.0.zip -O /tmp/SharePlugin-Android-v5.0.zip
-          unzip -q /tmp/SharePlugin-Android-v5.0.zip -d godot-project
+          unzip -q /tmp/SharePlugin-Android-v5.0.zip -d /tmp/share-plugin
+          test -f /tmp/share-plugin/SharePlugin-root/addons/SharePlugin/plugin.cfg
+          mkdir -p godot-project/addons
+          cp -a /tmp/share-plugin/SharePlugin-root/addons/SharePlugin godot-project/addons/SharePlugin
           test -f godot-project/addons/SharePlugin/plugin.cfg
           test -f godot-project/addons/SharePlugin/Share.gd
+          # v5.0 archives may carry only the release AAR; use that prebuilt AAR for debug export if needed.
+          if [ ! -f godot-project/addons/SharePlugin/bin/debug/SharePlugin-debug.aar ]; then
+            mkdir -p godot-project/addons/SharePlugin/bin/debug
+            cp godot-project/addons/SharePlugin/bin/release/SharePlugin-release.aar godot-project/addons/SharePlugin/bin/debug/SharePlugin-debug.aar
+          fi
+          test -s godot-project/addons/SharePlugin/bin/debug/SharePlugin-debug.aar
           find godot-project/addons/SharePlugin -maxdepth 4 -type f | sort
       - name: Install Godot Android Gradle template
         run: |
