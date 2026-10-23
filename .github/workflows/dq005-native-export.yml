@@ -4,7 +4,7 @@ on:
     branches: [chatgpt/dq005-selfcontained-trace]
   workflow_dispatch:
   pull_request:
-    branches: [develop]
+    branches: [develop, chatgpt/dq005-selfcontained-trace]
 permissions:
   contents: read
 jobs:
