@@ -1,6 +1,7 @@
 extends SceneTree
 ## Run: godot --headless --path godot-project -s res://scripts/realtime_fighter_encounter_test.gd
 const Fight = preload("res://scripts/realtime_fighter_encounter.gd")
+const Record = preload("res://scripts/battle_encounter_record.gd")
 var failures := 0
 const FOE := {"actor_id":"field_enemy_01", "side":"hostile", "role":"fighter", "stats":{"vigor":3, "might":2, "guard":0, "speed":5}}
 
@@ -15,6 +16,10 @@ func check(condition: bool, label: String) -> void:
         push_error("[DQ003] FAIL " + label)
 
 func _run() -> void:
+    var record = Record.make_record("fighter_duel", Record.make_combatant("mollosar", "player", "fighter", {"vigor":3,"might":5,"guard":0,"speed":5}), FOE, [])
+    check(record["mode"] == "fighter_duel" and record["combatants"].size() == 2 and record["enemy_creatures"].is_empty(), "explicit fighter-only encounter record")
+    var pending = Record.manager_pending(record, "test_room", Vector2.ZERO)
+    check(pending.has("enemy_fighter_stats") and pending.has("enemy_creatures") and pending.has("mode"), "pending preserves mode, fighter stats, and enemy_creatures")
     var win = Fight.new()
     win.begin(FOE)
     check(win.active and win.fighter_hp == 3 and win.fighter_max_hp == 3, "fighter vigor maps to 3 HP")
