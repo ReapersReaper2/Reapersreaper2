@@ -1,0 +1,62 @@
+name: DQ005 Native Android Trace Export Candidate
+on:
+  push:
+    branches: [chatgpt/dq005-selfcontained-trace]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  packed-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Fetch Godot 4.3 and its matching templates
+        run: |
+          set -eux
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip -O /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.3-stable_linux.x86_64
+          echo /tmp/godot >> "$GITHUB_PATH"
+          ln -s /tmp/godot/Godot_v4.3-stable_linux.x86_64 /tmp/godot/godot
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O /tmp/templates.tpz
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
+          unzip -q /tmp/templates.tpz -d /tmp/export
+          cp -a /tmp/export/templates/. "$HOME/.local/share/godot/export_templates/4.3.stable/"
+      - name: Build Android v2 native share AAR
+        uses: gradle/actions/setup-gradle@v4
+      - name: Compile native plugin
+        run: |
+          set -eux
+          cd android/dq005-share
+          gradle :plugin:assembleDebug --no-daemon
+          mkdir -p ../../godot-project/addons/dq005_share
+          cp plugin/build/outputs/aar/plugin-debug.aar ../../godot-project/addons/dq005_share/DQ005Share.aar
+      - name: Install Godot Android Gradle template
+        run: |
+          set -eux
+          mkdir -p godot-project/android
+          unzip -q "$HOME/.local/share/godot/export_templates/4.3.stable/android_source.zip" -d godot-project/android
+          test -f godot-project/android/build/build.gradle
+      - name: Import and export packed debug APK
+        run: |
+          set -eux
+          sh .github/scripts/recover_critical_art.sh
+          godot --headless --path godot-project --import --quit
+          mkdir -p dist
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/dq005-native-trace.apk"
+          test -s dist/dq005-native-trace.apk
+          unzip -l dist/dq005-native-trace.apk | grep -E 'classes.*dex|AndroidManifest.xml'
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: dq005-native-trace-apk
+          path: dist/dq005-native-trace.apk
+          retention-days: 7
