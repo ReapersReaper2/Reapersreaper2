@@ -6,6 +6,7 @@ var _done: bool = false
 
 func _ready() -> void:
 	if OS.has_feature("android"):
+		_add_trace_button()
 		print("[DQ005_ANDROID] boot platform=", OS.get_name())
 		call_deferred("_enter_bridge")
 
@@ -68,3 +69,21 @@ func _process(delta: float) -> void:
 	print("[DQ005_ANDROID] real bridge swing painted=", all_painted,
 		" unique_frames=", seen.size(), " clips=", clip_count)
 	print("[DQ005_ANDROID] RESULT ", "PASS" if all_painted and seen.size() > 1 and clip_count == 20 else "FAIL")
+
+func _add_trace_button() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 110
+	layer.name = "DQ005ExportOverlay"
+	add_child(layer)
+	var button := Button.new()
+	button.text = "SEND DQ005 TRACE"
+	button.custom_minimum_size = Vector2(205, 64)
+	button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	button.position = Vector2(1020, 10)
+	layer.add_child(button)
+	button.pressed.connect(_share_trace)
+
+func _share_trace() -> void:
+	DQ005Trace.record("EXPORT_TAP", "operator requested handoff")
+	if not DQ005Trace.export_via_email():
+		DQ005Trace.record("EXPORT_FAILED", "no mail handler or trace file")
