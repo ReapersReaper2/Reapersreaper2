@@ -232,13 +232,13 @@ func _read_config() -> void:
 	# stats, or enemy_creatures[] while old callers are being migrated.
 	var source_cfg := _cfg.duplicate(true)
 	_cfg = {
-		"mode": str(sourcesource_cfg.get("mode", "creature_duel")),
-		"player_fighter": sourcesource_cfg.get("player_fighter", {}),
-		"enemy_fighter": sourcesource_cfg.get("enemy_fighter", {}),
-		"enemy_fighter_stats": sourcesource_cfg.get("enemy_fighter_stats", {}),
-		"enemy_creatures": sourcesource_cfg.get("enemy_creatures", []),
-		"combatants": sourcesource_cfg.get("combatants", []),
-		"player_creature_id": str(sourcesource_cfg.get("player_creature_id", "snapling")),
+		"mode": str(source_cfg.get("mode", "creature_duel")),
+		"player_fighter": source_cfg.get("player_fighter", {}),
+		"enemy_fighter": source_cfg.get("enemy_fighter", {}),
+		"enemy_fighter_stats": source_cfg.get("enemy_fighter_stats", {}),
+		"enemy_creatures": source_cfg.get("enemy_creatures", []),
+		"combatants": source_cfg.get("combatants", []),
+		"player_creature_id": str(source_cfg.get("player_creature_id", "snapling")),
 		"player_level": int(source_cfg.get("player_level", 5)),
 		"player_hp": int(source_cfg.get("player_hp", -1)),
 		"player_party_index": int(source_cfg.get("player_party_index", -1)),
