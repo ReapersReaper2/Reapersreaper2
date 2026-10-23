@@ -25,8 +25,8 @@ func _run() -> void:
 	room.add_child(bg)
 	
 	# We intentionally avoid the full room's _ready by calling on a small
-	# handmade Node2D fixture? The room _ready() may still run here, but
-	# this fixture does not need a Player and the fallback is idempotent.
+	# handmade Node2D fixture? The fixture has no player or game-tree side effects;
+	# exercising _ensure_shore_art directly keeps the test isolated.
 	room._ensure_shore_art()
 	var texture := CriticalSpriteLoader.load_texture(P3_PATH)
 	var valid_art := texture != null and texture.get_width() >= 640 and texture.get_height() >= 360
@@ -34,9 +34,9 @@ func _run() -> void:
 		_check(bg.texture != null, "valid imported art must take priority")
 		_check(room.get_node_or_null("ShoreFallback") == null, "never overlay valid art")
 	else:
-		var fallback = room.get_node_or_null("ShoreFallback")
+		var fallback: Node = room.get_node_or_null("ShoreFallback")
 		_check(fallback != null, "missing shore art must render a fallback")
-		_check(fallback is ShoreFallback, "fallback must use deterministic dark-shore renderer")
+		_check(fallback.get_script() == ShoreFallback, "fallback must use deterministic dark-shore renderer")
 		_check(fallback.z_index < bg.z_index, "fallback belongs behind actors and HUD")
 		_check(bg.texture == null, "broken LFS stub must not remain visible")
 	room._ensure_shore_art()
