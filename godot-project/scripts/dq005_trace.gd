@@ -33,6 +33,12 @@ func trace_text() -> String:
 		_file.flush()
 	return FileAccess.get_file_as_string(PATH)
 
+func export_native() -> bool:
+	var body := trace_text()
+	if body.is_empty() or not Engine.has_singleton("DQ005Share"):
+		return false
+	return bool(Engine.get_singleton("DQ005Share").shareTrace(body))
+
 func export_via_email() -> bool:
 	# Temporary mobile handoff: launches installed mail handler, no ADB/desktop.
 	# Mailto URI length can be limited: intentionally NOT a production-grade full-file export.
