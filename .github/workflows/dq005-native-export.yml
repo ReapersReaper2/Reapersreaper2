@@ -19,7 +19,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Ensure Android SDK packages\n        run: |\n          yes | sdkmanager --licenses >/dev/null || true\n          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Ensure Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - name: Fetch Godot 4.3 and its matching templates
         run: |
           set -eux
