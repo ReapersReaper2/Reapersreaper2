@@ -30,6 +30,7 @@ extends Node2D
 ## scene_changer and set fast_mode=true in tests to skip tween waits.
 
 const BattleUnit = preload("res://scripts/battle_unit.gd")
+const EncounterRecord = preload("res://scripts/battle_encounter_record.gd")
 const CreatureData = preload("res://scripts/creature_data.gd")
 const CreatureAI = preload("res://scripts/creature_ai.gd")
 const PartyScript = preload("res://scripts/party.gd")
@@ -226,27 +227,37 @@ func _read_config() -> void:
 			_cfg = battle_manager.get("pending")
 		else:
 			_cfg = {}
+	# Keep the Rev 3 encounter contract intact alongside legacy creature
+	# fields. Never normalize away mode, actor identity/side/role, fighter
+	# stats, or enemy_creatures[] while old callers are being migrated.
+	var source_cfg := _cfg.duplicate(true)
 	_cfg = {
-		"player_creature_id": str(_cfg.get("player_creature_id", "snapling")),
-		"player_level": int(_cfg.get("player_level", 5)),
-		"player_hp": int(_cfg.get("player_hp", -1)),
-		"player_party_index": int(_cfg.get("player_party_index", -1)),
-		"enemy_creature_id": str(_cfg.get("enemy_creature_id", "bellowscap")),
-		"enemy_level": int(_cfg.get("enemy_level", 3)),
-		"is_boss": bool(_cfg.get("is_boss", false)),
-		"is_trainer": bool(_cfg.get("is_trainer", false)),
-		"trainer_id": str(_cfg.get("trainer_id", "")),
-		"trainer_name": str(_cfg.get("trainer_name", "")),
-		"enemy_roster": _cfg.get("enemy_roster", []),
-		"reward_credits": int(_cfg.get("reward_credits", 0)),
-		"post_dialogue": _cfg.get("post_dialogue", []),
-		"post_dialogue_loss": _cfg.get("post_dialogue_loss", []),
-		"spare_on_loss": bool(_cfg.get("spare_on_loss", false)),
-		"rivalry_flag": str(_cfg.get("rivalry_flag", "")),
-		"victory_flag": str(_cfg.get("victory_flag", "")),
-		"daily_hunt": bool(_cfg.get("daily_hunt", false)),
-		"return_room": str(_cfg.get("return_room", "p1")),
-		"return_pos": _cfg.get("return_pos", Vector2.ZERO),
+		"mode": str(sourcesource_cfg.get("mode", "creature_duel")),
+		"player_fighter": sourcesource_cfg.get("player_fighter", {}),
+		"enemy_fighter": sourcesource_cfg.get("enemy_fighter", {}),
+		"enemy_fighter_stats": sourcesource_cfg.get("enemy_fighter_stats", {}),
+		"enemy_creatures": sourcesource_cfg.get("enemy_creatures", []),
+		"combatants": sourcesource_cfg.get("combatants", []),
+		"player_creature_id": str(sourcesource_cfg.get("player_creature_id", "snapling")),
+		"player_level": int(source_cfg.get("player_level", 5)),
+		"player_hp": int(source_cfg.get("player_hp", -1)),
+		"player_party_index": int(source_cfg.get("player_party_index", -1)),
+		"enemy_creature_id": str(source_cfg.get("enemy_creature_id", "bellowscap")),
+		"enemy_level": int(source_cfg.get("enemy_level", 3)),
+		"is_boss": bool(source_cfg.get("is_boss", false)),
+		"is_trainer": bool(source_cfg.get("is_trainer", false)),
+		"trainer_id": str(source_cfg.get("trainer_id", "")),
+		"trainer_name": str(source_cfg.get("trainer_name", "")),
+		"enemy_roster": source_cfg.get("enemy_roster", []),
+		"reward_credits": int(source_cfg.get("reward_credits", 0)),
+		"post_dialogue": source_cfg.get("post_dialogue", []),
+		"post_dialogue_loss": source_cfg.get("post_dialogue_loss", []),
+		"spare_on_loss": bool(source_cfg.get("spare_on_loss", false)),
+		"rivalry_flag": str(source_cfg.get("rivalry_flag", "")),
+		"victory_flag": str(source_cfg.get("victory_flag", "")),
+		"daily_hunt": bool(source_cfg.get("daily_hunt", false)),
+		"return_room": str(source_cfg.get("return_room", "p1")),
+		"return_pos": source_cfg.get("return_pos", Vector2.ZERO),
 	}
 	_is_boss = bool(_cfg["is_boss"])
 	_is_trainer = bool(_cfg["is_trainer"])
