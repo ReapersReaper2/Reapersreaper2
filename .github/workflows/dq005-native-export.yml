@@ -57,7 +57,7 @@ jobs:
           set -eux
           mkdir -p godot-project/android
           unzip -q "$HOME/.local/share/godot/export_templates/4.3.stable/android_source.zip" -d godot-project/android
-          test -f godot-project/android/build/build.gradle
+          test -f godot-project/android/build.gradle
       - name: Import and export packed debug APK
         run: |
           set -eux
