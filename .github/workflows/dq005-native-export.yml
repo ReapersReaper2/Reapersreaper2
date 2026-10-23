@@ -64,3 +64,39 @@ jobs:
           name: dq005-native-trace-apk
           path: dist/dq005-native-trace.apk
           retention-days: 7
+
+  packed-emulator-trace:
+    needs: packed-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dq005-native-trace-apk
+          path: dist
+      - name: Run the packed game and extract the actual private file
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            set -eux
+            adb install -r dist/dq005-native-trace.apk
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 20
+            adb shell run-as com.reapersreaper2.reapersreaper.dev ls files
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            test -s dq005-packed-trace.txt
+            grep 'STRIP_' dq005-packed-trace.txt
+            grep 'SOURCE' dq005-packed-trace.txt
+            grep 'BRIDGE_SWING' dq005-packed-trace.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-packed-trace
+          path: dq005-packed-trace.txt
+          retention-days: 7
