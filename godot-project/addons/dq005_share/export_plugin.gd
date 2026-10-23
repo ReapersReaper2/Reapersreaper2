@@ -12,5 +12,7 @@ class ShareExport extends EditorExportPlugin:
 		return "DQ005Share"
 	func _supports_platform(platform: EditorExportPlatform) -> bool:
 		return platform is EditorExportPlatformAndroid
-	func _get_android_dependencies(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:\n\t\treturn PackedStringArray(["androidx.core:core:1.12.0"])\n\tfunc _get_android_libraries(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
+	func _get_android_dependencies(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
+		return PackedStringArray(["androidx.core:core:1.12.0"])
+	func _get_android_libraries(platform: EditorExportPlatform, debug: bool) -> PackedStringArray:
 		return PackedStringArray(["res://addons/dq005_share/DQ005Share.aar"])
