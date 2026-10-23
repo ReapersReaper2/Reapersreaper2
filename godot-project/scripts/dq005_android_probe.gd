@@ -37,6 +37,7 @@ func _process(delta: float) -> void:
 		return
 	var clip_count: int = mgr._attack_clips.size()
 	print("[DQ005_ANDROID] bridge form=", mgr._form, " clips=", clip_count)
+	DQ005Trace.record("BRIDGE_READY", "form=" + str(mgr._form) + " clips=" + str(clip_count))
 
 	# Exercise the EXACT Player -> rig -> sprite-manager path used by a swing,
 	# not just Form1AttackClips.sample() or a direct _try_approved_attack() call.
@@ -66,6 +67,7 @@ func _process(delta: float) -> void:
 				" material=", mgr._sprite.material,
 				" blade_visible=", mgr._mortal_blade_sprite.visible)
 			all_painted = false
+	DQ005Trace.record("BRIDGE_SWING", "painted=" + str(all_painted) + " unique_frames=" + str(seen.size()) + " clips=" + str(clip_count))
 	print("[DQ005_ANDROID] real bridge swing painted=", all_painted,
 		" unique_frames=", seen.size(), " clips=", clip_count)
 	print("[DQ005_ANDROID] RESULT ", "PASS" if all_painted and seen.size() > 1 and clip_count == 20 else "FAIL")
@@ -78,8 +80,12 @@ func _add_trace_button() -> void:
 	var button := Button.new()
 	button.text = "EXPORT TRACE FILE"
 	button.custom_minimum_size = Vector2(205, 64)
-	button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	button.position = Vector2(1020, 10)
+	button.anchor_left = 1.0
+	button.anchor_right = 1.0
+	button.offset_left = -250.0
+	button.offset_right = -12.0
+	button.offset_top = 12.0
+	button.offset_bottom = 76.0
 	layer.add_child(button)
 	button.pressed.connect(_share_trace)
 
