@@ -99,4 +99,4 @@ DQ005AndroidProbe="*res://scripts/dq005_android_probe.gd"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dq005_share/plugin.cfg")
+enabled=PackedStringArray("res://addons/SharePlugin/plugin.cfg")

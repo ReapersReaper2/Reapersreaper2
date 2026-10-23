@@ -4,7 +4,7 @@ on:
     branches: [chatgpt/dq005-selfcontained-trace]
   workflow_dispatch:
   pull_request:
-    branches: [develop, chatgpt/dq005-selfcontained-trace]
+    branches: [develop]
 permissions:
   contents: read
 jobs:
@@ -41,17 +41,14 @@ jobs:
           mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
           unzip -q /tmp/templates.tpz -d /tmp/export
           cp -a /tmp/export/templates/. "$HOME/.local/share/godot/export_templates/4.3.stable/"
-      - name: Build Android v2 native share AAR
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.5'
-      - name: Compile native plugin
+      - name: Install prebuilt Godot Share Plugin v5.0 (4.5-built compatibility trial)
         run: |
           set -eux
-          cd android/dq005-share
-          gradle :plugin:assembleDebug --no-daemon
-          mkdir -p ../../godot-project/addons/dq005_share
-          cp plugin/build/outputs/aar/plugin-debug.aar ../../godot-project/addons/dq005_share/DQ005Share.aar
+          wget -q https://github.com/godot-mobile-plugins/godot-share/releases/download/v5.0/SharePlugin-Android-v5.0.zip -O /tmp/SharePlugin-Android-v5.0.zip
+          unzip -q /tmp/SharePlugin-Android-v5.0.zip -d godot-project
+          test -f godot-project/addons/SharePlugin/plugin.cfg
+          test -f godot-project/addons/SharePlugin/Share.gd
+          find godot-project/addons/SharePlugin -maxdepth 4 -type f | sort
       - name: Install Godot Android Gradle template
         run: |
           set -eux
@@ -96,15 +93,30 @@ jobs:
           disable-animations: true
           script: |
             set -eux
+            adb wait-for-device
+            for n in $(seq 1 90); do
+              [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && break
+              sleep 2
+            done
             adb install -r dist/dq005-native-trace.apk
             adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
             sleep 20
             adb shell run-as com.reapersreaper2.reapersreaper.dev ls files
+            adb shell wm size
+            SCREEN_SIZE="$(adb shell wm size | awk -F': ' '/Physical size/ {print $2}' | tr -d '\\r' | tail -n 1)"
+            WIDTH="${SCREEN_SIZE%x*}"
+            HEIGHT="${SCREEN_SIZE#*x}"
+            adb shell input tap $((WIDTH * 90 / 100)) $((HEIGHT * 5 / 100))
+            sleep 6
+            adb shell dumpsys activity activities | grep -Ei 'ChooserActivity|ResolverActivity|IntentResolver'
             adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
             test -s dq005-packed-trace.txt
-            grep 'STRIP_' dq005-packed-trace.txt
+            grep 'BRIDGE_READY' dq005-packed-trace.txt
             grep 'SOURCE' dq005-packed-trace.txt
             grep 'BRIDGE_SWING' dq005-packed-trace.txt
+            grep 'SHARE_READY' dq005-packed-trace.txt
+            grep 'SHARE_REQUEST' dq005-packed-trace.txt
+            grep -E 'mime=text/plain bytes=[1-9][0-9]*' dq005-packed-trace.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
