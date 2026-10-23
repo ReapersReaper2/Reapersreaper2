@@ -3,6 +3,8 @@ on:
   push:
     branches: [chatgpt/dq005-selfcontained-trace]
   workflow_dispatch:
+  pull_request:
+    branches: [develop]
 permissions:
   contents: read
 jobs:
