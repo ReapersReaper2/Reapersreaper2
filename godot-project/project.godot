@@ -96,4 +96,7 @@ Stats="*res://scripts/stats.gd"
 BattleManager="*res://scripts/battle_manager.gd"
 DQ005Trace="*res://scripts/dq005_trace.gd"
 DQ005AndroidProbe="*res://scripts/dq005_android_probe.gd"
-\n[editor_plugins]\n\nenabled=PackedStringArray("res://addons/dq005_share/plugin.cfg")\n
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/dq005_share/plugin.cfg")
