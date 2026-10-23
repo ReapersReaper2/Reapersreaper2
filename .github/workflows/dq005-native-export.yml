@@ -107,7 +107,7 @@ jobs:
             WIDTH="${SCREEN_SIZE%x*}"
             HEIGHT="${SCREEN_SIZE#*x}"
             adb shell input tap $((WIDTH * 90 / 100)) $((HEIGHT * 5 / 100))
-            sleep 4
+            sleep 6
             adb shell dumpsys activity activities | grep -Ei 'ChooserActivity|ResolverActivity|IntentResolver'
             adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
             test -s dq005-packed-trace.txt
