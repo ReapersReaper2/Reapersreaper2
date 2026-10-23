@@ -14,6 +14,9 @@ on:
       - ".github/workflows/android-dev-apk.yml"
       - "godot-project/sprites/mollosar/approved/**"
       - "godot-project/scripts/form1_animation_runtime_test.gd"
+      - "godot-project/scripts/room_p3.gd"
+      - "godot-project/scripts/prologue_black_sand_fallback.gd"
+      - "godot-project/scripts/p3_shore_backdrop_test.gd"
   workflow_dispatch:
 
 permissions:
