@@ -22,6 +22,7 @@ const PartyScript := preload("res://scripts/party.gd")
 const TrainerData := preload("res://scripts/trainer_data.gd")
 const SeamlessBattleScript := preload("res://scripts/seamless_battle.gd")
 const TwitchScript := preload("res://scripts/twitch.gd")
+const EncounterRecord := preload("res://scripts/battle_encounter_record.gd")
 
 var pending: Dictionary = {}
 ## Msec timestamp of the last battle resolution (stamped in clear_pending).
@@ -83,6 +84,20 @@ func start_daily_hunt_battle(creature_id: String, level: int, is_boss: bool, ret
 	if is_boss:
 		return _launch_staged()
 	return _launch_wild_seamless()
+
+
+## Rev 3 §7 producer for explicitly modeled fighter encounters. This
+## prepares the complete pending record but intentionally does not launch
+## until battle.gd's real-time fighter_duel reader/controller is available.
+func prepare_fighter_duel(record: Dictionary, return_room: String, return_pos: Vector2, victory_flag: String = "") -> bool:
+	if not pending.is_empty():
+		push_warning("BattleManager: battle already pending, refusing fighter duel")
+		return false
+	if str(record.get("mode", "")) != "fighter_duel":
+		push_warning("BattleManager: prepare_fighter_duel requires fighter_duel mode")
+		return false
+	pending = EncounterRecord.manager_pending(record, return_room, return_pos, victory_flag)
+	return true
 
 
 func _launch_wild_seamless() -> bool:
