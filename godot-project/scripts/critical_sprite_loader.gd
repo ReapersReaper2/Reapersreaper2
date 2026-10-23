@@ -6,29 +6,40 @@ extends RefCounted
 const CRITICAL_DIR := "res://assets/critical_sprites/"
 static var _cache: Dictionary = {}
 
+static func _trace(step: String, detail: String) -> void:
+	if Engine.get_main_loop() is SceneTree:
+		var logger = (Engine.get_main_loop() as SceneTree).root.get_node_or_null("DQ005Trace")
+		if logger != null:
+			logger.record(step, detail)
+
+
 static func load_texture(path: String) -> Texture2D:
 	if _cache.has(path):
+		_trace("TEXTURE_CACHE", "path=" + path)
 		return _cache[path]
 	var result: Texture2D = null
-	print("[DQ005] sprite source ", path, " raw_exists=", FileAccess.file_exists(path), " resource_exists=", ResourceLoader.exists(path))
+	_trace("TEXTURE_BEGIN", "path=" + path + " raw=" + str(FileAccess.file_exists(path)) + " resource=" + str(ResourceLoader.exists(path)))
 	if FileAccess.file_exists(path) and not is_lfs_pointer(path):
 		var image := Image.load_from_file(path)
 		if image != null and not image.is_empty():
 			result = ImageTexture.create_from_image(image)
-			print("[DQ005] raw Image.load_from_file OK ", path)
+			_trace("TEXTURE_RAW_ACCEPT", "path=" + path)
 	# Android export packs imported PNGs as engine Texture2D resources.
 	# Raw FileAccess paths can disappear from the APK even when .ctex is
 	# present. Use the importer before falling back to exact bundled bytes.
 	if result == null and ResourceLoader.exists(path):
 		var imported := ResourceLoader.load(path)
-		print("[DQ005] ResourceLoader.load returned ", imported.get_class() if imported != null else "<null>", " for ", path)
+		_trace("TEXTURE_RESOURCE", "path=" + path + " class=" + (imported.get_class() if imported != null else "<null>"))
 		if imported is Texture2D:
 			result = imported as Texture2D
 	if result == null:
-		print("[DQ005] ResourceLoader route yielded null: ", path, " ; trying bundled fallback")
+		_trace("TEXTURE_BUNDLE_TRY", "path=" + path)
 		result = _load_bundled(path)
 	if result != null:
+		_trace("TEXTURE_ACCEPT", "path=" + path + " dimensions=" + str(result.get_width()) + "x" + str(result.get_height()))
 		_cache[path] = result
+	else:
+		_trace("TEXTURE_REJECT", "path=" + path + " raw/import/bundle all failed")
 	return result
 
 ## Check presence without emitting missing-art errors. Use this ONLY for
