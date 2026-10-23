@@ -27,7 +27,7 @@ public class DQ005SharePlugin extends GodotPlugin {
                 output.write(fullTrace.getBytes(StandardCharsets.UTF_8));
                 output.getFD().sync();
             }
-            Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
+            Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".dq005share", file);
             Intent send = new Intent(Intent.ACTION_SEND);
             send.setType("text/plain");
             send.putExtra(Intent.EXTRA_STREAM, uri);
