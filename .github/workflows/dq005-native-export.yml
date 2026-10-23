@@ -59,7 +59,7 @@ jobs:
           unzip -q "$HOME/.local/share/godot/export_templates/4.3.stable/android_source.zip" -d godot-project/android/build
           test -f godot-project/android/build/build.gradle
           # Godot 4.3 validates this marker before accepting a project-local Gradle template.
-          printf '%s\n' '4.3.stable.official.77dcf97d8' > godot-project/android/.build_version
+          printf '%s\n' '4.3.stable' > godot-project/android/.build_version
       - name: Import and export packed debug APK
         run: |
           set -eux
