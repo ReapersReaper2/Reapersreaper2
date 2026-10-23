@@ -76,7 +76,7 @@ func _add_trace_button() -> void:
 	layer.name = "DQ005ExportOverlay"
 	add_child(layer)
 	var button := Button.new()
-	button.text = "EMAIL TRACE (TEXT)"
+	button.text = "EXPORT TRACE FILE"
 	button.custom_minimum_size = Vector2(205, 64)
 	button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	button.position = Vector2(1020, 10)
@@ -85,5 +85,7 @@ func _add_trace_button() -> void:
 
 func _share_trace() -> void:
 	DQ005Trace.record("EXPORT_TAP", "operator requested handoff")
-	if not DQ005Trace.export_via_email():
-		DQ005Trace.record("EXPORT_FAILED", "no mail handler or trace file")
+	if not DQ005Trace.export_native():
+		DQ005Trace.record("EXPORT_FALLBACK", "native file sharing unavailable; email transport")
+		if not DQ005Trace.export_via_email():
+			DQ005Trace.record("EXPORT_FAILED", "no mail handler or trace file")
