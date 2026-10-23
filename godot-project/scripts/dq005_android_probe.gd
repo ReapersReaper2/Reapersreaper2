@@ -76,7 +76,7 @@ func _add_trace_button() -> void:
 	layer.name = "DQ005ExportOverlay"
 	add_child(layer)
 	var button := Button.new()
-	button.text = "SEND DQ005 TRACE"
+	button.text = "EMAIL TRACE (TEXT)"
 	button.custom_minimum_size = Vector2(205, 64)
 	button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	button.position = Vector2(1020, 10)
