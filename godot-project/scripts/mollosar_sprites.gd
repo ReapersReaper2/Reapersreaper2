@@ -656,6 +656,10 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 
 
 func _reset_mortal_sword_pose() -> void:
+	if _approved_attack_active or _mortal_pose_active:
+		var tracer = get_node_or_null("/root/DQ005Trace")
+		if tracer != null:
+			tracer.source(0, "base/reset", "approved_was=" + str(_approved_attack_active) + " fallback_was=" + str(_mortal_pose_active))
 	_release_mortal_blade()
 	if _approved_attack_active:
 		_approved_attack_active = false
