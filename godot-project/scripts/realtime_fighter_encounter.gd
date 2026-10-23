@@ -6,12 +6,15 @@ signal fight_ended(outcome: String)
 signal actor_killed(actor: RefCounted)
 
 const CombatDamage = preload("res://scripts/combat_damage.gd")
+const EncounterRecord = preload("res://scripts/battle_encounter_record.gd")
 
 var fighter_hp: int = 3
 var fighter_max_hp: int = 3
 var fighter_attack: int = 5
 var fighter_defense: int = 0
+var player: Dictionary = {}
 var enemy: Dictionary = {}
+var encounter_record: Dictionary = {}
 var encounter_mode := "fighter_duel"
 var allow_flee := true
 var active := false
@@ -24,7 +27,8 @@ static func calculate_damage(raw: float, defense: int, incoming_mult: float = 1.
     return CombatDamage.dealt(raw, defense, incoming_mult, no_armor)
 
 func begin(enemy_fighter: Dictionary, vigor: int = 3, vigor_max: int = 3, wild_fight: bool = true) -> void:
-    # Explicit fighter stats/identity, never a fabricated creature BattleUnit.
+    # Explicit participant identity and role; no creature is fabricated.
+    player = EncounterRecord.make_combatant("mollosar", "player", "fighter", {"vigor": vigor_max, "might": fighter_attack, "guard": fighter_defense, "speed": 5})
     assert(str(enemy_fighter.get("role", "")) == "fighter")
     assert(str(enemy_fighter.get("side", "")) == "hostile")
     assert(str(enemy_fighter.get("actor_id", "")) != "")
@@ -33,6 +37,8 @@ func begin(enemy_fighter: Dictionary, vigor: int = 3, vigor_max: int = 3, wild_f
         assert(stats.has(stat))
     enemy = enemy_fighter.duplicate(true)
     enemy["hp"] = maxi(1, int(stats["vigor"]))
+    encounter_record = EncounterRecord.make_record("fighter_duel", player, enemy, [])
+    encounter_mode = str(encounter_record["mode"])
     allow_flee = wild_fight
     fighter_max_hp = maxi(1, vigor_max)
     fighter_hp = clampi(vigor, 0, fighter_max_hp)
