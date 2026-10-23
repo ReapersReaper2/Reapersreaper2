@@ -615,14 +615,22 @@ func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) ->
 
 
 func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -> void:
+	var logger = get_node_or_null("/root/DQ005Trace")
 	if _sprite == null:
 		return
 	if _form != 1 or not has_sprites() or swing_index == 0:
+		if logger != null:
+			logger.source(0, "idle/base", "form=" + str(_form))
 		_reset_mortal_sword_pose()
 		return
 	if _try_approved_attack(swing_index, fraction, facing):
+		if logger != null:
+			logger.source(swing_index, "approved", "frame=" + str(_sprite.region_rect.position.x / 384.0) + " dir=" + str(facing))
 		return
 	# If an optional partial clip does not cover this action or direction,
+	if logger != null:
+		logger.source(swing_index, "fallback", "clips=" + str(_attack_clips.size()) + " dir=" + str(facing))
+	#
 	# restore the regular walk source before applying the shader fallback.
 	if _approved_attack_active:
 		_reset_mortal_sword_pose()
