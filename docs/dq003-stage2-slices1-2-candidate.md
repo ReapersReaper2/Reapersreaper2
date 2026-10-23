@@ -56,3 +56,26 @@ Source: liaison-provided REALTIME-BATTLE-SPEC-REV3-20261022.md (Hush BOT-014). N
 | §15–16 rulings | prior gaps | director confirmations supersede proposals; WILT values stay tuning only |
 
 **Audit finding:** Slice 1 contract mapping has been re-reviewed against Rev3 at current develop and documented; implementation closure remains incomplete, especially manager/reader, actor registry, solo readiness and damage adapters. Slice 2 is still an isolated model and must NOT be represented as one playable field fight. No changes merged. No Android packed-build verification.
+
+
+## 2026-10-23 Director B follow-up — Rev 3 corrections
+
+Branch remains `candidate/dq003-stage2-slices1-2-20261022`; no merge.
+
+- Opponent correction: fighter-only prototype now requires a hostile `role=fighter` actor with explicit actor_id and authored vigor/might/guard/speed. It does not instantiate BattleUnit as the opponent. Current regression fixture is a test-authored field-fighter record, **not yet wired to an existing in-game field enemy**.
+- Flee correction: channel is exactly 2.0 seconds and enabled only for wild encounters. Companion switching's 1.5-second vulnerability is separate and not implemented here.
+- Contract shape: added `battle_encounter_record.gd` for modes `fighter_duel`, `companion_skirmish`, `side_duel`, `peaceful`; participant records carry `actor_id`, `side`, `role`, optional species identity and authored stats. Manager pending shape carries `mode`, `player_fighter`, `enemy_fighter`, `enemy_fighter_stats`, `enemy_creatures[]`, `combatants[]`, return fields and victory flag. Core constructs a fighter_duel with Mollosar and one hostile fighter; no enemy companions.
+- Tests added for the record/pending shape, 2-second wild flee, and no flee outside wild mode. Tests are written but not run.
+
+## Slice 2 §13 acceptance status (2026-10-23)
+
+| Required scenario | Model coverage | Live game evidence |
+|---|---|---|
+| Victory | regression case authored | NOT VERIFIED |
+| Mollosar HP zero / defeat | regression case authored | NOT VERIFIED |
+| Wild flee channel interrupted by enemy hit | regression case authored | NOT VERIFIED |
+| Forced teardown | idempotent model case authored | NOT VERIFIED |
+
+**Current status remains PARTIAL.** These are state-model tests only. The prototype is not yet launched by BattleManager in the same room, does not bridge the existing field enemy's `take_hit` contact through the shared damage adapter, does not use the shared combat clock/attack phases, and has no live scene lifecycle/pending cleanup. Thus it does not yet satisfy the complete slice-2 acceptance scope. Slice 1's contract record shape is now explicit in a helper, but BattleManager producers and battle config readers have not yet been migrated together; do not call slice 1 implementation complete.
+
+Blockers: no Godot runtime/Android exporter is available through the current connector session, so no executable regression logs, playable four-outcome proof, or packed APK evidence can be supplied. No animation playback code was changed. Wrath BOT-003 review and director merge authorization remain required. Capture flow remains untouched; WILT values remain tuning parameters.
