@@ -4,7 +4,7 @@ const PATH := "user://dq005-trace.txt"
 var _file: FileAccess
 var _last_source := ""
 var _swing_id := 0
-var _last_action := -1
+var _last_action := 0
 
 func _ready() -> void:
 	_file = FileAccess.open(PATH, FileAccess.WRITE)
