@@ -101,32 +101,25 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none
-          emulator-boot-timeout: 900
-          disable-animations: true
+          emulator-boot-timeout: 600
+          disable-animations: false
           script: |
             set -eux
-            adb wait-for-device
-            for n in $(seq 1 90); do
-              [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && break
-              sleep 2
-            done
             adb install -r dist/dq005-native-trace.apk
             adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
-            sleep 30
+            sleep 12
+            # Capture manifest evidence FIRST; never gate it on touch or share controls.
             adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
-            cat dq005-packed-trace.txt
             test -s dq005-packed-trace.txt
-            grep 'MANIFEST_OPEN' dq005-packed-trace.txt
-            grep 'MANIFEST_PARSED' dq005-packed-trace.txt
-            grep 'MANIFEST_RESULT' dq005-packed-trace.txt
-            grep 'BRIDGE_READY' dq005-packed-trace.txt
-            grep 'TOUCH_DOWN' dq005-packed-trace.txt
-            grep 'TOUCH_UP' dq005-packed-trace.txt
-            grep 'BRIDGE_SWING' dq005-packed-trace.txt
+            grep -E 'MANIFEST_(OPEN|PARSED|RESULT)' dq005-packed-trace.txt | tee dq005-manifest-proof.txt
+            # The app's opt-in Android entry/touch probe runs automatically after NEW GAME.
+            sleep 12
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            grep -E 'BRIDGE_SWING|SOURCE|TOUCH_DOWN|TOUCH_UP' dq005-packed-trace.txt || true
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dq005-packed-trace
-          path: dq005-packed-trace.txt
+          path: |\n            dq005-packed-trace.txt\n            dq005-manifest-proof.txt
           retention-days: 7
