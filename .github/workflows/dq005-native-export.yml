@@ -121,5 +121,7 @@ jobs:
         if: always()
         with:
           name: dq005-packed-trace
-          path: |\n            dq005-packed-trace.txt\n            dq005-manifest-proof.txt
+          path: |
+            dq005-packed-trace.txt
+            dq005-manifest-proof.txt
           retention-days: 7
