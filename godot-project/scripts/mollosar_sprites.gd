@@ -365,7 +365,7 @@ static func mortal_attack_pose(index: int, fraction: float) -> Vector2:
 
 ## Advance animation. Call from the player's _physics_process with the
 ## current facing vector and whether the player is actually moving.
-func tick(delta: float, facing: Vector2, moving: bool) -> void:
+func tick(delta: float, facing: Vector2, moving: bool, gait_rate: float = 1.0) -> void:
 	refresh()
 	if not has_sprites():
 		return
@@ -407,7 +407,7 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		_walk_t = 0.0
 		_draw_frame()
 	if moving:
-		_walk_t += delta
+		_walk_t += delta * maxf(0.0, gait_rate)
 		var f := int(_walk_t * (CANON_WALK_FPS if _canon_walk_active else WALK_FPS))
 		if f != _frame:
 			_frame = f

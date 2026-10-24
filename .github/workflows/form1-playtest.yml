@@ -77,7 +77,7 @@ jobs:
           grep -F 'MANIFEST_ACCEPT clips=20' /tmp/dq005-real-entry-gate.log
           grep -F 'to=approved' /tmp/dq005-real-entry-gate.log
           godot --headless --path godot-project -s res://scripts/form1_animation_runtime_test.gd 2>&1 | tee /tmp/form1-runtime.log
-          grep -F 'PASS 943 checks' /tmp/form1-runtime.log
+          grep -F 'PASS 947 checks' /tmp/form1-runtime.log
           mkdir -p dist
           godot --headless --path godot-project --export-pack "Windows" "$GITHUB_WORKSPACE/dist/form1-playtest.pck"
           godot --headless --main-pack dist/form1-playtest.pck -s res://scripts/dq005_real_entry_touch_test.gd 2>&1 | tee /tmp/form1-packed.log
