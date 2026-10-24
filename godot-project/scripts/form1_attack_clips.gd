@@ -12,6 +12,7 @@ static func _trace(step: String, detail: String) -> void:
 			logger.record(step, detail)
 
 const MANIFEST_PATH := "res://sprites/mollosar/approved/form1_attack_manifest.json"
+const MANIFEST_RESOURCE_PATH := "res://sprites/mollosar/approved/form1_attack_manifest.tres"
 const ACTIONS := ["windup", "slash", "rslash", "heavy", "recover"]
 const DIRECTIONS := ["front", "back", "side-l", "side-r"]
 const ALLOWED_ROOT := "res://sprites/mollosar/approved/"
@@ -113,25 +114,29 @@ static func validate_manifest(source: Dictionary, loader: Callable) -> Dictionar
 
 
 static func load_approved(loader: Callable) -> Dictionary:
-	_trace("MANIFEST_OPEN", MANIFEST_PATH + " raw=" + str(FileAccess.file_exists(MANIFEST_PATH)) + " resource=" + str(ResourceLoader.exists(MANIFEST_PATH)))
-	print("[DQ005] manifest raw_exists=", FileAccess.file_exists(MANIFEST_PATH), " resource_exists=", ResourceLoader.exists(MANIFEST_PATH), " path=", MANIFEST_PATH)
-	if not FileAccess.file_exists(MANIFEST_PATH):
-		_trace("MANIFEST_REJECT", "step=raw_exists_false")
-		print("[DQ005] reject: manifest FileAccess.file_exists returned false")
+	# Keep the original JSON as the approval authority, but ship its exact
+	# contents inside an imported .tres. Raw .json files are not guaranteed
+	# to survive Android's packed export.
+	_trace("MANIFEST_OPEN", "resource=" + MANIFEST_RESOURCE_PATH + " resource_exists=" + str(ResourceLoader.exists(MANIFEST_RESOURCE_PATH)) + " original_raw_exists=" + str(FileAccess.file_exists(MANIFEST_PATH)))
+	var manifest: Resource = ResourceLoader.load(MANIFEST_RESOURCE_PATH, "", ResourceLoader.CACHE_MODE_IGNORE)
+	if manifest == null:
+		_trace("MANIFEST_REJECT", "step=resource_load_failed")
 		return {}
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
-	print("[DQ005] manifest bytes=", FileAccess.get_file_as_string(MANIFEST_PATH).length(), " parsed=", type_string(typeof(parsed)))
-	_trace("MANIFEST_PARSED", "type=" + type_string(typeof(parsed)))
+	var encoded: Variant = manifest.get("manifest_json")
+	if not (encoded is String) or (encoded as String).is_empty():
+		_trace("MANIFEST_REJECT", "step=resource_manifest_text_missing")
+		return {}
+	var parsed: Variant = JSON.parse_string(encoded)
+	_trace("MANIFEST_PARSED", "type=" + type_string(typeof(parsed)) + " bytes=" + str(encoded.length()))
 	if not (parsed is Dictionary):
 		_trace("MANIFEST_REJECT", "step=invalid_JSON_Dictionary")
-		push_error("[FORM1 ATTACK] Approved manifest is not valid JSON object")
+		push_error("[FORM1 ATTACK] Resource manifest does not contain an approved JSON Dictionary")
 		return {}
 	var clips := validate_manifest(parsed, loader)
 	_trace("MANIFEST_RESULT", "clips=" + str(clips.size()))
 	if clips.is_empty():
 		push_error("[FORM1 ATTACK] Incomplete/invalid approved attack set; retaining shader fallback")
 	return clips
-
 
 ## Combat drive's normalized progress, not animation FPS, owns the hit
 ## window. The art strip poses sample without ever looping mid-swing.
