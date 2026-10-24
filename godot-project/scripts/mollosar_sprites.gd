@@ -418,10 +418,12 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		if f2 != _frame:
 			_frame = f2
 			_draw_frame()
-	elif _frame != 0:
-		_frame = 0
+	else:
+		# Even a stop during frame zero starts the next step with a full dwell.
 		_walk_t = 0.0
-		_draw_frame()
+		if _frame != 0:
+			_frame = 0
+			_draw_frame()
 
 
 ## Form 1 does not have approved four-direction sword-attack sprite
@@ -593,9 +595,10 @@ func _release_mortal_blade() -> void:
 func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) -> bool:
 	if _attack_clips.is_empty():
 		return false
-	if not _approved_attack_active or _approved_action != swing_index:
-		_approved_action = swing_index
+	if not _approved_attack_active:
+		# One facing for the entire windup, strike and recovery sequence.
 		_approved_facing = facing if facing.length_squared() > 0.001 else Vector2.DOWN
+	_approved_action = swing_index
 	var sample: Dictionary = Form1AttackClips.sample(_attack_clips, swing_index, fraction, _approved_facing)
 	if sample.is_empty():
 		return false
