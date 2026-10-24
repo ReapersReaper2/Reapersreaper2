@@ -70,6 +70,7 @@ jobs:
         run: |
           set -eux
           sh .github/scripts/recover_critical_art.sh
+          printf '\n[reaper]\ndq005_auto_real_entry=true\n' >> godot-project/project.godot
           godot --headless --path godot-project --import --quit
           mkdir -p dist
           godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/dq005-native-trace.apk"
@@ -95,10 +96,12 @@ jobs:
       - name: Run the packed game and extract the actual private file
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 30
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none
+          emulator-boot-timeout: 900
           disable-animations: true
           script: |
             set -eux
@@ -109,23 +112,18 @@ jobs:
             done
             adb install -r dist/dq005-native-trace.apk
             adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
-            sleep 20
-            adb shell run-as com.reapersreaper2.reapersreaper.dev ls files
-            adb shell wm size
-            SCREEN_SIZE="$(adb shell wm size | awk -F': ' '/Physical size/ {print $2}' | tr -d '\\r' | tail -n 1)"
-            WIDTH="${SCREEN_SIZE%x*}"
-            HEIGHT="${SCREEN_SIZE#*x}"
-            adb shell input tap $((WIDTH * 90 / 100)) $((HEIGHT * 5 / 100))
-            sleep 6
-            adb shell dumpsys activity activities | grep -Ei 'ChooserActivity|ResolverActivity|IntentResolver'
+            sleep 30
             adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            cat dq005-packed-trace.txt
             test -s dq005-packed-trace.txt
+            grep 'MANIFEST_OPEN' dq005-packed-trace.txt
+            grep 'MANIFEST_PARSED' dq005-packed-trace.txt
+            grep 'MANIFEST_RESULT' dq005-packed-trace.txt
             grep 'BRIDGE_READY' dq005-packed-trace.txt
-            grep 'SOURCE' dq005-packed-trace.txt
+            grep 'TOUCH_DOWN' dq005-packed-trace.txt
+            grep 'TOUCH_UP' dq005-packed-trace.txt
             grep 'BRIDGE_SWING' dq005-packed-trace.txt
-            grep 'SHARE_READY' dq005-packed-trace.txt
-            grep 'SHARE_REQUEST' dq005-packed-trace.txt
-            grep -E 'mime=text/plain bytes=[1-9][0-9]*' dq005-packed-trace.txt
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:
