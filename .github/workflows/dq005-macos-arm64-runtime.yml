@@ -1,7 +1,5 @@
 name: DQ005 Final ARM64 Android Runtime
 on:
-  push:
-    branches: [chatgpt/dq005-selfcontained-trace]
   workflow_dispatch:
 permissions:
   contents: read
