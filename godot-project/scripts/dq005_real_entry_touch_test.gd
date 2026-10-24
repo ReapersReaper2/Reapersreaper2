@@ -73,7 +73,7 @@ func _run() -> void:
 		var state_value := int(rig.state)
 		if state_value == 1 or state_value == 2 or state_value == 4:
 			saw_approved = saw_approved or bool(sprites._approved_attack_active)
-			saw_fallback = saw_fallback or not bool(sprites._approved_attack_active)
+			saw_fallback = saw_fallback or bool(sprites._mortal_pose_active)
 			frames_seen[int(sprites._sprite.region_rect.position.x / 384.0)] = true
 	print("[DQ005_REAL_ENTRY] swings approved=", saw_approved, " fallback=", saw_fallback, " frame_count=", frames_seen.size(), " clips=", clips)
 	_check(clips == 20, "all 20 approved attack strips present")
