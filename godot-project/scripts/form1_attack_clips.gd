@@ -113,17 +113,21 @@ static func validate_manifest(source: Dictionary, loader: Callable) -> Dictionar
 
 
 static func load_approved(loader: Callable) -> Dictionary:
-	_trace("MANIFEST_OPEN", MANIFEST_PATH)
+	_trace("MANIFEST_OPEN", MANIFEST_PATH + " raw=" + str(FileAccess.file_exists(MANIFEST_PATH)) + " resource=" + str(ResourceLoader.exists(MANIFEST_PATH)))
 	print("[DQ005] manifest raw_exists=", FileAccess.file_exists(MANIFEST_PATH), " resource_exists=", ResourceLoader.exists(MANIFEST_PATH), " path=", MANIFEST_PATH)
 	if not FileAccess.file_exists(MANIFEST_PATH):
+		_trace("MANIFEST_REJECT", "step=raw_exists_false")
 		print("[DQ005] reject: manifest FileAccess.file_exists returned false")
 		return {}
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(MANIFEST_PATH))
 	print("[DQ005] manifest bytes=", FileAccess.get_file_as_string(MANIFEST_PATH).length(), " parsed=", type_string(typeof(parsed)))
+	_trace("MANIFEST_PARSED", "type=" + type_string(typeof(parsed)))
 	if not (parsed is Dictionary):
+		_trace("MANIFEST_REJECT", "step=invalid_JSON_Dictionary")
 		push_error("[FORM1 ATTACK] Approved manifest is not valid JSON object")
 		return {}
 	var clips := validate_manifest(parsed, loader)
+	_trace("MANIFEST_RESULT", "clips=" + str(clips.size()))
 	if clips.is_empty():
 		push_error("[FORM1 ATTACK] Incomplete/invalid approved attack set; retaining shader fallback")
 	return clips
