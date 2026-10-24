@@ -1,76 +1,79 @@
 extends Node
-## DQ-005 instrumented Android reproduction — diagnostic branch ONLY.
-## Does not change the loader, approval rules, attack timing or animations.
-var _elapsed: float = 0.0
-var _done: bool = false
+## DQ-005 packed-Android real-entry reproduction. Candidate diagnostics only.
+## CI opts in via project setting. Ordinary operator APKs do not auto-play.
+var _elapsed := 0.0
+var _started := false
+var _finished := false
 
 func _ready() -> void:
-	if OS.has_feature("android"):
-		_add_trace_button()
-		print("[DQ005_ANDROID] boot platform=", OS.get_name())
-		call_deferred("_enter_bridge")
+	if not OS.has_feature("android"):
+		return
+	_add_trace_button()
+	DQ005Trace.record("ANDROID_PROBE_READY", "auto_real_entry=" + str(_is_auto()))
+	if _is_auto():
+		call_deferred("_real_entry")
 
-func _enter_bridge() -> void:
-	print("[DQ005_ANDROID] switching to opening bridge")
-	var err := get_tree().change_scene_to_file("res://scenes/room_p1.tscn")
-	print("[DQ005_ANDROID] change_scene status=", err)
+func _is_auto() -> bool:
+	return bool(ProjectSettings.get_setting("reaper/dq005_auto_real_entry", false))
+
+func _real_entry() -> void:
+	var scene := get_tree().current_scene
+	DQ005Trace.record("ENTRY_START", "scene=" + str(scene.scene_file_path if scene != null else "<null>"))
+	if scene == null or not scene.has_method("activate"):
+		DQ005Trace.record("ENTRY_REJECT", "title scene or activate() not available")
+		return
+	scene.activate("new")
+	_started = true
 
 func _process(delta: float) -> void:
-	if not OS.has_feature("android") or _done:
+	if not _is_auto() or not _started or _finished:
 		return
 	_elapsed += delta
 	if _elapsed < 2.5:
 		return
-	var scene := get_tree().current_scene
-	if scene == null:
-		return
-	var player := scene.find_child("Player", true, false)
-	if player == null:
-		if _elapsed > 20.0:
-			_done = true
-			push_error("[DQ005_ANDROID] no Player node after 20 seconds")
-		return
-	_done = true
-	var mgr = player.get("sprites")
-	if mgr == null:
-		push_error("[DQ005_ANDROID] Player has no sprite manager")
-		return
-	var clip_count: int = mgr._attack_clips.size()
-	print("[DQ005_ANDROID] bridge form=", mgr._form, " clips=", clip_count)
-	DQ005Trace.record("BRIDGE_READY", "form=" + str(mgr._form) + " clips=" + str(clip_count))
+	_finished = true
+	call_deferred("_exercise_real_touch")
 
-	# Exercise the EXACT Player -> rig -> sprite-manager path used by a swing,
-	# not just Form1AttackClips.sample() or a direct _try_approved_attack() call.
-	player.facing = Vector2.DOWN
-	mgr.tick(0.0, Vector2.DOWN, true)
-	var rig = player.get_node_or_null("ScytheRig")
-	if rig == null:
-		push_error("[DQ005_ANDROID] Missing ScytheRig in bridge")
+func _exercise_real_touch() -> void:
+	var scene := get_tree().current_scene
+	var player := scene.find_child("Player", true, false) if scene != null else null
+	if player == null:
+		DQ005Trace.record("ENTRY_REJECT", "Player absent after NEW GAME")
 		return
-	rig._start_swing(1)
-	var seen: Dictionary = {}
-	var all_painted: bool = true
-	var sample_tex: Texture2D = mgr._attack_clips["slash_front"]["texture"] if clip_count == 20 else null
-	var frames: int = int(ceilf(rig._swing_duration() * 60.0))
-	for n in range(frames):
-		rig._swing_t = float(n) / 60.0
-		player._physics_process(0.0)
-		var frame_id := int(mgr._sprite.region_rect.position.x / 384.0)
-		seen[frame_id] = true
-		var is_painted: bool = (mgr._approved_attack_active and
-				mgr._sprite.texture == sample_tex and
-				mgr._sprite.material == null and
-				not mgr._mortal_blade_sprite.visible)
-		if not is_painted:
-			print("[DQ005_ANDROID] fallback at swing step=", n,
-				" frame=", frame_id, " approved=", mgr._approved_attack_active,
-				" material=", mgr._sprite.material,
-				" blade_visible=", mgr._mortal_blade_sprite.visible)
-			all_painted = false
-	DQ005Trace.record("BRIDGE_SWING", "painted=" + str(all_painted) + " unique_frames=" + str(seen.size()) + " clips=" + str(clip_count))
-	print("[DQ005_ANDROID] real bridge swing painted=", all_painted,
-		" unique_frames=", seen.size(), " clips=", clip_count)
-	print("[DQ005_ANDROID] RESULT ", "PASS" if all_painted and seen.size() > 1 and clip_count == 20 else "FAIL")
+	var mgr = player.get("sprites")
+	var rig = player.get_node_or_null("ScytheRig")
+	var controls = player.get_node_or_null("TouchControls")
+	var overlay = controls.get("overlay") if controls != null else null
+	if mgr == null or rig == null or overlay == null:
+		DQ005Trace.record("ENTRY_REJECT", "Player sprite/rig/MobileHUD missing")
+		return
+	var count: int = mgr._attack_clips.size()
+	DQ005Trace.record("BRIDGE_READY", "from_title=true form=%s clips=%s" % [mgr._form, count])
+	var point: Vector2 = overlay._attack_center()
+	var down := InputEventScreenTouch.new()
+	down.index = 0
+	down.position = point
+	down.pressed = true
+	overlay._input(down)
+	await get_tree().process_frame
+	DQ005Trace.record("TOUCH_DOWN", "charging=" + str(rig.is_charging()))
+	var up := InputEventScreenTouch.new()
+	up.index = 0
+	up.position = point
+	up.pressed = false
+	overlay._input(up)
+	await get_tree().process_frame
+	DQ005Trace.record("TOUCH_UP", "state=" + str(rig.state))
+	var painted := false
+	var fallback := false
+	var frames := {}
+	for n in range(40):
+		await get_tree().physics_frame
+		if int(rig.state) in [1, 2, 4]:
+			painted = painted or bool(mgr._approved_attack_active)
+			fallback = fallback or bool(mgr._mortal_pose_active)
+			frames[int(mgr._sprite.region_rect.position.x / 384.0)] = true
+	DQ005Trace.record("BRIDGE_SWING", "real_entry=true approved=%s fallback=%s unique_frames=%s clips=%s" % [painted, fallback, frames.size(), count])
 
 func _add_trace_button() -> void:
 	var layer := CanvasLayer.new()
@@ -92,6 +95,6 @@ func _add_trace_button() -> void:
 func _share_trace() -> void:
 	DQ005Trace.record("EXPORT_TAP", "operator requested handoff")
 	if not DQ005Trace.export_native():
-		DQ005Trace.record("EXPORT_FALLBACK", "native file sharing unavailable; email transport")
+		DQ005Trace.record("EXPORT_FALLBACK", "native sharing unavailable")
 		if not DQ005Trace.export_via_email():
-			DQ005Trace.record("EXPORT_FAILED", "no mail handler or trace file")
+			DQ005Trace.record("EXPORT_FAILED", "no mail handler")
