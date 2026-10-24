@@ -1,12 +1,5 @@
 name: DQ005 Android Packed Runtime Probe
 on:
-  pull_request:
-    branches: [develop]
-    paths:
-      - 'godot-project/scripts/dq005_android_probe.gd'
-      - 'godot-project/project.godot'
-      - 'godot-project/export_presets.cfg'
-      - '.github/workflows/dq005-android-emulator.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,6 +34,7 @@ jobs:
           path: dist/dq005-probe.apk
           retention-days: 3
   emulator:
+    if: false # Existing director stop: operator playtest only.
     needs: debug-apk
     runs-on: ubuntu-24.04
     timeout-minutes: 35
