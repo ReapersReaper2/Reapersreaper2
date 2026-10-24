@@ -1,0 +1,50 @@
+name: DQ005 Separate macOS Android Runtime
+on:
+  push:
+    branches: [chatgpt/dq005-selfcontained-trace]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  macos-hvf-packed-test:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch same packed APK from successful Run 68 build
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40046839728
+          github-token: ${{ github.token }}
+          name: dq005-native-trace-apk
+          path: dist
+      - name: Launch packed APK in separate macOS HVF Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          disable-animations: false
+          emulator-options: -no-window -noaudio -no-boot-anim -no-snapshot
+          emulator-boot-timeout: 600
+          script: |
+            set -eux
+            adb devices -l
+            adb install -r dist/dq005-native-trace.apk
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 12
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            grep -E 'MANIFEST_(OPEN|PARSED|RESULT)' dq005-packed-trace.txt | tee dq005-manifest-proof.txt
+            sleep 12
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            grep -E 'BRIDGE_SWING|SOURCE|TOUCH_DOWN|TOUCH_UP' dq005-packed-trace.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-macos-packed-runtime-evidence
+          path: |
+            dq005-packed-trace.txt
+            dq005-manifest-proof.txt
+          retention-days: 7
