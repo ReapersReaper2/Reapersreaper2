@@ -1,0 +1,50 @@
+name: DQ005 Final ARM64 Android Runtime
+on:
+  push:
+    branches: [chatgpt/dq005-selfcontained-trace]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  macos14-arm64:
+    runs-on: macos-14
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40046839728
+          github-token: ${{ github.token }}
+          name: dq005-native-trace-apk
+          path: dist
+      - name: Verify Apple Silicon host
+        run: |
+          uname -m
+          test "$(uname -m)" = "arm64"
+      - name: Boot ARM64 Android and read manifest evidence first
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: arm64-v8a
+          disable-animations: false
+          emulator-options: -no-window -noaudio -no-boot-anim -no-snapshot
+          emulator-boot-timeout: 600
+          script: |
+            set -eux
+            adb install -r dist/dq005-native-trace.apk
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 12
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            grep -E 'MANIFEST_(OPEN|PARSED|RESULT)' dq005-packed-trace.txt | tee dq005-manifest-proof.txt
+            sleep 12
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            grep -E 'BRIDGE_SWING|SOURCE|TOUCH_DOWN|TOUCH_UP' dq005-packed-trace.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-arm64-manifest-evidence
+          path: |
+            dq005-packed-trace.txt
+            dq005-manifest-proof.txt
