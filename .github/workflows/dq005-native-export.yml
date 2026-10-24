@@ -69,9 +69,16 @@ jobs:
       - name: Import and export packed debug APK
         run: |
           set -eux
+          set -o pipefail
           sh .github/scripts/recover_critical_art.sh
           printf '\n[reaper]\ndq005_auto_real_entry=true\n' >> godot-project/project.godot
           godot --headless --path godot-project --import --quit
+          # Hard gate: no Android export unless real-entry Linux approves all clips
+          # and draws real painted frames through MobileHUD.
+          godot --headless --path godot-project -s res://scripts/dq005_real_entry_touch_test.gd 2>&1 | tee /tmp/dq005-real-entry-gate.log
+          grep -F 'PASS real entry + touch dispatch stays approved through swing' /tmp/dq005-real-entry-gate.log
+          grep -F 'MANIFEST_ACCEPT clips=20' /tmp/dq005-real-entry-gate.log
+          grep -F 'to=approved' /tmp/dq005-real-entry-gate.log
           mkdir -p dist
           godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/dq005-native-trace.apk"
           test -s dist/dq005-native-trace.apk
