@@ -1,0 +1,37 @@
+name: DQ005 Real Entry Touch Harness
+on:
+  push:
+    branches: [chatgpt/dq005-selfcontained-trace]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  title-to-touch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Install Godot 4.3
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip -O /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.3-stable_linux.x86_64
+          echo /tmp/godot >> "$GITHUB_PATH"
+          ln -s /tmp/godot/Godot_v4.3-stable_linux.x86_64 /tmp/godot/godot
+      - name: Recover critical art and import
+        run: |
+          sh .github/scripts/recover_critical_art.sh
+          godot --headless --path godot-project --import --quit
+      - name: Run title-to-NEW-GAME virtual touch and approved-clip assertions
+        run: |
+          set -o pipefail
+          timeout 90s godot --headless --path godot-project -s res://scripts/dq005_real_entry_touch_test.gd 2>&1 | tee dq005-real-entry-touch.log
+          grep "PASS real entry + touch dispatch stays approved through swing" dq005-real-entry-touch.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-real-entry-touch-log
+          path: dq005-real-entry-touch.log
+          retention-days: 7
