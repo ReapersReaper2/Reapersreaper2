@@ -55,14 +55,14 @@ func _run() -> void:
 	tap.index = 0
 	tap.position = action_center
 	tap.pressed = true
-	Input.parse_input_event(tap)
+	overlay._input(tap)
 	await process_frame
 	_check(rig.is_charging(), "touch press entered charge via HUD and Player input")
 	var release := InputEventScreenTouch.new()
 	release.index = 0
 	release.position = action_center
 	release.pressed = false
-	Input.parse_input_event(release)
+	overlay._input(release)
 	await process_frame
 	_check(int(rig.state) == 1 or int(rig.state) == 3, "touch release dispatched combat state")
 	var saw_approved := false
