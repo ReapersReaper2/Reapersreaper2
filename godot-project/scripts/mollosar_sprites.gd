@@ -365,7 +365,7 @@ static func mortal_attack_pose(index: int, fraction: float) -> Vector2:
 
 ## Advance animation. Call from the player's _physics_process with the
 ## current facing vector and whether the player is actually moving.
-func tick(delta: float, facing: Vector2, moving: bool) -> void:
+func tick(delta: float, facing: Vector2, moving: bool, gait_rate: float = 1.0) -> void:
 	refresh()
 	if not has_sprites():
 		return
@@ -407,7 +407,7 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		_walk_t = 0.0
 		_draw_frame()
 	if moving:
-		_walk_t += delta
+		_walk_t += delta * maxf(0.0, gait_rate)
 		var f := int(_walk_t * (CANON_WALK_FPS if _canon_walk_active else WALK_FPS))
 		if f != _frame:
 			_frame = f
@@ -418,10 +418,12 @@ func tick(delta: float, facing: Vector2, moving: bool) -> void:
 		if f2 != _frame:
 			_frame = f2
 			_draw_frame()
-	elif _frame != 0:
-		_frame = 0
+	else:
+		# Even a stop during frame zero starts the next step with a full dwell.
 		_walk_t = 0.0
-		_draw_frame()
+		if _frame != 0:
+			_frame = 0
+			_draw_frame()
 
 
 ## Form 1 does not have approved four-direction sword-attack sprite
@@ -593,9 +595,10 @@ func _release_mortal_blade() -> void:
 func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) -> bool:
 	if _attack_clips.is_empty():
 		return false
-	if not _approved_attack_active or _approved_action != swing_index:
-		_approved_action = swing_index
+	if not _approved_attack_active:
+		# One facing for the entire windup, strike and recovery sequence.
 		_approved_facing = facing if facing.length_squared() > 0.001 else Vector2.DOWN
+	_approved_action = swing_index
 	var sample: Dictionary = Form1AttackClips.sample(_attack_clips, swing_index, fraction, _approved_facing)
 	if sample.is_empty():
 		return false
@@ -615,14 +618,22 @@ func _try_approved_attack(swing_index: int, fraction: float, facing: Vector2) ->
 
 
 func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -> void:
+	var logger = get_node_or_null("/root/DQ005Trace")
 	if _sprite == null:
 		return
 	if _form != 1 or not has_sprites() or swing_index == 0:
+		if logger != null:
+			logger.source(0, "idle/base", "form=" + str(_form))
 		_reset_mortal_sword_pose()
 		return
 	if _try_approved_attack(swing_index, fraction, facing):
+		if logger != null:
+			logger.source(swing_index, "approved", "frame=" + str(_sprite.region_rect.position.x / 384.0) + " dir=" + str(facing))
 		return
 	# If an optional partial clip does not cover this action or direction,
+	if logger != null:
+		logger.source(swing_index, "fallback", "clips=" + str(_attack_clips.size()) + " dir=" + str(facing))
+	#
 	# restore the regular walk source before applying the shader fallback.
 	if _approved_attack_active:
 		_reset_mortal_sword_pose()
@@ -648,6 +659,10 @@ func set_mortal_sword_pose(swing_index: int, fraction: float, facing: Vector2) -
 
 
 func _reset_mortal_sword_pose() -> void:
+	if _approved_attack_active or _mortal_pose_active:
+		var tracer = get_node_or_null("/root/DQ005Trace")
+		if tracer != null:
+			tracer.source(0, "base/reset", "approved_was=" + str(_approved_attack_active) + " fallback_was=" + str(_mortal_pose_active))
 	_release_mortal_blade()
 	if _approved_attack_active:
 		_approved_attack_active = false

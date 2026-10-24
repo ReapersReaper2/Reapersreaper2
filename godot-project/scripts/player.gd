@@ -98,7 +98,10 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_flight_visual()
 	if sprites != null:
-		sprites.tick(delta, facing, velocity.length() > 20.0)
+		# Drive footsteps from actual travel, including acceleration and wall stops.
+		var travelled := global_position.distance_to(before)
+		var gait_rate := travelled / maxf(delta * walk_speed, 0.001)
+		sprites.tick(delta, facing, travelled > 20.0 * delta, gait_rate)
 		# Sync mortal shoulder/body motion with the weapon rig's exact
 		# normalized swing progress; do not change damage, hitbox or
 		# movement-lock mechanics. Other Forms keep painted attack sheets.

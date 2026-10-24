@@ -1,0 +1,131 @@
+name: DQ005 Native Android Trace Export Candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  packed-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Ensure Android SDK packages
+        run: |
+          set -eux
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          export PATH="$ANDROID_HOME/platform-tools:$PATH"
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
+      - name: Fetch Godot 4.3 and its matching templates
+        run: |
+          set -eux
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip -O /tmp/godot.zip
+          unzip -q /tmp/godot.zip -d /tmp/godot
+          chmod +x /tmp/godot/Godot_v4.3-stable_linux.x86_64
+          echo /tmp/godot >> "$GITHUB_PATH"
+          ln -s /tmp/godot/Godot_v4.3-stable_linux.x86_64 /tmp/godot/godot
+          wget -q https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz -O /tmp/templates.tpz
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.3.stable"
+          unzip -q /tmp/templates.tpz -d /tmp/export
+          cp -a /tmp/export/templates/. "$HOME/.local/share/godot/export_templates/4.3.stable/"
+      - name: Install prebuilt Godot Share Plugin v5.0 (4.5-built compatibility trial)
+        run: |
+          set -eux
+          wget -q https://github.com/godot-mobile-plugins/godot-share/releases/download/v5.0/SharePlugin-Android-v5.0.zip -O /tmp/SharePlugin-Android-v5.0.zip
+          unzip -q /tmp/SharePlugin-Android-v5.0.zip -d /tmp/share-plugin
+          test -f /tmp/share-plugin/SharePlugin-root/addons/SharePlugin/plugin.cfg
+          mkdir -p godot-project/addons
+          cp -a /tmp/share-plugin/SharePlugin-root/addons/SharePlugin godot-project/addons/SharePlugin
+          test -f godot-project/addons/SharePlugin/plugin.cfg
+          test -f godot-project/addons/SharePlugin/Share.gd
+          # v5.0 archives may carry only the release AAR; use that prebuilt AAR for debug export if needed.
+          if [ ! -f godot-project/addons/SharePlugin/bin/debug/SharePlugin-debug.aar ]; then
+            mkdir -p godot-project/addons/SharePlugin/bin/debug
+            cp godot-project/addons/SharePlugin/bin/release/SharePlugin-release.aar godot-project/addons/SharePlugin/bin/debug/SharePlugin-debug.aar
+          fi
+          test -s godot-project/addons/SharePlugin/bin/debug/SharePlugin-debug.aar
+          find godot-project/addons/SharePlugin -maxdepth 4 -type f | sort
+      - name: Install Godot Android Gradle template
+        run: |
+          set -eux
+          mkdir -p godot-project/android/build
+          unzip -q "$HOME/.local/share/godot/export_templates/4.3.stable/android_source.zip" -d godot-project/android/build
+          test -f godot-project/android/build/build.gradle
+          # Godot 4.3 validates this marker before accepting a project-local Gradle template.
+          printf '%s\n' '4.3.stable' > godot-project/android/.build_version
+      - name: Import and export packed debug APK
+        run: |
+          set -eux
+          set -o pipefail
+          sh .github/scripts/recover_critical_art.sh
+          printf '\n[reaper]\ndq005_auto_real_entry=true\n' >> godot-project/project.godot
+          godot --headless --path godot-project --import --quit
+          # Hard gate: no Android export unless real-entry Linux approves all clips
+          # and draws real painted frames through MobileHUD.
+          godot --headless --path godot-project -s res://scripts/dq005_real_entry_touch_test.gd 2>&1 | tee /tmp/dq005-real-entry-gate.log
+          grep -F 'PASS real entry + touch dispatch stays approved through swing' /tmp/dq005-real-entry-gate.log
+          grep -F 'MANIFEST_ACCEPT clips=20' /tmp/dq005-real-entry-gate.log
+          grep -F 'to=approved' /tmp/dq005-real-entry-gate.log
+          mkdir -p dist
+          godot --headless --path godot-project --export-debug "Android Dev" "$GITHUB_WORKSPACE/dist/dq005-native-trace.apk"
+          test -s dist/dq005-native-trace.apk
+          unzip -l dist/dq005-native-trace.apk | grep -E 'classes.*dex|AndroidManifest.xml'
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: dq005-native-trace-apk
+          path: dist/dq005-native-trace.apk
+          retention-days: 7
+
+  packed-emulator-trace:
+    if: false # DQ005 director hard-stop: no more hosted Android emulator attempts
+    needs: packed-apk
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dq005-native-trace-apk
+          path: dist
+      - name: Run the packed game and extract the actual private file
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -camera-back none -camera-front none
+          emulator-boot-timeout: 600
+          disable-animations: false
+          script: |
+            set -eux
+            adb install -r dist/dq005-native-trace.apk
+            adb shell monkey -p com.reapersreaper2.reapersreaper.dev 1
+            sleep 12
+            # Capture manifest evidence FIRST; never gate it on touch or share controls.
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            test -s dq005-packed-trace.txt
+            grep -E 'MANIFEST_(OPEN|PARSED|RESULT)' dq005-packed-trace.txt | tee dq005-manifest-proof.txt
+            # The app's opt-in Android entry/touch probe runs automatically after NEW GAME.
+            sleep 12
+            adb exec-out run-as com.reapersreaper2.reapersreaper.dev cat files/dq005-trace.txt > dq005-packed-trace.txt
+            grep -E 'BRIDGE_SWING|SOURCE|TOUCH_DOWN|TOUCH_UP' dq005-packed-trace.txt || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dq005-packed-trace
+          path: |
+            dq005-packed-trace.txt
+            dq005-manifest-proof.txt
+          retention-days: 7
