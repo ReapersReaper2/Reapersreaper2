@@ -18,7 +18,7 @@ extends RefCounted
 ##     props/dummies/invaders never grow fruit plants (canon says a
 ##     *creature's* death sprouts the plant).
 ##   - Battle seam: infect_unit() tags a BattleUnit for the future
-##     Mollosar-needle battle beat; battle.gd _on_enemy_fainted() runs the
+##     Mollosar-needle battle beat; battle.gd _on_enemy_fainted() runs the [Turn-based battles removed 2026-10-24.]
 ##     death hook, and a fainted foe counts as the death for this system
 ##     (documented choice: the spore doesn't distinguish faint from death).
 ##   - Infection marker: BattleUnit.spore_infected / .spore_lean; field

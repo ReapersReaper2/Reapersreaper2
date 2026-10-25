@@ -20,8 +20,6 @@ func _run() -> void:
 		"prologue counts as gameplay")
 	_check(GameStateScript.is_gameplay_scene("res://scenes/room_gd1.tscn"),
 		"Reserve overworld counts as gameplay")
-	_check(GameStateScript.is_gameplay_scene("res://scenes/battle.tscn"),
-		"combat counts as gameplay")
 	_check(GameStateScript.is_gameplay_scene("res://scenes/garden_refuge.tscn"),
 		"Garden Refuge interior counts as gameplay")
 	_check(not GameStateScript.is_gameplay_scene("res://scenes/title_screen.tscn"),
@@ -56,16 +54,11 @@ func _run() -> void:
 		"negative deltas cannot lower total time")
 	_close_scene(room)
 
-	var battle := _activate_scene("res://scenes/battle.tscn")
-	gs._process(6.0)
-	_check(is_equal_approx(float(gs.state["playtime"]), 10.75),
-		"battle seconds accumulate with exploration")
-	_close_scene(battle)
 
 	var json := JSON.stringify(gs.state)
 	var decoded = JSON.parse_string(json)
 	_check(decoded is Dictionary and
-		is_equal_approx(float((decoded as Dictionary).get("playtime", -1.0)), 10.75),
+		is_equal_approx(float((decoded as Dictionary).get("playtime", -1.0)), 4.75),
 		"normal JSON save preserves recorded time")
 	gs.new_game()
 	_check(is_zero_approx(float(gs.state["playtime"])),

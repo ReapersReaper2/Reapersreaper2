@@ -263,7 +263,7 @@ static func gain_xp(gs: Node, index: int, amount: int) -> Array:
 ## --- Out-of-battle care -----------------------------------------------------
 ## Statuses persist on the entry under "statuses" (Array of String ids).
 ## Entries from older saves without the key are tolerated (treated healthy).
-## Battles sync the battler's statuses back via _sync_party_hp in battle.gd.
+## Battles sync the battler's statuses back via _sync_party_hp in battle.gd. [Turn-based battles removed 2026-10-24.]
 
 
 ## Status ids currently on the member. [] when invalid or none.

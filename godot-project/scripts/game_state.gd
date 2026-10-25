@@ -45,7 +45,6 @@ func _ready() -> void:
 ## or workbench/headless test harnesses with no current scene.
 static func is_gameplay_scene(path: String) -> bool:
 	return (path.begins_with("res://scenes/room_") and path.ends_with(".tscn")) or \
-		path == "res://scenes/battle.tscn" or \
 		path == "res://scenes/garden_refuge.tscn"
 
 

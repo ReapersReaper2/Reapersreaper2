@@ -6,7 +6,7 @@ extends RefCounted
 ##
 ## All bosses back-to-back, scored. Unlocks after completing the story
 ## (ending_choice flag set). Uses the existing boss fights via
-## BattleManager.start_boss_battle().
+## BattleManager.start_boss_battle(). [Turn-based battles removed 2026-10-24.]
 ##
 ## Boss roster (in order):
 ##   1. Tentacle (room_c1 tutorial boss)

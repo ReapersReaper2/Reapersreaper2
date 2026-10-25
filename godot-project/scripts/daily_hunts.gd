@@ -28,7 +28,7 @@ extends RefCounted
 ##   slow_start     — battle.gd: player acts last for the first 3 turns (LIVE)
 ##   rich           — applied in hunt_for(): Soul Credit reward x2 (LIVE)
 ##   no_items       — battle.gd choose_item: item menu disabled (LIVE)
-## Hunt fight wiring (battle_manager.start_daily_hunt_battle -> battle.gd
+## Hunt fight wiring (battle_manager.start_daily_hunt_battle -> battle.gd [Turn-based battles removed 2026-10-24.]
 ## tracks duration/damage -> complete_hunt on victory) is LIVE.
 
 ## Modifier id -> {name, desc}. Pool of 8; 1-2 picked per day.

@@ -42,7 +42,7 @@ var spore_lean: String = ""
 ## Temporary battle modifiers from items (e.g. Ironwood Bark):
 ## {"atk_mult": 1.0, "def_mult": 1.75, "spd_mult": 0.6, "turns": 3}.
 var temp_mods: Dictionary = {}
-## Daily Hunt modifiers (set by battle.gd when a hunt battle is active).
+## Daily Hunt modifiers (set by battle.gd when a hunt battle is active). [Turn-based battles removed 2026-10-24.]
 ## Only ever set on the player's unit.
 var mod_incoming_mult := 1.0   # frail: 2.0 / heavy_hits: 1.25
 var mod_outgoing_mult := 1.0   # heavy_hits: 1.5

@@ -26,7 +26,7 @@ extends RefCounted
 ##
 ## Effect application sets `twitch_<id>` stat flags on GameState, consumed by:
 ##   twitch_rare_spawn    — wild_zone.gd: force rare roll on next encounter (consumed)
-##   twitch_bonus_loot    — battle.gd: Soul Credit reward x2 on next victory (consumed)
+##   twitch_bonus_loot    — battle.gd: Soul Credit reward x2 on next victory (consumed) [Turn-based battles removed 2026-10-24.]
 ##   twitch_hard_encounter— wild_zone.gd: +4 levels on next encounter (consumed)
 ##   twitch_heavy_handed  — battle_unit.gd: incoming damage x1.5 next fight (consumed)
 ##   twitch_swarm         — wild_zone.gd: spawn one extra enemy next encounter (consumed)

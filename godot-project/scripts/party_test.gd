@@ -20,7 +20,6 @@ extends SceneTree
 const BattleUnit = preload("res://scripts/battle_unit.gd")
 
 var _failures: Array[String] = []
-var _nav: Array = []
 
 
 func _check(name: String, cond: bool) -> void:
@@ -151,34 +150,6 @@ func _init() -> void:
 	_check("entry 1 restored", str(P3.get_entry(gs3, 1).get("creature_id", "")) == "bellowscap")
 	gs3.save_system.delete_save(97)
 
-	# --- 9. BattleManager pulls the lead from the party ---
-	var bm = (load("res://scripts/battle_manager.gd")).new()
-	bm.game_state = gs  # gs party: [bellmaw lv12, bellowscap, siltmaw, gravebind, thornchoir]
-	bm.scene_changer = _nav.append
-	root.add_child(bm)
-	_check("wild start ok", bm.start_wild_battle("siltmaw", 2, "c1", Vector2(1, 2)))
-	_check("pending uses party lead id", str(bm.pending.get("player_creature_id", "")) == "bellmaw")
-	_check("pending uses party lead level", int(bm.pending.get("player_level", 0)) == 12)
-	_check("pending party index 0", int(bm.pending.get("player_party_index", -1)) == 0)
-	_check("pending carries lead hp", int(bm.pending.get("player_hp", -1)) == int(P.get_entry(gs, 0).get("current_hp", -2)))
-	bm.clear_pending()
-
-	# --- 10. fainted lead is skipped, next conscious steps up ---
-	P.set_hp(gs, 0, 0)
-	_nav.clear()
-	_check("start with fainted lead", bm.start_wild_battle("siltmaw", 2, "c1", Vector2.ZERO))
-	_check("skips to index 1", int(bm.pending.get("player_party_index", -1)) == 1)
-	_check("uses index 1 creature", str(bm.pending.get("player_creature_id", "")) == str(P.get_entry(gs, 1).get("creature_id", "")))
-	bm.clear_pending()
-
-	# --- 11. all fainted -> battle refused ---
-	for i in P.size(gs):
-		P.set_hp(gs, i, 0)
-	_nav.clear()
-	_check("all fainted refuses start", not bm.start_wild_battle("siltmaw", 2, "c1", Vector2.ZERO))
-	_check("nothing pending", bm.pending.is_empty())
-	_check("no scene change queued", _nav.is_empty())
-	bm.queue_free()
 
 	print("=== TEST DONE: %d failure(s) ===" % _failures.size())
 	if not _failures.is_empty():
