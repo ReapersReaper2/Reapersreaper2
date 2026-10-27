@@ -1,83 +1,70 @@
-name: Project Rebirth Windows Smoke
+name: Project Rebirth Windows Tests
 on:
   push:
     branches:
       - planning/project-rebirth-20261026
+      - 'candidate/rebirth-**'
     paths:
       - '.github/workflows/project-rebirth-windows.yml'
+      - 'tools/testing/**'
       - 'tools/windows/**'
       - 'godot-project/**'
   workflow_dispatch:
-
 permissions:
   contents: read
-
+concurrency:
+  group: rebirth-windows-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  windows-godot-smoke:
-    # GitHub-hosted disposable machine: does NOT access the owner's laptop.
-    runs-on: windows-latest
-    timeout-minutes: 35
+  windows-godot:
+    runs-on: windows-2022
+    timeout-minutes: 40
     steps:
-      - name: Checkout source with Git LFS
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           lfs: true
           persist-credentials: false
-
-      - name: Download Godot 4.3 standard editor
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare evidence and download Godot 4.3 console editor
         shell: pwsh
         run: |
-          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force evidence | Out-Null
+          "commit=$env:GITHUB_SHA`nrun=$env:GITHUB_RUN_ID`nattempt=$env:GITHUB_RUN_ATTEMPT" | Set-Content evidence/setup.txt
           $url = 'https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_win64.exe.zip'
           Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP\godot.zip"
           Expand-Archive -LiteralPath "$env:RUNNER_TEMP\godot.zip" -DestinationPath "$env:RUNNER_TEMP\godot"
-          $godot = Get-ChildItem "$env:RUNNER_TEMP\godot" -Filter 'Godot_v4.3-stable_win64.exe' -Recurse | Select-Object -First 1 -ExpandProperty FullName
-          if (-not $godot) { throw 'Godot 4.3 executable missing from archive' }
-          $godot | Set-Content "$env:RUNNER_TEMP\godot-path.txt"
-          & $godot --version
-          if ($LASTEXITCODE -ne 0) { throw 'Godot version check failed' }
-
-      - name: Import game resources
-        shell: pwsh
-        run: |
-          $godot = Get-Content "$env:RUNNER_TEMP\godot-path.txt"
-          & $godot --headless --path "$env:GITHUB_WORKSPACE\godot-project" --import *> "$env:RUNNER_TEMP\import.log"
-          $code = $LASTEXITCODE
-          Get-Content "$env:RUNNER_TEMP\import.log" -Tail 35
-          if ($code -ne 0) { throw "Godot import failed with exit $code" }
-
-      - name: Execute three baseline test suites and preserve raw diagnostics
-        id: smoke
-        shell: pwsh
-        run: |
-          $godot = Get-Content "$env:RUNNER_TEMP\godot-path.txt"
-          $root = "$env:GITHUB_WORKSPACE\godot-project"
-          $out = "$env:GITHUB_WORKSPACE\windows-smoke-evidence"
-          New-Item -ItemType Directory -Force $out | Out-Null
-          Copy-Item "$env:RUNNER_TEMP\import.log" (Join-Path $out 'import.log')
-          @("commit=$env:GITHUB_SHA","runner=$env:RUNNER_OS","godot=4.3 stable","suite=initial smoke only") | Set-Content (Join-Path $out 'manifest.txt')
-          $suites = @('mollosar_sprites_test.gd', 'prologue_visual_test.gd', 'form1_attack_clips_test.gd')
-          $results = @()
-          foreach ($suite in $suites) {
-            $stdout = Join-Path $out ($suite + '.stdout.txt')
-            $stderr = Join-Path $out ($suite + '.stderr.txt')
-            $p = Start-Process -FilePath $godot -ArgumentList @('--headless','--path',('"' + $root + '"'),'--script',('res://scripts/' + $suite)) -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-            $raw = ((Get-Content $stdout -Raw -ErrorAction SilentlyContinue), (Get-Content $stderr -Raw -ErrorAction SilentlyContinue)) -join [Environment]::NewLine
-            $diagnostics = ([regex]::Matches($raw, '(?im)^\s*(?:SCRIPT ERROR:|ERROR:)')).Count
-            $results += [pscustomobject]@{ Test=$suite; ExitCode=$p.ExitCode; EngineErrorLines=$diagnostics; Classification=$(if($p.ExitCode -ne 0){'FAILED PROCESS'}elseif($diagnostics -gt 0){'REVIEW LOG'}else{'NO ENGINE ERRORS'}) }
-          }
-          $results | Export-Csv (Join-Path $out 'results.csv') -NoTypeInformation
-          $results | Format-Table | Out-String | Write-Host
-          if ($results | Where-Object { $_.ExitCode -ne 0 }) { throw 'At least one Godot test process failed; inspect uploaded evidence' }
-          # Log-level errors are triaged separately, not silently reclassified as passing assertions.
-
-      - name: Upload immutable smoke evidence
+          $godot = Get-ChildItem "$env:RUNNER_TEMP\godot" -Filter '*_console.exe' -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $godot) { throw 'Godot console executable missing' }
+          "GODOT_EXE=$godot" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Get-FileHash "$env:RUNNER_TEMP\godot.zip" | Format-List | Out-File evidence/setup.txt -Append
+      - name: Test automation failure handling
+        run: python -m unittest discover -s tools/testing -p 'test_*.py' -v
+      - name: Full Godot 4.3 baseline
+        id: baseline
+        run: python tools/testing/run_godot_tests.py --godot "$env:GODOT_EXE" --output evidence/baseline
+      - name: Probe graphics and capture actual gameplay
+        if: ${{ !cancelled() && env.GODOT_EXE != '' }}
+        run: python tools/testing/run_godot_tests.py --godot "$env:GODOT_EXE" --output evidence/capture --capture
+      - name: Publish summary
         if: always()
-        uses: actions/upload-artifact@v4
+        shell: pwsh
+        run: |
+          foreach ($lane in @('baseline', 'capture')) {
+            $path = "evidence/$lane/manifest.json"
+            if (Test-Path $path) {
+              $m = Get-Content $path -Raw | ConvertFrom-Json
+              "${lane}: $($m.status) — $($m.commit)" | Out-File $env:GITHUB_STEP_SUMMARY -Append
+            } else { "${lane}: NOT RUN" | Out-File $env:GITHUB_STEP_SUMMARY -Append }
+          }
+          'Graphical evidence is diagnostic; no artistic or physical-device acceptance is implied.' | Out-File $env:GITHUB_STEP_SUMMARY -Append
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: rebirth-windows-smoke-${{ github.sha }}
+          name: rebirth-windows-${{ github.sha }}-${{ github.run_attempt }}
           path: |
-            windows-smoke-evidence/
-            ${{ runner.temp }}/import.log
-          if-no-files-found: warn
+            evidence/
+            !evidence/**/userdata/**
+          if-no-files-found: error
           retention-days: 14
