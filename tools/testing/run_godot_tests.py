@@ -85,7 +85,9 @@ def main():
             capture_dir = out / "frames"
             capture_dir.mkdir()
             result, text = run(a.godot, ["--path", a.project, "--audio-driver", "Dummy", "--resolution", "1280x720", "--fixed-fps", "60", "--script", "res://scripts/rebirth_gameplay_capture.gd", "--", str(capture_dir)], out, "gameplay-capture", 180, env)
-            if "REBIRTH_CAPTURE_COMPLETE" not in text or len(list(capture_dir.glob("*.png"))) != 27:
+            manifest["captured_frames"] = len(list(capture_dir.glob("*.png")))
+            manifest["capture_completed"] = "REBIRTH_CAPTURE_COMPLETE" in text and manifest["captured_frames"] == 27
+            if not manifest["capture_completed"]:
                 result["result"] = "FAIL"
             results.append(result)
         else:
@@ -106,12 +108,12 @@ def main():
         return 1
     finally:
         manifest["results"] = results
-        manifest["evidence_sha256"] = {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob("*") if p.is_file() and "userdata" not in p.parts and p.name != "manifest.json"}
-        (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         with (out / "results.csv").open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=["test", "result", "exit_code", "timed_out", "engine_errors", "seconds"], extrasaction="ignore")
             writer.writeheader()
             writer.writerows(results)
+        manifest["evidence_sha256"] = {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest() for p in out.rglob("*") if p.is_file() and "userdata" not in p.parts and p.name != "manifest.json"}
+        (out / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
         print(f"Evidence: {out}; status: {manifest['status']}")
 
 

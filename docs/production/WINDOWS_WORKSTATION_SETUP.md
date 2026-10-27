@@ -37,8 +37,8 @@ If the checkout is already present, do not clone over it: verify the location an
 4. Let resources import fully, then run the project's default title scene (F6 for selected scene or F5 for the project); record startup errors and any missing LFS art. Run the opening bridge from an actual in-game path.
 5. Capture 2 genuine screenshots and optionally a 10–20-second recording: title and bridge with Mollosar walking and attacking. Save outside the checkout, e.g. `C:\ReapersReaper\captures\<date>\`, along with commit SHA and engine version. Do not label any render as approved yet.
 
-## Phase D — Automated runner (separate ticket)
-Build a repeatable Godot scene-launch harness for walking, attacking, damage and transitions; capture log + frame screenshots. Compare real frames and user-approved art references, not just numeric validation. GUI automation is device/access-platform-dependent; do not assume a GitHub connector provides laptop screen control.
+## Phase D — Automated runner (candidate implementation)
+The candidate implementation and executed Windows evidence are documented in [REBIRTH_TEST_AUTOMATION.md](REBIRTH_TEST_AUTOMATION.md). It runs all 117 test scripts and captures real title-to-bridge walking and attacking. Damage and later room transitions remain future scenarios. Compare real frames and user-approved art references, not just numeric validation. GUI automation is device/access-platform-dependent; do not assume a GitHub connector provides laptop screen control.
 Keep Chromebook as review/coordination device; optionally test Linux-on-ChromeOS support separately, not as the baseline.
 
 ## Phase E — Android later

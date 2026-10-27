@@ -32,3 +32,18 @@ This is source-checkout evidence of a bounded opening scenario. It is not packed
 ## Runner verification
 
 `python -m unittest discover -s tools/testing -p 'test_*.py' -v` checks clean exits, nonzero failures, stdout and stderr errors with exit zero, explicit failure markers, and timeouts. CI executes these checks before the game suite.
+
+## Executed Windows evidence
+
+[Run 40519063374](https://github.com/ReapersReaper2/Reapersreaper2/actions/runs/40519063374), commit `3368043b26e2a6d5a3bd94eb3f816db3f802d4bb`:
+
+- Official Godot 4.3 version and resource import passed.
+- All 117 scripts completed: **72 clean, 45 failed the strict diagnostic gate**. Every script returned exit code zero; no script timed out. These are script counts, not assertion counts.
+- The 45 include both real diagnostics (invalid polygons, duplicate connections, scene-tree lifecycle errors, leaks) and deliberate negative-path tests (corrupt saves, unsupported form 99, invalid step-driver inputs). They must not be described as 45 distinct gameplay bugs. No blanket error suppression or unreviewed allowlist was added.
+- Windows graphics probe passed using ANGLE / Microsoft Basic Render Driver / Direct3D11.
+- Actual title → New Game → bridge capture completed: **27 PNGs**, zero movement/attack/capture assertions failed. The job correctly remains red for **12 engine errors**, including 11 invalid-polygon errors and the missing external story-package file. This is diagnostic capture success, not a clean game result.
+- Windows bridge/walking screenshot inspected; local software-rendered bridge and attack screenshots also inspected. No art approval or phone rendering claim.
+- Downloaded Windows artifact verified: all **358 baseline** and **43 capture** recorded hashes matched. The follow-up runner also hashes `results.csv` (the first version generated CSV after sealing) and explicitly records `captured_frames` and `capture_completed` independently of diagnostic status.
+- Artifact: `rebirth-windows-3368043b26e2a6d5a3bd94eb3f816db3f802d4bb-1`, available from the run page until 2026-11-10. Artifacts contain stdout/stderr and the full test roster, not only this summary.
+
+Next bounded work: classify intentional error cases with per-test exact expectations; repair the bridge polygon generation and story-package path; then address scene-tree lifecycle/resource cleanup diagnostics. Keep those gameplay/test-fixture repairs separate from this infrastructure PR. Existing packed-art/DQ-005 work remains unmerged.

@@ -19,6 +19,13 @@ class RunnerTests(unittest.TestCase):
     def test_clean_process(self):
         self.assertEqual(self.invoke('print("PASS 4 checks")')['result'], 'PASS')
 
+    def test_script_argument_with_spaces(self):
+        with tempfile.TemporaryDirectory(prefix='rebirth path with spaces ') as tmp:
+            script = Path(tmp) / 'test program.py'
+            script.write_text('import sys; assert sys.argv[1] == "argument with spaces"')
+            result, _ = runner.run(Path(sys.executable), [str(script), 'argument with spaces'], Path(tmp), 'fixture', 5, os.environ.copy())
+            self.assertEqual(result['result'], 'PASS')
+
     def test_zero_exit_script_error(self):
         self.assertEqual(self.invoke('print("SCRIPT ERROR: failed assertion")')['result'], 'FAIL')
 
