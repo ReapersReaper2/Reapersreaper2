@@ -446,5 +446,7 @@ func _input(event: InputEvent) -> void:
 		cycle_slot(1)
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_accept"):
-		activate_selected()
+		# New Game/Continue can immediately remove this title from the tree.
+		# Consume the event while its viewport still exists.
 		get_viewport().set_input_as_handled()
+		activate_selected()

@@ -179,14 +179,7 @@ func _draw_worn_post(p: Vector2, broken: bool, far_edge: bool) -> void:
 		p + Vector2(14, top_y + 2), p + Vector2(12, 19),
 	])
 	draw_colored_polygon(silhouette, ASH)
-	var cap := PackedVector2Array([
-		p + Vector2(-19, top_y - 3 + notch),
-		p + Vector2(-10, top_y - 9 + notch),
-		p + Vector2(12, top_y - 6 + notch),
-		p + Vector2(18, top_y + 1),
-		p + Vector2(4, top_y + 7),
-		p + Vector2(-18, top_y + 6),
-	])
+	var cap := post_cap_polygon(p, broken, far_edge)
 	draw_colored_polygon(cap, BASALT.lerp(OXIDIZED, 0.24))
 	draw_line(p + Vector2(-12, top_y + 6), p + Vector2(-10, 12),
 		WET_EDGE.darkened(0.45), 1.7, true)
@@ -228,3 +221,18 @@ func _draw_rubble() -> void:
 				p + Vector2(6, -14), p + Vector2(14, 3), p + Vector2(2, 9),
 			])
 			draw_colored_polygon(rubble, ASH.lerp(BASALT, rng.randf_range(0.25, 0.64)))
+
+
+static func post_cap_polygon(p: Vector2, broken: bool, far_edge: bool) -> PackedVector2Array:
+	var top_y := -34.0 if far_edge else -28.0
+	# Lower the complete cap: moving only its upper vertices crossed the
+	# lower edge on damaged posts, causing eleven triangulation errors.
+	var notch := 10.0 if broken else 0.0
+	return PackedVector2Array([
+		p + Vector2(-19, top_y - 3 + notch),
+		p + Vector2(-10, top_y - 9 + notch),
+		p + Vector2(12, top_y - 6 + notch),
+		p + Vector2(18, top_y + 1 + notch),
+		p + Vector2(4, top_y + 7 + notch),
+		p + Vector2(-18, top_y + 6 + notch),
+	])
