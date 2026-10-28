@@ -19,13 +19,11 @@ func _check(ok: bool, label: String) -> void:
 
 func _run() -> void:
 	var clips := Clips.load_approved(Callable(Loader, "load_texture"))
-	# Preserve procedural fallback ONLY if no approved manifest exists.
-	# An existing manifest must load a complete set; never pass a corrupt one.
+	# Delivery regression: this project ships the approved set. A stripped
+	# manifest must fail instead of silently passing the fallback path.
 	if clips.is_empty():
-		_check(not FileAccess.file_exists(Clips.MANIFEST_PATH),
-			"approved manifest must load all 20 strips if installed")
-		print("[FORM1 ANIMATION RUNTIME] PASS: rejected art absent; fallback active")
-		quit(1 if failed > 0 else 0)
+		_check(false, "required approved set missing or rejected")
+		quit(1)
 		return
 	_check(clips.size() == 20, "complete approved animation set required")
 	var actor = PlayerScene.instantiate()
@@ -95,6 +93,22 @@ func _run() -> void:
 				"walk restarts at frame zero with its normal scale")
 			manager.tick(0.18, facing, true)
 			_check(art.region_rect.position.x > 0.0, "walk advances after attack recovery")
+	# Facing remains committed when direction input changes between phases.
+	manager._reset_mortal_sword_pose()
+	for action_index in [3, 1, 5]:
+		manager.set_mortal_sword_pose(action_index, 0.5,
+			Vector2.DOWN if action_index == 3 else Vector2.RIGHT)
+		_check(manager._approved_facing == Vector2.DOWN,
+			"windup/strike/recovery preserve committed facing")
+	manager._reset_mortal_sword_pose()
+	manager.set_mortal_sword_pose(1, 0.0, Vector2.RIGHT)
+	_check(manager._approved_facing == Vector2.RIGHT, "new attack accepts new facing")
+	manager._reset_mortal_sword_pose()
+	manager.tick(0.04, Vector2.RIGHT, true)
+	manager.tick(0.0, Vector2.RIGHT, false)
+	_check(is_zero_approx(manager._walk_t), "stopping during frame zero resets gait clock")
+	manager.tick(0.04, Vector2.RIGHT, true)
+	_check(art.region_rect.position.x == 0.0, "restarted first step gets full dwell")
 	actor.free()
 	print("[FORM1 ANIMATION RUNTIME] %s %d checks" % ["PASS" if failed == 0 else "FAIL", checks])
 	quit(1 if failed > 0 else 0)
