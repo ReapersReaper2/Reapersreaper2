@@ -4,6 +4,7 @@ Runs the actual engine, retains raw diagnostics (including expected baseline
 failures), and gates required art instead of accepting a missing-art fallback.
 """
 import argparse
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -57,6 +58,18 @@ def validate_trace(trace, before):
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+@contextmanager
+def isolated_pack_directory():
+    previous = Path.cwd()
+    with tempfile.TemporaryDirectory(prefix='rebirth isolated pack ') as empty:
+        try:
+            yield empty
+        finally:
+            # Windows cannot remove a directory while it is our current cwd.
+            # Restore before TemporaryDirectory cleans up, including failures.
+            os.chdir(previous)
 
 
 def main():
@@ -124,7 +137,7 @@ def main():
             pack = lane / 'form1.pck'
             invoke('export', ['--headless', '--path', project, '--export-pack', 'Windows', pack], 600)
             manifest['packs'][phase] = {'sha256': sha(pack), 'bytes': pack.stat().st_size}
-            with tempfile.TemporaryDirectory(prefix='rebirth isolated pack ') as empty:
+            with isolated_pack_directory() as empty:
                 for mode in ('source', 'packed'):
                     os.chdir(project if mode == 'source' else empty)
                     args = ['--path', project] if mode == 'source' else ['--path', empty, '--main-pack', pack]
@@ -169,7 +182,7 @@ def main():
             invoke('missing-manifest-export', ['--headless', '--path', project, '--export-pack', 'Windows', missing_pack], 600)
         finally:
             preset.write_bytes(original)
-        with tempfile.TemporaryDirectory(prefix='rebirth missing manifest ') as empty:
+        with isolated_pack_directory() as empty:
             os.chdir(empty)
             invoke('missing-manifest-regression', ['--headless', '--path', empty, '--main-pack', missing_pack,
                    '--script', 'res://scripts/form1_animation_runtime_test.gd'], expected=['required approved set missing or rejected'])

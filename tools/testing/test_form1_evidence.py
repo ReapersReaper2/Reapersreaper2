@@ -1,9 +1,20 @@
 """Expected baseline failures must not hide additional engine failures."""
 import unittest
-from run_form1_evidence import expected_regression, EXPECTED_BEFORE
+import os
+from pathlib import Path
+from run_form1_evidence import expected_regression, EXPECTED_BEFORE, isolated_pack_directory
 
 
 class BaselineDiagnosticTests(unittest.TestCase):
+    def test_isolated_directory_restores_cwd_before_cleanup(self):
+        previous = Path.cwd()
+        with self.assertRaisesRegex(RuntimeError, 'fixture'):
+            with isolated_pack_directory() as empty:
+                os.chdir(empty)
+                raise RuntimeError('fixture')
+        self.assertEqual(Path.cwd(), previous)
+        self.assertFalse(Path(empty).exists())
+
     def setUp(self):
         self.result = dict(exit_code=1, timed_out=False, engine_errors=3)
         self.log = '\n'.join('ERROR: [FORM1 ANIMATION RUNTIME] ' + e for e in EXPECTED_BEFORE)
