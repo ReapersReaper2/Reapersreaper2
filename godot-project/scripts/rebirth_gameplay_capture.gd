@@ -43,14 +43,23 @@ func _run() -> void:
 	await _frames(2)
 	_input("scythe_swing", false)
 	var active_attack := false
+	var approved_seen := false
 	for i in range(24):
 		await _frames(2)
 		var rig = player.get_node("ScytheRig")
 		if int(rig.get("state")) != 0:
 			active_attack = true
-		events.append({"attack_sample": i, "state": rig.get("state"), "position": [player.position.x, player.position.y]})
+		var manager = player.sprites
+		approved_seen = approved_seen or manager._approved_attack_active
+		if int(rig.get("state")) != 0 and not manager._approved_attack_active:
+			push_error("Live sword action selected fallback instead of approved art")
+			failures += 1
+		events.append({"attack_sample": i, "state": rig.get("state"),
+			"approved": manager._approved_attack_active, "clips": manager._attack_clips.size(),
+			"frame": int(manager._sprite.region_rect.position.x / 384.0),
+			"position": [player.position.x, player.position.y]})
 		await _shot("attack-%02d" % i)
-	if not active_attack:
+	if not active_attack or not approved_seen:
 		push_error("Sword input did not activate the real attack rig")
 		failures += 1
 	var file := FileAccess.open(output.path_join("input-trace.json"), FileAccess.WRITE)

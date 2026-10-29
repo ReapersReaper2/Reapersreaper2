@@ -68,3 +68,42 @@ jobs:
             !evidence/**/userdata/**
           if-no-files-found: error
           retention-days: 14
+
+  form1-evidence:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 38839dc2bcc9c0a892740cb6deeec90322a91d24
+          path: rebirth-before
+          lfs: true
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download official Godot 4.3
+        shell: pwsh
+        run: |
+          $url = 'https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_win64.exe.zip'
+          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP\form1-godot.zip"
+          Expand-Archive -LiteralPath "$env:RUNNER_TEMP\form1-godot.zip" -DestinationPath "$env:RUNNER_TEMP\form1-godot"
+          $godot = Get-ChildItem "$env:RUNNER_TEMP\form1-godot" -Filter '*_console.exe' -Recurse | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $godot) { throw 'Godot console executable missing' }
+          "GODOT_EXE=$godot" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Compare actual before and after animation in source and isolated packs
+        run: python tools/testing/run_form1_evidence.py --godot "$env:GODOT_EXE" --before rebirth-before/godot-project --after godot-project --output form1-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: form1-windows-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            form1-evidence/
+            !form1-evidence/**/userdata/**
+            !form1-evidence/**/*.pck
+          if-no-files-found: error
+          retention-days: 14
