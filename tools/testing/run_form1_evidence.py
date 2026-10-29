@@ -111,6 +111,15 @@ def main():
                     raise RuntimeError(f'Unexpected result: {phase}/{name}')
                 return log
 
+            if os.name == 'nt':
+                # Godot 4.3's Windows packtmp rename can fail in hosted runners.
+                # Scope direct saves to disposable editor settings, never the
+                # user's editor or game save files. Export errors still fail.
+                settings = Path(env['APPDATA']) / 'Godot' / 'editor_settings-4.3.tres'
+                settings.parent.mkdir(parents=True, exist_ok=True)
+                settings.write_text('[gd_resource type="EditorSettings" format=3]\n\n[resource]\n'
+                    'filesystem/on_save/safe_save_on_backup_then_rename = false\n', encoding='utf-8')
+                manifest['windows_export_direct_save'] = True
             invoke('import', ['--headless', '--path', project, '--import'], 600)
             pack = lane / 'form1.pck'
             invoke('export', ['--headless', '--path', project, '--export-pack', 'Windows', pack], 600)
