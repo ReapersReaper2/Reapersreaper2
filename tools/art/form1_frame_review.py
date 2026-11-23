@@ -106,9 +106,9 @@ def review(manifest: Path, clip: str, out: Path) -> list[dict]:
         texture = entry["texture"]
         if not texture.startswith("res://") or ".." in texture:
             raise ValueError(f"Unsafe resource path for {name}")
-        path = manifest.parents[2] / texture.removeprefix("res://")
+        path = manifest.parents[3] / texture.removeprefix("res://")
         # manifest lives in godot-project/sprites/mollosar/approved;
-        # parents[2] is godot-project.
+        # parents[3] is godot-project.
         if not path.is_file():
             raise FileNotFoundError(path)
         source_hash = hashlib.sha256(path.read_bytes()).hexdigest()
