@@ -1,0 +1,43 @@
+name: Form 1 Read-only Art Review
+on:
+  push:
+    branches:
+      - candidate/form1-frame-qa-tool-20261123
+  pull_request:
+    branches:
+      - candidate/rebirth-form1-packed-fixes-20261028
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  form1-art-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout project with approved assets
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+      - name: Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Pillow
+        run: python -m pip install Pillow==11.3.0
+      - name: Test review tool
+        run: python -m unittest discover -s tools/art -p 'test_*.py' -v
+      - name: Generate approved Form 1 source-art diagnostics
+        run: python tools/art/form1_frame_review.py --clip slash_side-r --output evidence/form1-pilot
+      - name: Inspect all approved attack clips without modifying art
+        run: python tools/art/form1_frame_review.py --clip all --output evidence/form1-all
+      - name: Upload non-destructive art review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: form1-approved-art-review-all
+          path: |
+            evidence/form1-pilot
+            evidence/form1-all
+          if-no-files-found: warn
+          retention-days: 30
