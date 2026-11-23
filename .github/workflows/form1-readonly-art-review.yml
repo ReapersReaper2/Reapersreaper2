@@ -29,11 +29,15 @@ jobs:
         run: python -m unittest discover -s tools/art -p 'test_*.py' -v
       - name: Generate approved Form 1 source-art diagnostics
         run: python tools/art/form1_frame_review.py --clip slash_side-r --output evidence/form1-pilot
+      - name: Inspect all approved attack clips without modifying art
+        run: python tools/art/form1_frame_review.py --clip all --output evidence/form1-all
       - name: Upload non-destructive art review evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: form1-slash-side-r-review
-          path: evidence/form1-pilot
+          name: form1-approved-art-review-all
+          path: |
+            evidence/form1-pilot
+            evidence/form1-all
           if-no-files-found: warn
           retention-days: 30
