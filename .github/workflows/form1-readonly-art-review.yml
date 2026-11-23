@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - candidate/form1-frame-qa-tool-20261123
+  pull_request:
+    branches:
+      - candidate/rebirth-form1-packed-fixes-20261028
   workflow_dispatch:
 permissions:
   contents: read
